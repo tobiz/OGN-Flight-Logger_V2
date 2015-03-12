@@ -16,6 +16,17 @@
 # Land speed in km/h.
 # Latitude, west is negative decimal degrees.
 # Longitude, south is negative decimal degrees.
+#
+# 20150312: 	First working version
+# Usage: 		Run flogger.py to collect the daily flight data then
+#        		run process.py which processes the raw data into a table flights in the database flogger.sgl3
+#				This first version is very experimental, it is proof of concept and processes. The code needs to
+#				be 'improved'.
+# To be done:	1) The program should be run each day between 0900 and sunset. This should be handled by cron
+#				   to start the program and the program determining sunset and stopping itself. It also needs
+#				   to handle power outages (not sure how at the moment)
+#				2) The Flarm code to registration code needs to addressed using OGNs new database.
+#
 
 import socket
 
@@ -307,7 +318,7 @@ try:
 			# Make the connection to the server
 			sock_file = sock.makefile()
 # Delete following line when not running in test mode
-			exit()
+#			exit()
 			continue
 		
 		# Parse the returned packet into fields
