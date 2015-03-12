@@ -132,9 +132,9 @@ class fap_telemetry_t(Structure):
     ]
 class fap_packet_t(Structure):
     _fields_ = [
-        ('error_code', POINTER(fap_error_code_t)), # POINTER(fap_error_code_t)
+        ('error_code', POINTER(fap_error_code_t)),  # POINTER(fap_error_code_t)
 #        ('error_message', c_char_p),
-        ('type', POINTER(c_int)), # POINTER(fap_packet_type_t)
+        ('type', POINTER(c_int)),  # POINTER(fap_packet_type_t)
         ('orig_packet', c_char_p),
         ('orig_packet_len', c_uint),
         ('header', c_char_p),
@@ -146,7 +146,7 @@ class fap_packet_t(Structure):
         ('path_len', c_uint),
         ('latitude', POINTER(c_double)),
         ('longitude', POINTER(c_double)),
-        ('format', POINTER(c_int)), # POINTER(fap_pos_format_t)
+        ('format', POINTER(c_int)),  # POINTER(fap_pos_format_t)
         ('pos_resolution', POINTER(c_double)),
         ('pos_ambiguity', POINTER(c_uint)),
         ('dao_datum_byte', c_byte),
@@ -157,7 +157,7 @@ class fap_packet_t(Structure):
         ('symbol_code', c_byte),
         ('messaging', POINTER(c_short)),
         ('destination', c_char_p),
-        ('message',c_char_p ),
+        ('message', c_char_p),
         ('message_ack', c_char_p),
         ('message_nack', c_char_p),
         ('message_id', c_char_p),
@@ -169,7 +169,7 @@ class fap_packet_t(Structure):
         ('radio_range', POINTER(c_uint)),
         ('phg', c_char_p),
         ('timestamp', POINTER(time_t)),
-        ('raw_timestamp', c_char_p),            # Added
+        ('raw_timestamp', c_char_p),  # Added
         ('nmea_checksum_ok', POINTER(c_short)),
         ('wx_report', POINTER(fap_wx_report_t)),
         ('telemetry', POINTER(fap_telemetry_t)),
