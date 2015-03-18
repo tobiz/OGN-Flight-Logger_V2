@@ -173,6 +173,18 @@ def fleet_check_new(callsign):
 							VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
 							{'registration':callsign, 'type':"", 'model': "", 'owner':"",'airfield': "Sutton Bank", 'flarm_id':callsign})
 		return True
+	
+def callsign_trans(callsign):
+	cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+	row = cursor.fetchone()
+	# Check whether registration and flarm_id are the same value 
+	if row[0] <> row[1]:
+		# They aren't the same so use registration
+		return row[0]
+	else:
+		# The are the same so use flarm_id
+		return callsign
+	
 
 
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
@@ -430,13 +442,16 @@ try:
 			print "-----------------End of Packet: ", i, " ------------------------------"	
 			continue
 		
-#		fleet_check_new(str(src_callsign))		# Temporary to test method
+		# Check if callsign is in the fleet 
 		if fleet_check_new(str(src_callsign)) == False:
 			print "Aircraft ", src_callsign, " not in Sutton Bank fleet, ignore"
 			print "-----------------End of Packet: ", i, " ------------------------------"
 			continue
 		else:
-			print "Aircraft ", src_callsign, " is in Sutton Bank fleet, process"	
+			print "Aircraft ", src_callsign, " is in Sutton Bank fleet, process"
+			# Use registration if it is in aircraft table else just use Flarm_ID
+			src_callsign = 	callsign_trans(src_callsign)
+			print "Aircraft callsign is now: ", src_callsign
 			# Check with this aircraft callsign has been seen before
 			CheckPrev(src_callsign, 'latitude', 0)
 			CheckVals(src_callsign, 'latitude', 0)
@@ -521,7 +536,7 @@ try:
 				print "-----------------End of Packet: ", i, " ------------------------------"
 				continue
 #			if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] == 0:
-			if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['max_altitude'] <= QNH:
+			if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= QNH:
 				# Aircraft hasn't moved and is not at an altitude greater than Sutton Bank.  
 				print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nvalues[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
 			else:

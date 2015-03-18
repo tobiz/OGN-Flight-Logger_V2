@@ -45,7 +45,7 @@ row = cursor.fetchone()
 print "row is: ", row
 #
 # The following takes into account the situation when there are no records in flight_log
-# and there is therfore no highest date record. Note it does require that this code is
+# and there is therefore no highest date record. Note it does require that this code is
 # run on the same day as the flights are recorded in flight_log_final
 #
 if row <> (None,):
@@ -88,68 +88,91 @@ db.commit()
 
 # Phase 2 processing
 # For some records for each flight the end time and next start time are too close together
-# to be independent flights
+# to be independent flights.
+# This phase examines all the records and puts them into groups such that each group has 
+# an end and start time, such that they are distinct flights ie their end and start times are greater than
+# TIME_DELTA, and not just therefore data
+# jiggles (eg moving moving the plane to a new position on the flight line),
+# ie the end and start time of subsequent flights is such that it couldn't have been a real flight
 
 print "Phase 2"
-call_sign = "FLRDDE671"
-cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
-               FROM flight_log WHERE src_callsign=?
-               ORDER BY sdate, stime ''', (call_sign,)) 
-#for row in rows: 
-row_count = len(cursor.fetchall())
-print "nos rows is: ", row_count 
-  
-cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
-             FROM flight_log WHERE src_callsign=?
-             ORDER BY sdate, stime ''', (call_sign,))
-i = 1
-group = 1
-while i <= row_count: 
-    try:
-         row_0 =cursor.next()
-         row_1 = cursor.next()
-         print "Row pair: ", i
-         print "row_0 is: ", row_0
-         print "row_1 is: ", row_1
-         time.strptime("0:5:0", "%H:%M:%S")
-         time_delta = datetime.datetime.strptime(row_1[1], "%H:%M:%S") - datetime.datetime.strptime(row_0[3], "%H:%M:%S")
-         delta_secs = time_delta.total_seconds()
-         time_lmt = datetime.datetime.strptime("0:5:0", "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
-         lmt_secs = time_lmt.total_seconds()
-         print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-         if (delta_secs) < lmt_secs:
-             print "++++Same flight"    
-             cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
-                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
-                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})             
-         else:
-             # Different flight so start next group ID
-             print "----Different flight"  
-             cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
-                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
-                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})
-             group = group + 1
-         i = i + 1
-         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
+#
+# Note the following code processes each unique or distinct call_sign ie each group
+# of flights for a call_sign
+# SELECT DISTINCT call_sign FROM flight_log
+# rows = cursor.fetchall()
+# for call_sign in rows
+
+cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
+all_callsigns = cursor.fetchall()
+print "All call_signs: ", all_callsigns
+for acallsign in all_callsigns:
+#    call_sign = "FLRDDE671"
+    call_sign = ''.join(acallsign)                   # callsign is a tuple ie (u'cccccc',) converts ccccc to string
+    print "Processing for call_sign: ", call_sign
+    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+                   FROM flight_log WHERE src_callsign=?
+                   ORDER BY sdate, stime ''', (call_sign,)) 
+    #for row in rows: 
+    row_count = len(cursor.fetchall())
+    print "nos rows is: ", row_count 
+      
+    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
                  FROM flight_log WHERE src_callsign=?
                  ORDER BY sdate, stime ''', (call_sign,))
-         j = 1
-         print "i is: ", i, " j is: ",j
-         while j < i:
-             print "Move to row: ", j
-             row_0 = cursor.next()
-             j = j + 1
-    except StopIteration:
-         print "Last row"
-         break
+    i = 1
+    group = 1
+    while i <= row_count: 
+        try:
+             row_0 =cursor.next()
+             row_1 = cursor.next()
+             print "Row pair: ", i
+             print "row_0 is: ", row_0
+             print "row_1 is: ", row_1
+             time.strptime(TIME_DELTA, "%H:%M:%S")
+             time_delta = datetime.datetime.strptime(row_1[1], "%H:%M:%S") - datetime.datetime.strptime(row_0[3], "%H:%M:%S")
+             delta_secs = time_delta.total_seconds()
+             time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+             lmt_secs = time_lmt.total_seconds()
+             print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
+             if (delta_secs) < lmt_secs:
+                 print "++++Same flight"    
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
+                                    {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})             
+             else:
+                 # Different flight so start next group ID
+                 print "----Different flight"  
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
+                                    {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})
+                 group = group + 1
+             i = i + 1
+             cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+                     FROM flight_log WHERE src_callsign=?
+                     ORDER BY sdate, stime ''', (call_sign,))
+             j = 1
+             print "i is: ", i, " j is: ",j
+             while j < i:
+                 print "Move to row: ", j
+                 row_0 = cursor.next()
+                 j = j + 1
+        except StopIteration:
+             print "Last row"
+             break
 db.commit()
 
 # Phase 3.  This sums the flight durations for each of the flight groups
 # hence resulting in the actual flight start, end times and duration
 print "+++++++Phase 3"
 
+#
+# This function since I can't find a library function that does what I want; dates & times
+# are very confusing in Python!
+#
 def time_add(t1, t2):
     ts = 0
     tm = 0
