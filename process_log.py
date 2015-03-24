@@ -22,16 +22,16 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS
                         flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, speed TEXT)''') 
+                            src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, speed TEXT)''') 
+                            src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_group(id INTEGER PRIMARY KEY, groupID TEXT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT)''') 
+                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flights(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT)''') 
+                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 
 #cursor.execute('''DELETE FROM flight_log''') 
 
 MINTIME = time.strptime("0:5:0", "%H:%M:%S")       # 5 minutes minimum flight time
@@ -59,10 +59,10 @@ else:
 print "max_date set to today: ", max_date
   
 
-cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed FROM flight_log_final''')
+cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration FROM flight_log_final''')
 data = cursor.fetchall()
 for row in data:
-    print "Row is: sdate %s, stime %s, edate %s, etime, %s, duration %s, src_callsign %s, altitude %s, speed %s" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]) 
+    print "Row is: sdate %s, stime %s, edate %s, etime, %s, duration %s, src_callsign %s, altitude %s, speed %s" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]) 
     time_str = row[4].replace("h", "")
     time_str = time_str.replace("m", "")
     time_str = time_str.replace("s", "")
@@ -74,10 +74,10 @@ for row in data:
         print "**** Record start date: ", strt_date, " after last flight_log record, copy: ", max_date
         if duration > MINTIME:
             print "#### Copy record. Duration is: ", time_str
-            cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed)
-                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed)''',
+            cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
+                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
                                 {'sdate':row[0], 'stime':row[1], 'edate': row[2], 'etime':row[3],
-                                'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7]})
+                                'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8]})
             print "Row copied"
         else:
             print "====Ignore row, flight time too short: ", row[4]
@@ -104,6 +104,7 @@ TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
 # rows = cursor.fetchall()
 # for call_sign in rows
 
+group = 0                   # Number of groups set for case there are none
 cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
 all_callsigns = cursor.fetchall()
 print "All call_signs: ", all_callsigns
@@ -118,7 +119,7 @@ for acallsign in all_callsigns:
     row_count = len(cursor.fetchall())
     print "nos rows is: ", row_count 
       
-    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration 
                  FROM flight_log WHERE src_callsign=?
                  ORDER BY sdate, stime ''', (call_sign,))
     i = 1
@@ -138,20 +139,20 @@ for acallsign in all_callsigns:
              print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
              if (delta_secs) < lmt_secs:
                  print "++++Same flight"    
-                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
-                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                     {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})             
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})             
              else:
                  # Different flight so start next group ID
                  print "----Different flight"  
-                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude)
-                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                     {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6]})
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})
                  group = group + 1
              i = i + 1
-             cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+             cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration 
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
              j = 1
@@ -196,9 +197,12 @@ def time_add(t1, t2):
     time_return = time.strptime(tstring, "%H:%M:%S")
     return time_return
     
-    
-max_groupID = group - 1
-print "Max groupID is: ", max_groupID
+if group <> 0:    
+    max_groupID = group - 1
+    print "Max groupID is: ", max_groupID
+else:
+    print "No groups to process"
+    exit()
 
 i = 1
 while i <= max_groupID:
@@ -208,7 +212,7 @@ while i <= max_groupID:
     max_altitude = r[0]
     print "Max altitude from group: ", i, " is: ", r[0]
     
-    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
                  FROM flight_group WHERE groupID=?
                  ORDER BY sdate, stime ''', (i,))
     rows = cursor.fetchall()
@@ -234,10 +238,10 @@ while i <= max_groupID:
     
     r = cursor.fetchone()
     print "Start time is: ", r[0], " End time is: ", r[1], " Duration is: ", total_duration 
-    cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude)
-                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude)''',
+    cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                 {'sdate':sdate, 'stime':r[0], 'edate': edate, 'etime':r[1],
-                                'duration': t_d, 'src_callsign':callsign, 'max_altitude':max_altitude}) 
+                                'duration': t_d, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':row[7]}) 
     db.commit()
     i = i + 1
     print "*****Flight logged to flights*********"

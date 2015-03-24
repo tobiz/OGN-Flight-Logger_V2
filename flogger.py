@@ -39,6 +39,7 @@ import sqlite3
 import pytz
 from datetime import timedelta
 import sys
+from flarm_db import flarmdb
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -163,8 +164,12 @@ def is_dst(zonename):
 def fleet_check_new(callsign):
 	cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
 	row = cursor.fetchone()
+	cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =?''', (callsign,))
+	row1 = cursor.fetchone()
+	if row1 == None:
+		print "Registration not found: ", callsign
+	# Temporarily use local aircraft db	
 	if row <> None:
-#	for r in row:
 		print "Aircraft: ", callsign, " found at: ", row[0]
 		return True
 	else:
@@ -175,14 +180,25 @@ def fleet_check_new(callsign):
 		return True
 	
 def callsign_trans(callsign):
-	cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+	# Translates a callsign supplied as as flarm_id
+	# into the aircraft registration using a local db based on flarmnet
+#	cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+	cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (callsign,))
 	row = cursor.fetchone()
 	# Check whether registration and flarm_id are the same value 
-	if row[0] <> row[1]:
+#	if row[0] <> row[1]:
+#	if row[0] <> None:
 		# They aren't the same so use registration
+#		return row[0]
+#	else:
+		# The are the same so use flarm_id
+#		return callsign
+	
+	if row[0] <> None:
+		# Registration found for flarm_id so return registration
 		return row[0]
 	else:
-		# The are the same so use flarm_id
+		# Registration not found for flarm_id so return flarm_id
 		return callsign
 	
 
@@ -207,10 +223,10 @@ try:
     						flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS
     					flight_log2(id INTEGER PRIMARY KEY AUTOINCREMENT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-    					src_callsign TEXT, max_altitude TEXT, speed TEXT)''')	
+    					src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')	
     cursor.execute('''CREATE TABLE IF NOT EXISTS
     					flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-    					src_callsign TEXT, max_altitude TEXT, speed TEXT)''')			
+    					src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')			
     
 #    for k, v in aircraft.iteritems():
 #		print "Key is: ", k, " value is: ", v
@@ -228,7 +244,14 @@ except Exception as e:
 # finally:
     # Close the db connection
 #    db.close()
-print "Database and tables open"    
+print "Database and tables open"
+
+# Build local database from flarmnet of aircraft
+if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
+	print "Flarmnet db built"   
+else:
+	print "Flarmnet db build failed, exit" 
+	exit()
 
 # create socket & connect to server
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -325,7 +348,11 @@ try:
 				sock.close()
 			print "Create new socket"
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))		
+			try:
+				sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
+			except Errno:
+				print "Connection refused. Errno: ", Errno
+				exit()		
 			sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
 			# Make the connection to the server
 			sock_file = sock.makefile()
@@ -450,8 +477,10 @@ try:
 		else:
 			print "Aircraft ", src_callsign, " is in Sutton Bank fleet, process"
 			# Use registration if it is in aircraft table else just use Flarm_ID
-			src_callsign = 	callsign_trans(src_callsign)
-			print "Aircraft callsign is now: ", src_callsign
+#			src_callsign = 	callsign_trans(src_callsign)
+#			print "Aircraft callsign is now: ", src_callsign
+			registration = 	callsign_trans(src_callsign)
+			print "Aircraft registration is: ", registration, " FLARM code is: ", src_callsign
 			# Check with this aircraft callsign has been seen before
 			CheckPrev(src_callsign, 'latitude', 0)
 			CheckVals(src_callsign, 'latitude', 0)
@@ -469,9 +498,9 @@ try:
 
 				# aircraft was stopped, now isn't
 				print "Aircraft ", src_callsign, " was stopped, now moving. Create new record"	
-				cursor.execute('''INSERT INTO flight_log2(sdate, stime, edate, etime, duration,	src_callsign, max_altitude, speed)
-							VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed)''',
-							{'sdate':fl_date, 'stime':fl_time, 'edate': "", 'etime':"", 'duration': "", 'src_callsign':src_callsign, 'max_altitude':altitude, 'speed':0})
+				cursor.execute('''INSERT INTO flight_log2(sdate, stime, edate, etime, duration,	src_callsign, max_altitude, speed, registration)
+							VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
+							{'sdate':fl_date, 'stime':fl_time, 'edate': "", 'etime':"", 'duration': "", 'src_callsign':src_callsign, 'max_altitude':altitude, 'speed':0, 'registration': registration})
 				nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']
 				
 #			if nprev_vals[src_callsign]['speed'] <> 0 and nvalues[src_callsign]['speed'] == 0:
@@ -507,10 +536,10 @@ try:
 				fl_duration_time_str = str(fl_duration_time)
 				print "Start time: ", fl_start_time, "End time: ", fl_end_time_str, "Duration: ", fl_duration_time, " Max altitude: ", max_altitude
 				# Add record to flight_log_final
-				cursor.execute('''INSERT INTO flight_log_final(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed)
-							VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed)''',
+				cursor.execute('''INSERT INTO flight_log_final(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
+							VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
 							{'sdate':start_date, 'stime':start_time, 'edate': fl_end_date, 'etime':fl_end_time_str,
-							'duration': fl_duration_time_str, 'src_callsign':src_callsign, 'max_altitude':max_altitude, 'speed':0})
+							'duration': fl_duration_time_str, 'src_callsign':src_callsign, 'max_altitude':max_altitude, 'speed':0, 'registration': registration})
 				print "Updated flight_log_final", src_callsign
 				
 				
