@@ -54,7 +54,7 @@ nvalues = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0,
 L_SMALL = float(0.001)  	# Small latitude or longitude delta of a 0.001 degree
 A_SMALL = float(0.01)  		# Small altitude delta of 0.01 a metre, ie 1cm
 V_SMALL = float(10.0)		# Small velocity delta of 10.0 kph counts as zero ie not moving
-QNH = 300 					# ASL for Sutton Bank(max 297m) in metres
+QNH_SB = 300 				# ASL for Sutton Bank(max 297m) in metres
 frst_time = False
 AIRFIELD = "SuttonBnk"
 # Coded 	001-099: Gliders, 
@@ -194,11 +194,13 @@ def callsign_trans(callsign):
 		# The are the same so use flarm_id
 #		return callsign
 	
-	if row[0] <> None:
+	if row <> None:
 		# Registration found for flarm_id so return registration
-		return row[0]
+		print "In flarmnet db return: ", row
+		return row 
 	else:
 		# Registration not found for flarm_id so return flarm_id
+		print "Not in flarmnet db return: ", callsign
 		return callsign
 	
 
@@ -565,18 +567,19 @@ try:
 				print "-----------------End of Packet: ", i, " ------------------------------"
 				continue
 #			if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] == 0:
-			if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= QNH:
+			if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= QNH_SB:
 				# Aircraft hasn't moved and is not at an altitude greater than Sutton Bank.  
 				print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nvalues[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
 			else:
 				# aircraft is moving. Check whether current altitude is greater than previous
 				print "Aircraft ", src_callsign, " is still moving"
+				print "Old height was: ", nprev_vals[src_callsign]['altitude'], " New height is: ", nvalues[src_callsign]['altitude']
 				if nvalues[src_callsign]['altitude'] > nprev_vals[src_callsign]['altitude']:
-					print "Aircraft ", src_callsign, " is now higher, was: ", nprev_vals[src_callsign]['altitude'], " now: ", nvalues[src_callsign]['altitude']
+					print "Aircraft ", src_callsign, " is now higher than max height, was: ", nprev_vals[src_callsign]['altitude'], " now: ", nvalues[src_callsign]['altitude']
 					cursor.execute('''UPDATE flight_log2 SET max_altitude=? WHERE src_callsign=? ''', (altitude, src_callsign))
 					nprev_vals[src_callsign]['altitude'] = nvalues[src_callsign]['altitude']  # Now higher
 				else:
-					print "Aircraft callsign: ", src_callsign, " is moving but is not higher than last time. Height: ", nvalues[src_callsign]['altitude'], " Speed is: ", nvalues[src_callsign]['speed'], " Was: ", nprev_vals[src_callsign]['speed']
+					print "Aircraft callsign: ", src_callsign, " is moving but is not higher than max height: ", nvalues[src_callsign]['altitude'], " Speed is: ", nvalues[src_callsign]['speed'], " Was: ", nprev_vals[src_callsign]['speed']
 					# Set previous speed values to current
 					nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']
 					continue
