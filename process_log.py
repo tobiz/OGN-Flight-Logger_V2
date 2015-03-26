@@ -62,7 +62,17 @@ print "max_date set to today: ", max_date
 cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration FROM flight_log_final''')
 data = cursor.fetchall()
 for row in data:
-    print "Row is: sdate %s, stime %s, edate %s, etime, %s, duration %s, src_callsign %s, altitude %s, speed %s" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]) 
+    print "Row is: sdate %s, stime %s, edate %s, etime %s, duration %s, src_callsign %s, altitude %s, speed %s, registration %s" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+#    print "Row is: sdate %s" % row[0] 
+#    print "stime %s " % row[1] 
+#    print "edate %s " % row[2]
+#    print "etime %s " % row[3]
+#    print "duration %s " % row[4]
+#    print "src_callsign %s " % row[5]
+#    print "altitude %s " % row[6]
+#    print "speed %s"  % row[7]
+#    print "registration %s" % row[8]
+
     time_str = row[4].replace("h", "")
     time_str = time_str.replace("m", "")
     time_str = time_str.replace("s", "")
