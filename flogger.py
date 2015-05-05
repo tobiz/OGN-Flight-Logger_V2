@@ -1,7 +1,9 @@
 #
+# FLOGGER
+#
 # This program reads records from the OGN network processing only
-# those received from a specified site and registration marks, the the
-# gliders belonging to the club.
+# those received from a specified site and registration marks, eg aircraft belonging to 
+# a specific club.
 # It writes each record to a database and at the end of each day process
 # them to determine the flight times of each flight for each machine.
 # Phase 1 will just collect the data. 
@@ -17,13 +19,18 @@
 # Latitude, west is negative decimal degrees.
 # Longitude, south is negative decimal degrees.
 #
+# This program is covered by the GNU GENERAL PUBLIC LICENSE.
+# See the file 'LICENSE' for details
+# 
+#
 # 20150312: 	First working version
 # Usage: 		Run flogger.py to collect the daily flight data then
 #        		run process.py which processes the raw data into a table flights in the database flogger.sgl3
 #				This first version is very experimental, it is proof of concept and processes. The code needs to
 #				be 'improved'.
 # To be done:	1) The program should be run each day between 0900 and sunset. This should be handled by cron
-#				   to start the program and the program determining sunset and stopping itself. It also needs
+#				   to start the program at a time specified in settings which then calculates sunrise and suspends
+#                  until then.  Once running the program determines sunset and stopping itself at that time. It also needs
 #				   to handle power outages (not sure how at the moment)
 #				2) The Flarm code to registration code needs to addressed using OGNs new database.
 #
@@ -31,6 +38,7 @@
 import socket
 
 from libfap import *
+#import libfap
 import settings
 import string
 import datetime
@@ -40,7 +48,10 @@ import pytz
 from datetime import timedelta
 import sys
 from flarm_db import flarmdb
-
+from pysqlite2 import dbapi2 as sqlite
+from open_db import opendb 
+import ephem
+from flogger_process_log import process_log
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nprev_vals = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
@@ -182,7 +193,12 @@ def fleet_check_new(callsign):
 def callsign_trans(callsign):
 	# Translates a callsign supplied as as flarm_id
 	# into the aircraft registration using a local db based on flarmnet
-#	cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+	cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+	if callsign.startswith("FLR"):
+		# Callsign starts with "FLR" so remove it
+		str = callsign[3:]
+		callsign = "%s" % str
+		print "Removing FLR string.  Callsign is now: ", callsign
 	cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (callsign,))
 	row = cursor.fetchone()
 	# Check whether registration and flarm_id are the same value 
@@ -196,16 +212,21 @@ def callsign_trans(callsign):
 	
 	if row <> None:
 		# Registration found for flarm_id so return registration
-		print "In flarmnet db return: ", row
-		return row 
+		registration = "%s" % row
+#		print "In flarmnet db return: ", row
+		print "In flarmnet db return: ", registration
+		return registration
 	else:
 		# Registration not found for flarm_id so return flarm_id
 		print "Not in flarmnet db return: ", callsign
 		return callsign
-	
-
-
+#	
+#----------------------------------------------------------------- 
+#Start of main code	
+#-----------------------------------------------------------------
+#
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
+"""
 try:
     # Creates or opens a file called mydb with a SQLite3 DB
     db = sqlite3.connect('flogger.sql3')
@@ -247,32 +268,82 @@ except Exception as e:
     # Close the db connection
 #    db.close()
 print "Database and tables open"
+"""
+#
+#-----------------------------------------------------------------
+# Build flogger db using schema
+#-----------------------------------------------------------------
+#
+cur = [0]    # cur is mutable  
+r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
+#cursor = cur
+print "End of building db using schema: ", r, ". cur is: ", cur
 
-# Build local database from flarmnet of aircraft
+db = sqlite3.connect('flogger.sql3')
+#Get a cursor object
+cursor = db.cursor()
+
+
+#	
+#-----------------------------------------------------------------
+# Build local database from flarmnet of aircraft	
+#-----------------------------------------------------------------
+#
 if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
 	print "Flarmnet db built"   
 else:
 	print "Flarmnet db build failed, exit" 
 	exit()
+	
+#	
+#-----------------------------------------------------------------
+# Initialise API for computing sunrise and sunset	
+#-----------------------------------------------------------------
+#
+location = ephem.Observer()
+location.pressure = 0
+location.horizon = '-0:34'	# Adjustments for angle to horizon
+
+#'33.8', '-84.4' 
+location.lat, location.lon = settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE
+date = datetime.datetime.now()
+next_sunrise = location.next_rising(ephem.Sun(), date)
+next_sunset = location.next_setting(ephem.Sun(), date)
+print "Sunrise today: ", date, " is: ", next_sunrise
+print "Sunset today: ", date, " is: ", next_sunset
+
+#	
+#-----------------------------------------------------------------
+# Connect to the APRS server to receive flarm data	
+#-----------------------------------------------------------------
+#
 
 # create socket & connect to server
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-set_keepalive(sock, after_idle_sec=60, interval_sec=3, max_fails=5)
-sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
+try:
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	set_keepalive(sock, after_idle_sec=60, interval_sec=3, max_fails=5)
+	sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
+except Exception, e:
+	print "Socket failure on connect: ", e
 print "Socket sock connected"
 
-# logon to OGN APRS network	
-# sock.send('user %s pass %s vers Python_Example 0.0.1 filter e/SuttonBnk\n ' % (settings.APRS_USER, settings.APRS_PASSCODE) )
-sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
-# print 'user %s pass %s vers Python_Example 0.0.1 filter %s ' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) 
-# filter =  'user %s pass %s vers Python_Example_0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER)
-# print "Filter string is: ", filter
-# sock.send('user %s pass %s vers Python_Example 0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) )	
-# sock.send(filter)
-# 54.13.728N  001.12.580W 
-# r/33/-96/25
-# r/54.13.728/-001.12.580/25 # 25Km of Sutton Bank
-# 54.228833,-1.209639
+try:
+	# logon to OGN APRS network	
+	# sock.send('user %s pass %s vers Python_Example 0.0.1 filter e/SuttonBnk\n ' % (settings.APRS_USER, settings.APRS_PASSCODE) )
+	sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
+	# print 'user %s pass %s vers Python_Example 0.0.1 filter %s ' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) 
+	# filter =  'user %s pass %s vers Python_Example_0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER)
+	# print "Filter string is: ", filter
+	# sock.send('user %s pass %s vers Python_Example 0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) )	
+	# sock.send(filter)
+	# 54.13.728N  001.12.580W 
+	# r/33/-96/25
+	# r/54.13.728/-001.12.580/25 # 25Km of Sutton Bank
+	# 54.228833,-1.209639
+except Exception, e:
+	print "Socket send failure: ", e
+	exit()
+print "Socket send ok"
 
 # Make the connection to the server
 start_time = datetime.datetime.now()
@@ -300,6 +371,37 @@ try:
 	while 1:
 # 	for i in range(1000000):
 		i = i + 1
+		datetime_now = datetime.datetime.now()
+		previous_sunrise = location.previous_rising(ephem.Sun(), date).datetime()
+		next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
+		previous_sunset = location.previous_setting(ephem.Sun(), date).datetime()
+		next_sunset = location.next_setting(ephem.Sun(), date).datetime()
+		# Determine if sun has set by testing if sun is 12 degrees below horizon - defn of twilight
+		s = ephem.Sun()
+		observer_location = ephem.city('London') # London is just ok for uk, better to use coordinates held in settings but how?
+		s.compute(observer_location)
+		twilight = -6 * ephem.degree
+		if s.alt > twilight:
+			print 'Is it light in London? Yes. Log todays flights'
+		else:
+			print 'Is it light in London? No. Process todays flights'
+			process_log(cursor,db)
+			# Delete entries from daily flight logging tables
+			try:
+				cursor.execute('''DELETE TABLE flight_log''')
+				cursor.execute('''DELETE TABLE flight_log_final''')
+				cursor.execute('''DELETE TABLE flight_group''')
+			except:
+				print "Delete flight logging tables failed or no records in tables"
+				exit
+			# Wait for sunrise
+			wait_time = next_sunrise - datetime_now
+			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time.total_seconds()
+			# Sleep till sunrise
+			time.sleep(wait_time.total_seconds())
+			# Sun has now risen so recommence logging flights
+			continue
+					
 		current_time = time.time()
 		elapsed_time = int(current_time - keepalive_time)
  		print "Elapsed time is: ", elapsed_time
@@ -339,6 +441,9 @@ try:
 		if len_packet_str == 0:
 			# create new socket & connect to server
 			print "Read returns zero length string on iteration: ", i
+			# Wait 20 seconds
+			time.sleep(20)
+			continue
 			try:
 				sock.shutdown(0)
 			except socket.error, e:
@@ -364,7 +469,7 @@ try:
 		
 		# Parse the returned packet into fields
 		packet = libfap.fap_parseaprs(packet_str, len(packet_str), 0)
-		print '%s %s' % (packet[0].src_callsign, packet[0].body)
+		print 'Parse packet. Callsign: %s. Packet body: %s' % (packet[0].src_callsign, packet[0].body)
 		try:
 			error_code = packet[0].error_code[0]
 		except ValueError:
