@@ -4,6 +4,8 @@
 import string
 import requests
 import sqlite3
+import time
+#import unicodedata
 
 def flarmdb (flarmnet, flogger_db, flarm_data):
     try:
@@ -34,7 +36,7 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
     # Read first line and convert to number
     x = db.readline()
     val = int(x, 16)
-    print "First line is: ", val
+    print "First line from FlarmNet data is : ", val
     
     try:
         # Creates or opens a file called mydb with a SQLite3 DB
@@ -43,8 +45,11 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
         print "Create flarm_db table"
         # Get a cursor object
         cursor = dbflarm.cursor()
+#        cursor.execute('''DROP TABLE flarm_db''')
+        cursor.execute('''DELETE FROM flarm_db''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS
                             flarm_db(id INTEGER PRIMARY KEY, flarm_id TEXT, airport STRING, type TEXT, registration TEXT, radio TEXT)''')
+        print "flarm_db table created"
         # Commit the changes
     #    dbflarm.commit()
     # Catch the exception
@@ -61,9 +66,11 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
         try:
             line = db.readline()
             line_lng = len(line)
+#            print "Line length is: ", line_lng
             string = ""
-        #    print "read: ", i, " returns: ", line
+#            print "read: ", i, " returns: ", line
             for j in range(0,172,2):
+#            for j in range(0,line_lng - 1,2):
     #            x = line[j:j+2]
     #            y = int(x, 16)
     #            c = chr(y)
@@ -75,9 +82,18 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
     #        Airport = str(string[27:47]).decode("iso-8859-15").encode("utf-8", errors="replace")
             try:
                 Airport = str(string[27:47]).decode("utf-8").encode("iso-8859-15")
+#                Airport = str(string[27:47]).decode("iso-8858-15").encode("iso-8859-15")
+                Airport = Airport.rstrip()
             except:
                 print "Code error ", str(string[27:47])
-    #        Airport = string[27:47]
+#                try:
+#                    s = "%s" % str(string[27:47]).encode("utf-8")
+#                    print s
+#                except:
+#                    print "WRONG ", s
+#                s = unicodedata.name(str(string[27:47]))
+#                Airport = str(string[27:47]).decode("utf-8").encode("utf-16")
+#                Airport = string[27:47]
             Type = str(string[48:69]).decode("iso-8859-15").encode("utf-8")
             Registration = str(string[69:75]).decode("iso-8859-15").encode("utf-8")
             Radio = str(string[79:86]).decode("iso-8859-15").encode("utf-8")
@@ -94,9 +110,16 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
                dbflarm.commit()
                return False
         except:
-            print "Last line is: ", i
+            print "Number of rows is: ", i - 1
             dbflarm.commit()
             return True
     return True
     #dbflarm.commit()
+
+   
+#print "Start build Flarm DB: Test"
+#t1 = time.time() 
+#flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data")
+#t2 = time.time()
+#print "End build Flarm DB in ", t2 - t1 , " seconds"
 
