@@ -20,10 +20,10 @@ flogger determines when the next sunrise time and sleeps until then, ie waits.
 
 If installing on an arm based system this can be achieved by:
 
-sudo apt-get install python-tz sqlite3
-wget http://www.pakettiradio.net/downloads/libfap/1.5/libfap6_1.5_armhf.deb
-sudo dpkg -i libfap*.deb
+- sudo apt-get install python-tz sqlite3
+- wget http://www.pakettiradio.net/downloads/libfap/1.5/libfap6_1.5_armhf.deb
+- sudo dpkg -i libfap*.deb
 
--sudo apt-get install pythonX-dev where X is version of python being used
--sudo apt-get install python-pip
--sudo pip install pyephem 
+- sudo apt-get install pythonX-dev where X is version of python being used
+- sudo apt-get install python-pip
+- sudo pip install pyephem 
