@@ -24,6 +24,6 @@ sudo apt-get install python-tz sqlite3
 wget http://www.pakettiradio.net/downloads/libfap/1.5/libfap6_1.5_armhf.deb
 sudo dpkg -i libfap*.deb
 
-sudo apt-get install pythonX-dev where X is version of python being used
-sudo apt-get install python-pip
-sudo pip install pyephem
+-sudo apt-get install pythonX-dev where X is version of python being used
+-sudo apt-get install python-pip
+-sudo pip install pyephem

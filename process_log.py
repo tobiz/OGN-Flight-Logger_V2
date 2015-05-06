@@ -20,15 +20,19 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_times(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,
                         flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
+cursor.execute('''DROP TABLE flight_log_final''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
+cursor.execute('''DROP TABLE flight_log''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
+cursor.execute('''DROP TABLE flight_group''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_group(id INTEGER PRIMARY KEY, groupID TEXT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 
+                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''')
+cursor.execute('''DROP TABLE flights''') 
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flights(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 

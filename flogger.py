@@ -33,6 +33,20 @@
 #                  until then.  Once running the program determines sunset and stopping itself at that time. It also needs
 #				   to handle power outages (not sure how at the moment)
 #				2) The Flarm code to registration code needs to addressed using OGNs new database.
+# 20150505		Second working version
+#				Only need to run flogger.py, it now handles collection of data during daylight hours and processes
+#				after sunset (assumes gliders only fly during daylight hours)
+#				Now reads aircraft registration data from Flarmnet to build own internal table
+# To be done:	1) Tidy up code, remove all redundant testing comments
+#				2) A lot more testing - some features might still not work!
+#				3) Consider how this may be run as a service with standard start, stop etc options
+#				4) Consider adding full logging with levels
+#				5) Review the algorithm to determine if aircraft is on the ground. At the moment it determines
+#				   this by the GPS ground speed being zero (ie below a defined value); the ground speed could be zero
+#				   if the wind speed and airspeed are the same but opposite, eg when ridge flying. The algorithm could use
+#				   the altitude as well, eg if ground speed is zero but altitude is greater than home airfield altitude then
+#				   'we're flying'. Note this still has issues!
+#				6) Need to consider sending 'keep alives' when in the sleep state.
 #
 
 import socket
