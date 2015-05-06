@@ -394,7 +394,7 @@ try:
 		s = ephem.Sun()
 		observer_location = ephem.city('London') # London is just ok for uk, better to use coordinates held in settings but how?
 		s.compute(observer_location)
-		twilight = -6 * ephem.degree
+		twilight = -6 * ephem.degree	# Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
 		if s.alt > twilight:
 			print 'Is it light in London? Yes. Log todays flights'
 		else:
@@ -410,10 +410,12 @@ try:
 				exit
 			# Wait for sunrise
 			wait_time = next_sunrise - datetime_now
-			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time.total_seconds()
+			wait_time_secs = int(wait_time.total_seconds()) + 100 # Wait 1 min 40 secs more before resuming
+			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
 			# Sleep till sunrise
-			time.sleep(wait_time.total_seconds())
+			time.sleep(wait_time_secs)
 			# Sun has now risen so recommence logging flights
+			print "Woken up. Date time is now: ", datetime.datetime.now()
 			continue
 					
 		current_time = time.time()
