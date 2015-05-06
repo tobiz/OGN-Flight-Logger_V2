@@ -26,4 +26,4 @@ sudo dpkg -i libfap*.deb
 
 -sudo apt-get install pythonX-dev where X is version of python being used
 -sudo apt-get install python-pip
--sudo pip install pyephem
+-sudo pip install pyephem 
