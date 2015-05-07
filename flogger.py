@@ -47,6 +47,7 @@
 #				   the altitude as well, eg if ground speed is zero but altitude is greater than home airfield altitude then
 #				   'we're flying'. Note this still has issues!
 #				6) Need to consider sending 'keep alives' when in the sleep state.
+#				7) There's a problem concerning character codes when building the flarm database which needs solving, only show in 1 record
 #
 
 import socket
@@ -318,7 +319,6 @@ location = ephem.Observer()
 location.pressure = 0
 location.horizon = '-0:34'	# Adjustments for angle to horizon
 
-#'33.8', '-84.4' 
 location.lat, location.lon = settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE
 date = datetime.datetime.now()
 next_sunrise = location.next_rising(ephem.Sun(), date)
@@ -392,13 +392,14 @@ try:
 		next_sunset = location.next_setting(ephem.Sun(), date).datetime()
 		# Determine if sun has set by testing if sun is 12 degrees below horizon - defn of twilight
 		s = ephem.Sun()
-		observer_location = ephem.city('London') # London is just ok for uk, better to use coordinates held in settings but how?
-		s.compute(observer_location)
+#		observer_location = ephem.city('London') # London is just ok for uk, better to use coordinates held in settings but how?
+#		s.compute(observer_location)
+		s.compute(location)
 		twilight = -6 * ephem.degree	# Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
 		if s.alt > twilight:
-			print 'Is it light in London? Yes. Log todays flights'
+			print 'Is it light at Location? Yes. Log todays flights', " Time: ", datetime_now, " Next sunset at: ", next_sunset
 		else:
-			print 'Is it light in London? No. Process todays flights'
+			print 'Is it light at Location? No. Process todays flights'
 			process_log(cursor,db)
 			# Delete entries from daily flight logging tables
 			try:
@@ -410,11 +411,13 @@ try:
 				exit
 			# Wait for sunrise
 			wait_time = next_sunrise - datetime_now
-			wait_time_secs = int(wait_time.total_seconds()) + 100 # Wait 1 min 40 secs more before resuming
+			# Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
+			wait_time_secs = int(wait_time.total_seconds()) + 600 
 			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
 			# Sleep till sunrise
 			time.sleep(wait_time_secs)
 			# Sun has now risen so recommence logging flights
+			location.Date(datetime.datetime.now())
 			print "Woken up. Date time is now: ", datetime.datetime.now()
 			continue
 					
