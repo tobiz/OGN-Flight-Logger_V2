@@ -115,7 +115,7 @@ def process_log (cursor,db):
                 print "====Ignore row, flight time too short: ", row[4]
         else:
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
-    print "Done"
+    print "Done Phase 1"
     db.commit()  
     
     # Phase 2 processing
@@ -158,7 +158,7 @@ def process_log (cursor,db):
         group = 1
         while i <= row_count: 
             try:
-                 row_0 =cursor.next()
+                 row_0 = cursor.next()
                  row_1 = cursor.next()
                  print "Row pair: ", i
                  print "row_0 is: ", row_0
@@ -197,7 +197,7 @@ def process_log (cursor,db):
                  print "Last row"
                  break
     db.commit()
-    print "Done"
+    print "Done Phase 2"
     # Phase 3.  This sums the flight durations for each of the flight groups
     # hence resulting in the actual flight start, end times and duration
     print "+++++++Phase 3"
@@ -278,7 +278,7 @@ def process_log (cursor,db):
         db.commit()
         i = i + 1
         print "*****Flight logged to flights*********"
-    print "Done"
+    print "Done Phase 3"
     return
     
         

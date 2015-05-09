@@ -235,6 +235,37 @@ def callsign_trans(callsign):
 		# Registration not found for flarm_id so return flarm_id
 		print "Not in flarmnet db return: ", callsign
 		return callsign
+	
+def APRS_connect (settings):
+	#	
+	#-----------------------------------------------------------------
+	# Connect to the APRS server to receive flarm data	
+	#-----------------------------------------------------------------
+	#
+	
+	# create socket & connect to server
+	try:
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		set_keepalive(sock, after_idle_sec=60, interval_sec=3, max_fails=5)
+		sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
+	except Exception, e:
+		print "Socket failure on connect: ", e
+	print "Socket sock connected"
+	
+	try:
+		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
+	except Exception, e:
+		print "Socket send failure: ", e
+		exit()
+	print "Socket send ok"
+	
+	# Make the connection to the server
+#	start_time = datetime.datetime.now()
+#	keepalive_time = time.time()
+	sock_file = sock.makefile()
+	print "APRS connection made"
+	return sock_file
+
 #	
 #----------------------------------------------------------------- 
 #Start of main code	
@@ -326,6 +357,7 @@ next_sunset = location.next_setting(ephem.Sun(), date)
 print "Sunrise today: ", date, " is: ", next_sunrise
 print "Sunset today: ", date, " is: ", next_sunset
 
+"""
 #	
 #-----------------------------------------------------------------
 # Connect to the APRS server to receive flarm data	
@@ -359,10 +391,13 @@ except Exception, e:
 	exit()
 print "Socket send ok"
 
+"""
 # Make the connection to the server
 start_time = datetime.datetime.now()
 keepalive_time = time.time()
-sock_file = sock.makefile()
+#sock_file = sock.makefile()
+
+sock_file = APRS_connect(settings)
 print "libfap_init"
 libfap.fap_init()
 
@@ -390,35 +425,58 @@ try:
 		next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
 		previous_sunset = location.previous_setting(ephem.Sun(), date).datetime()
 		next_sunset = location.next_setting(ephem.Sun(), date).datetime()
-		# Determine if sun has set by testing if sun is 12 degrees below horizon - defn of twilight
+		# Set datetime to current time
+		location.date = ephem.Date(datetime.datetime.now())
 		s = ephem.Sun()
-#		observer_location = ephem.city('London') # London is just ok for uk, better to use coordinates held in settings but how?
-#		s.compute(observer_location)
 		s.compute(location)
 		twilight = -6 * ephem.degree	# Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
 		if s.alt > twilight:
-			print 'Is it light at Location? Yes. Log todays flights', " Time: ", datetime_now, " Next sunset at: ", next_sunset
+			print "Is it light at Location? Yes", location, " Ephem date is: ", ephem.Date(location.date), " Next sunset at: ", location.next_setting(ephem.Sun())
 		else:
-			print 'Is it light at Location? No. Process todays flights'
+			print "Is it light at Location? No", location, " Ephem date is: ", ephem.Date(location.date), " Next sunrise at: ", location.next_rising(ephem.Sun())
 			process_log(cursor,db)
 			# Delete entries from daily flight logging tables
 			try:
-				cursor.execute('''DELETE TABLE flight_log''')
-				cursor.execute('''DELETE TABLE flight_log_final''')
-				cursor.execute('''DELETE TABLE flight_group''')
+				cursor.execute('''DELETE FROM flight_log''')
+				print "Delete flight_log table ok"
 			except:
-				print "Delete flight logging tables failed or no records in tables"
-				exit
+				print "Delete flight_log table failed or no records in tables"
+			try:
+				cursor.execute('''DELETE FROM flight_log2''')
+				print "Delete flight_log2 table ok"
+			except:
+				print "Delete flight_log2 table failed or no records in tables"
+			try:
+				cursor.execute('''DELETE FROM flight_log_final''')
+				print "Delete flight_log_final table ok"
+			except:
+				print "Delete flight_log_final table failed or no records in tables"
+			try:
+				cursor.execute('''DELETE FROM flight_group''')
+				print "Delete flight_group table ok"
+			except:
+				print "Delete flight_group table failed or no records in tables"
+#				exit
+			db.commit()
 			# Wait for sunrise
 			wait_time = next_sunrise - datetime_now
 			# Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
 			wait_time_secs = int(wait_time.total_seconds()) + 600 
 			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
+			# close socket -- not needed. Create new one at sunrise
+			sock.shutdown(0)
+			sock.close()
 			# Sleep till sunrise
 			time.sleep(wait_time_secs)
 			# Sun has now risen so recommence logging flights
-			location.Date(datetime.datetime.now())
+			location.date = ephem.Date(datetime.datetime.now())
 			print "Woken up. Date time is now: ", datetime.datetime.now()
+			print "Ephem datetime on wakeup is: ", ephem.Date(location.date)
+			# Make new socket as old one will have timed out during the 'big' sleep, reset the timers
+			start_time = datetime.datetime.now()
+			keepalive_time = time.time()
+			sock_file = APRS_connect(settings)
+			i = 0 				# Count of todays APRS reads reset
 			continue
 					
 		current_time = time.time()
