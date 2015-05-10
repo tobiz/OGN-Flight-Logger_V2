@@ -262,9 +262,9 @@ def APRS_connect (settings):
 	# Make the connection to the server
 #	start_time = datetime.datetime.now()
 #	keepalive_time = time.time()
-	sock_file = sock.makefile()
+#	sock_file = sock.makefile()
 	print "APRS connection made"
-	return sock_file
+	return sock
 
 #	
 #----------------------------------------------------------------- 
@@ -397,7 +397,8 @@ start_time = datetime.datetime.now()
 keepalive_time = time.time()
 #sock_file = sock.makefile()
 
-sock_file = APRS_connect(settings)
+sock = APRS_connect(settings)
+sock_file = sock.makefile()
 print "libfap_init"
 libfap.fap_init()
 
@@ -475,7 +476,8 @@ try:
 			# Make new socket as old one will have timed out during the 'big' sleep, reset the timers
 			start_time = datetime.datetime.now()
 			keepalive_time = time.time()
-			sock_file = APRS_connect(settings)
+			sock = APRS_connect(settings)
+			sock_file = sock.makefile()		# Note both sock & sock_file get used
 			i = 0 				# Count of todays APRS reads reset
 			continue
 					
