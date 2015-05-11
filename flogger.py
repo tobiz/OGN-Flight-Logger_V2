@@ -484,7 +484,8 @@ try:
 		current_time = time.time()
 		elapsed_time = int(current_time - keepalive_time)
  		print "Elapsed time is: ", elapsed_time
-		if (current_time - keepalive_time) > 900:
+#		if (current_time - keepalive_time) > 900:
+		if (current_time - keepalive_time) > settings.FLOGGER_KEEPALIVE_TIME:
 			try:
 				print "Socket open for: ", (current_time - keepalive_time), " seconds, send keepalive"
 				rtn = sock_file.write("#Python Example App\n\n")

@@ -9,7 +9,7 @@ At the moment this is very much 'in development'
 To install OGN Flight Logger the following prerequisites are required
 - python-tz
 - sqlite3
-- libfap
+- libfap (Note this is the "C" library libfap, not the python module libfap.py)
 - ephem
  
 To run flogger first set up the parameters in settings.py then call 'flogger.py'.  Flogger.py will

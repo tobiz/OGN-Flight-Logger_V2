@@ -69,7 +69,7 @@ def process_log (cursor,db):
     #
     # Note this may need revision for the case that the system is started before sunrise. Not sure
     #
-    print "+++++++Phase 1"
+    print "+++++++Phase 1 Start+++++++"
     if row <> (None,):
         max_date = datetime.datetime.strptime(row[0], "%y/%m/%d")
         print "Last record date in flight_log is: ", max_date
@@ -115,7 +115,7 @@ def process_log (cursor,db):
                 print "====Ignore row, flight time too short: ", row[4]
         else:
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
-    print "Done Phase 1"
+    print "-------Phase 1 End--------"
     db.commit()  
     
     # Phase 2 processing
@@ -127,7 +127,7 @@ def process_log (cursor,db):
     # jiggles (eg moving moving the plane to a new position on the flight line),
     # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
     
-    print "+++++++Phase 2"
+    print "+++++++Phase 2 Start+++++++"
     TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
     #
     # Note the following code processes each unique or distinct call_sign ie each group
@@ -169,24 +169,41 @@ def process_log (cursor,db):
                  time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
                  lmt_secs = time_lmt.total_seconds()
                  print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-                 if (delta_secs) < lmt_secs:
-                     print "++++Same flight"    
+                 """
+                if (delta_secs) < lmt_secs:
+                     print "++++Same flight"
+                     # So create a record in group with current groupID    
                      cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
                                         VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                         {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
                                         'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})             
                  else:
                      # Different flight so start next group ID
-                     print "----Different flight"  
+                     print "----Different flight" 
+                     # So create a record in group with current groupID but increment groupID for next record processed
                      cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
                                         VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                         {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
                                         'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})
                      group = group + 1
+                     print "Number of groups is: ", group
+                """                     
+                 # Create a group record for 1st record's data                 
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+                                    {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})
+                 print "GroupID: ", group, " record created"                 
+                 if (delta_secs) < lmt_secs:
+                     print "++++Same flight"
+                     # Record created in flight_group table with current groupID, next record will have same groupID              
+                 else:
+                     # Different flight so start next group ID
+                     print "----Different flight" 
+                     # Record created in flight_group table with current groupID but next record processed will have next groupID
+                     group = group + 1
+                     print "Number of groups is: ", group   
                  i = i + 1
-                 cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration 
-                         FROM flight_log WHERE src_callsign=?
-                         ORDER BY sdate, stime ''', (call_sign,))
                  j = 1
                  print "i is: ", i, " j is: ",j
                  while j < i:
@@ -197,10 +214,10 @@ def process_log (cursor,db):
                  print "Last row"
                  break
     db.commit()
-    print "Done Phase 2"
+    print "-------Phase 2 End-------"
     # Phase 3.  This sums the flight durations for each of the flight groups
     # hence resulting in the actual flight start, end times and duration
-    print "+++++++Phase 3"
+    print "+++++++Phase 3 Start+++++++"
     
     #
     # This function since I can't find a library function that does what I want; dates & times
@@ -278,7 +295,7 @@ def process_log (cursor,db):
         db.commit()
         i = i + 1
         print "*****Flight logged to flights*********"
-    print "Done Phase 3"
+    print "-------Phase 3 End--------"
     return
     
         
