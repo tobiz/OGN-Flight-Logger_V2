@@ -53,7 +53,6 @@
 import socket
 
 from libfap import *
-#import libfap
 import settings
 import string
 import datetime
@@ -77,10 +76,10 @@ nvalues = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0,
 		     "G-CKFN": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0}
 				}
 
-L_SMALL = float(0.001)  	# Small latitude or longitude delta of a 0.001 degree
-A_SMALL = float(0.01)  		# Small altitude delta of 0.01 a metre, ie 1cm
-V_SMALL = float(10.0)		# Small velocity delta of 10.0 kph counts as zero ie not moving
-QNH_SB = 300 				# ASL for Sutton Bank(max 297m) in metres
+L_SMALL = float(0.001)  					# Small latitude or longitude delta of a 0.001 degree
+A_SMALL = float(0.01)  						# Small altitude delta of 0.01 a metre, ie 1cm
+V_SMALL = float(10.0)						# Small velocity delta of 10.0 kph counts as zero ie not moving
+QNH_SB = settings.FLOGGER_QNH 				# ASL for Sutton Bank(max 297m) in metres
 frst_time = False
 AIRFIELD = "SuttonBnk"
 # Coded 	001-099: Gliders, 
@@ -202,7 +201,7 @@ def fleet_check_new(callsign):
 		print "Aircraft: ", callsign, " not found"
 		cursor.execute('''INSERT INTO aircraft(registration,type,model,owner,airfield ,flarm_id)
 							VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
-							{'registration':callsign, 'type':"", 'model': "", 'owner':"",'airfield': "Sutton Bank", 'flarm_id':callsign})
+							{'registration':callsign, 'type':"", 'model': "", 'owner':"",'airfield': settings.FLOGGER_AIRFIELD_NAME, 'flarm_id':callsign})
 		return True
 	
 def callsign_trans(callsign):
@@ -253,7 +252,11 @@ def APRS_connect (settings):
 	print "Socket sock connected"
 	
 	try:
-		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
+#		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
+		s = "user %s pass %s vers OGN_Flogger 0.0.3 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+#		print "Socket connect string is: ", s
+		sock.send(s)
+#		sock.send('user %s pass %s vers OGN_Flogger 0.0.3 filter %s/$s/25\\n ' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE))	
 	except Exception, e:
 		print "Socket send failure: ", e
 		exit()
@@ -325,7 +328,8 @@ r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
 #cursor = cur
 print "End of building db using schema: ", r, ". cur is: ", cur
 
-db = sqlite3.connect('flogger.sql3')
+#db = sqlite3.connect('flogger.sql3')
+db = sqlite3.connect(settings.FLOGGER_DB_NAME)
 #Get a cursor object
 cursor = db.cursor()
 
@@ -335,7 +339,8 @@ cursor = db.cursor()
 # Build local database from flarmnet of aircraft	
 #-----------------------------------------------------------------
 #
-if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
+#if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
+if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, settings.FLOGGER_DB_NAME, "flarm_data") == True:
 	print "Flarmnet db built"   
 else:
 	print "Flarmnet db build failed, exit" 
@@ -631,7 +636,8 @@ try:
 		# Test the packet to be one for the required field
 		res1 = string.find(str(packet_str), "# aprsc")
 		res2 = string.find(str(packet_str), "# logresp")
-		res3 = string.find(str(packet_str), "SuttonBnk")
+#		res3 = string.find(str(packet_str), "SuttonBnk")
+		res3 = string.find(str(packet_str), settings.FLOGGER_AIRFIELD_NAME)
 		if res1 <> -1 :
 			print "Comment aprs packet returned: ", packet_str
 			print "-----------------End of Packet: ", i, " ------------------------------"	
@@ -641,16 +647,18 @@ try:
 			print "-----------------End of Packet: ", i, " ------------------------------"	
 			continue
 		if res3 <> -1 :
-			print "---------!!!!!! Comment Sutton Bank packet returned: ", packet_str	
+			print "---------!!!!!! Comment",  settings.FLOGGER_AIRFIELD_NAME, " packet returned: ", packet_str	
 			src_callsign = packet[0].src_callsign
 			res = string.find(str(packet[0].src_callsign), "None")
 			if string.find(str(packet_str), "GLIDERN1") <> -1 or string.find(str(packet_str), "GLIDERN2") <> -1:
 # 			if res == -1:
-				print "Sutton Bank beacon packet, ignore: ", str(packet_str)
+#				print "Sutton Bank beacon packet, ignore: ", str(packet_str)
+				print settings.FLOGGER_AIRFIELD_NAME, " beacon packet, ignore: ", str(packet_str)
 				print "-----------------End of Packet: ", i, " ------------------------------"	
 				continue
 			else:
-				print "Sutton Bank aircraft position packet: ", src_callsign
+#				print "Sutton Bank aircraft position packet: ", src_callsign
+				print settings.FLOGGER_AIRFIELD_NAME, " aircraft position packet: ", src_callsign
 		else:
 			print "No match ", packet_str
 			print "-----------------End of Packet: ", i, " ------------------------------"	
@@ -658,11 +666,11 @@ try:
 		
 		# Check if callsign is in the fleet 
 		if fleet_check_new(str(src_callsign)) == False:
-			print "Aircraft ", src_callsign, " not in Sutton Bank fleet, ignore"
+			print "Aircraft ", src_callsign, " not in ", settings.FLOGGER_AIRFIELD_NAME, " , ignore"
 			print "-----------------End of Packet: ", i, " ------------------------------"
 			continue
 		else:
-			print "Aircraft ", src_callsign, " is in Sutton Bank fleet, process"
+			print "Aircraft ", src_callsign, " is in ", settings.FLOGGER_AIRFIELD_NAME, " fleet, process"
 			# Use registration if it is in aircraft table else just use Flarm_ID
 #			src_callsign = 	callsign_trans(src_callsign)
 #			print "Aircraft callsign is now: ", src_callsign

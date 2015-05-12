@@ -1,6 +1,14 @@
+#    
+#-----------------------------------------------------------------
+# Function to read flarm_id database and create SQLite version for local use.
+# Note this means if a new entry is added to Flarmnet after flogger has started
+# it won't be included. Maybe this should be run at the start of each day?  
+# Flarmnet holds its data as the hex coding of the characters.
+# The function reads this format into its own local file converting it to
+# character form (ie 2 pairs of hex digits become 1 character) 
+# before creating the database of records.
+#-----------------------------------------------------------------
 #
-# Program to read flarm_id database and create SQLite version for local use
-
 import string
 import requests
 import sqlite3
@@ -9,7 +17,7 @@ import time
 
 def flarmdb (flarmnet, flogger_db, flarm_data):
     try:
-#        flarmnet_db = "http://www.flarmnet.org/files/data.fln"
+        # flarmnet_db is at "http://www.flarmnet.org/files/data.fln"
         flarmnet_db = flarmnet
         r = requests.get(flarmnet_db)
     except:

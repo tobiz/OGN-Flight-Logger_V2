@@ -40,5 +40,9 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 # aprs.glidernet.org on port 14580.
 FLOGGER_DB_SCHEMA = "flogger_schema-0.0.1.sql"
 FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639'
+FLOGGER_QNH = 300                   # QNH, ie ASL in metres for airfield at lat/logitude
 FLOGGER_MIN_FLIGHT_TIME = "0:5:0" #hh:mm:ss
 FLOGGER_KEEPALIVE_TIME = 900 # Interval in seconds for sending tcp/ip keep alive on socket connection
+FLOGGER_DB_NAME = "flogger.sql3"    # Name of file for flogger SQLite3 database
+FLOGGER_FLARMNET_DB_URL = "http://www.flarmnet.org/files/data.fln" # URL of Flarmnet database
+FLOGGER_AIRFIELD_NAME = "SuttonBnk"     # Name of Flarm base station for airfield
