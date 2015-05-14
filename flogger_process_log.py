@@ -144,55 +144,52 @@ def process_log (cursor,db):
     #    call_sign = "FLRDDE671"
         call_sign = ''.join(acallsign)                   # callsign is a tuple ie (u'cccccc',) converts ccccc to string
         print "Processing for call_sign: ", call_sign
-        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
-                       FROM flight_log WHERE src_callsign=?
-                       ORDER BY sdate, stime ''', (call_sign,)) 
+#        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
+#                       FROM flight_log WHERE src_callsign=?
+#                       ORDER BY sdate, stime ''', (call_sign,)) 
         #for row in rows: 
-        row_count = len(cursor.fetchall())
-        print "nos rows is: ", row_count 
+#        row_count = len(cursor.fetchall())
+#        print "nos rows is: ", row_count 
           
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration 
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
-        i = 1
-        group = 1
-        while i <= row_count: 
+        
+        rows = cursor.fetchall()
+#        row_count = len(cursor.fetchall())
+        row_count = len(rows)
+        print "Number of rows is: ", row_count
+        
+# Just for testing Start
+        n = 1
+        for row in rows:
+            print "Row ", n, " is: ", row
+            n = n + 1
+# Just for testing End
+
+        i = 0                   # First index in a list is 0
+        group = 1               # group is used as the identifier of flights in a group
+        for r in rows:          # This will cycle through all the rows of the select statement
+#        while i <= row_count: 
             try:
-                 row_0 = cursor.next()
-                 row_1 = cursor.next()
+#                 row_0 = cursor.next()
+#                 row_1 = cursor.next()
+                 row_0 = rows[i]
+                 row_1 = rows[i + 1]
                  print "Row pair: ", i
-                 print "row_0 is: ", row_0
-                 print "row_1 is: ", row_1
+                 print "row_", i, " is: ", row_0
+                 print "row_", i + 1, " is: ", row_1
                  time.strptime(TIME_DELTA, "%H:%M:%S")
                  time_delta = datetime.datetime.strptime(row_1[1], "%H:%M:%S") - datetime.datetime.strptime(row_0[3], "%H:%M:%S")
                  delta_secs = time_delta.total_seconds()
                  time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
                  lmt_secs = time_lmt.total_seconds()
-                 print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-                 """
-                if (delta_secs) < lmt_secs:
-                     print "++++Same flight"
-                     # So create a record in group with current groupID    
-                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
-                                        {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                        'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})             
-                 else:
-                     # Different flight so start next group ID
-                     print "----Different flight" 
-                     # So create a record in group with current groupID but increment groupID for next record processed
-                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
-                                        {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                        'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})
-                     group = group + 1
-                     print "Number of groups is: ", group
-                """                     
+                 print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs     
                  # Create a group record for 1st record's data                 
                  cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
                                     VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                     {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row[7]})
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
                  print "GroupID: ", group, " record created"                 
                  if (delta_secs) < lmt_secs:
                      print "++++Same flight"
@@ -204,15 +201,27 @@ def process_log (cursor,db):
                      group = group + 1
                      print "Number of groups is: ", group   
                  i = i + 1
-                 j = 1
-                 print "i is: ", i, " j is: ",j
-                 while j < i:
-                     print "Move to row: ", j
-                     row_0 = cursor.next()
-                     j = j + 1
-            except StopIteration:
-                 print "Last row"
-                 break
+#                 j = 1
+#                 print "i is: ", i, " j is: ",j
+#                 while j < i:
+#                     print "Move to row: ", j
+#                     row_0 = cursor.next()
+#                     j = j + 1
+            except IndexError:
+                 print "Odd number of rows: ", i 
+                 # Odd number of rows. Index error on accessing rows[i+1] but row_0 not written yet                                
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]}) 
+                 break 
+            # Even number of rows but row_1 not written 
+            print "Even number of rows: ", i        
+            cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+                            VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+                            {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+                            'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7]})
+            break 
     db.commit()
     print "-------Phase 2 End-------"
     # Phase 3.  This sums the flight durations for each of the flight groups

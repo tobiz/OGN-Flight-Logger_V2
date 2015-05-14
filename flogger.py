@@ -256,7 +256,6 @@ def APRS_connect (settings):
 		s = "user %s pass %s vers OGN_Flogger 0.0.3 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #		print "Socket connect string is: ", s
 		sock.send(s)
-#		sock.send('user %s pass %s vers OGN_Flogger 0.0.3 filter %s/$s/25\\n ' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE))	
 	except Exception, e:
 		print "Socket send failure: ", e
 		exit()
@@ -433,6 +432,7 @@ try:
 		next_sunset = location.next_setting(ephem.Sun(), date).datetime()
 		# Set datetime to current time
 		location.date = ephem.Date(datetime.datetime.now())
+		print "Ephem date is: ", location.date
 		s = ephem.Sun()
 		s.compute(location)
 		twilight = -6 * ephem.degree	# Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
@@ -465,14 +465,18 @@ try:
 #				exit
 			db.commit()
 			# Wait for sunrise
-			wait_time = next_sunrise - datetime_now
+#			wait_time = next_sunrise - datetime_now
+			wait_time = location.next_rising(ephem.Sun(), date).datetime() - datetime_now
+			print "Next sunrise at: ", location.next_rising(ephem.Sun(), date).datetime(), " Datetime now is: ", datetime_now
 			# Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
 			wait_time_secs = int(wait_time.total_seconds()) + 600 
 			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
 			# close socket -- not needed. Create new one at sunrise
 			sock.shutdown(0)
 			sock.close()
+			#
 			# Sleep till sunrise
+			# Then open new socket, set ephem date to new day
 			time.sleep(wait_time_secs)
 			# Sun has now risen so recommence logging flights
 			location.date = ephem.Date(datetime.datetime.now())
