@@ -141,7 +141,9 @@ def process_log (cursor,db):
     all_callsigns = cursor.fetchall()
     print "All call_signs: ", all_callsigns
     for acallsign in all_callsigns:
-    #    call_sign = "FLRDDE671"
+        if group == 0:
+            print "GroupId set to 1"    # Must be at least 1 group since select is not empty 
+            group = 1
         call_sign = ''.join(acallsign)                   # callsign is a tuple ie (u'cccccc',) converts ccccc to string
         print "Processing for call_sign: ", call_sign
 #        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
@@ -168,7 +170,7 @@ def process_log (cursor,db):
 # Just for testing End
 
         i = 0                   # First index in a list is 0
-        group = 1               # group is used as the identifier of flights in a group
+#        group = 1               # group is used as the identifier of flights in a group
         for r in rows:          # This will cycle through all the rows of the select statement
 #        while i <= row_count: 
             try:
@@ -256,7 +258,8 @@ def process_log (cursor,db):
         return time_return
         
     if group <> 0:    
-        max_groupID = group - 1
+#       max_groupID = group - 1   
+        max_groupID = group 
         print "Max groupID is: ", max_groupID
     else:
         print "No groups to process"

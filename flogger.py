@@ -37,6 +37,11 @@
 #				Only need to run flogger.py, it now handles collection of data during daylight hours and processes
 #				after sunset (assumes gliders only fly during daylight hours)
 #				Now reads aircraft registration data from Flarmnet to build own internal table
+# 20150515		Third working version
+#				1) APRS user and APRS passcode have to be supplied on the command line and not in settings
+#				2) Changes to flogger_process_log to correct errors - still in testing
+#
+#
 # To be done:	1) Tidy up code, remove all redundant testing comments
 #				2) A lot more testing - some features might still not work!
 #				3) Consider how this may be run as a service with standard start, stop etc options
@@ -66,6 +71,7 @@ from pysqlite2 import dbapi2 as sqlite
 from open_db import opendb 
 import ephem
 from flogger_process_log import process_log
+import argparse
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nprev_vals = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
@@ -270,9 +276,23 @@ def APRS_connect (settings):
 
 #	
 #----------------------------------------------------------------- 
-#Start of main code	
+# Start of main code	
 #-----------------------------------------------------------------
 #
+
+#
+# User and passcode now mandatory positional parameters
+#
+
+parser = argparse.ArgumentParser()
+parser.add_argument("user", help="user and passcode must be supplied, see http://www.george-smart.co.uk/wiki/APRS_Callpass for how to obtain")
+parser.add_argument("passcode", help="user and passcode must be supplied", type=int)
+args = parser.parse_args()
+print "user=", args.user, " passcode=", args.passcode
+
+settings.APRS_USER = args.user
+settings.APRS_PASSCODE = args.passcode
+
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
 """
 try:
@@ -466,6 +486,13 @@ try:
 			db.commit()
 			# Wait for sunrise
 #			wait_time = next_sunrise - datetime_now
+				
+			datetime_now = datetime.datetime.now()
+			date = datetime.datetime.now()
+			location.date = ephem.Date(datetime.datetime.now())
+			next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
+			
+			print "Location Date now: ", location.date, " Next sunrise is: ", next_sunrise
 			wait_time = location.next_rising(ephem.Sun(), date).datetime() - datetime_now
 			print "Next sunrise at: ", location.next_rising(ephem.Sun(), date).datetime(), " Datetime now is: ", datetime_now
 			# Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
