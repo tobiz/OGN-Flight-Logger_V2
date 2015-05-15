@@ -38,11 +38,11 @@ APRS_SERVER_PORT = 14580
 # Please get your own Username and Passcode from http://www.george-smart.co.uk/wiki/APRS_Callpass
 # DO NOT USE THE VALUES IN THIS FILE AS IT WILL STOP A PREVIOUS INVOCATION WORKING CORRECTLY
 #
-# APRS_USER = 'PythonEx'
+APRS_USER = 'PythonEx'
 # APRS_PASSCODE = 'Python Example App'
 # APRS_PASSCODE = -1   #Read only
 # APRS_PASSCODE = "rw"  #Read & write (for keepalive)
-# APRS_PASSCODE =   # See http://www.george-smart.co.uk/wiki/APRS_Callpass 
+APRS_PASSCODE =  1234  # See http://www.george-smart.co.uk/wiki/APRS_Callpass 
 # Check that APRS_USER and APRS_PASSCODE are set
 assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER and APRS_PASSCODE in settings.py.'
 # aprs.glidernet.org on port 14580.
