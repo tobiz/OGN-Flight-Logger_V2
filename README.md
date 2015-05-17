@@ -18,6 +18,10 @@ and sunset. After sunset it processes the days log to determine which log entrie
 and those which are ground movements etc. Once all the flights have been generated into the 'flights' table
 flogger determines when the next sunrise time and sleeps until then, ie waits.
 
+OGN-Flight-Logger must be called using: python flogger.py your_username your_passcode,
+where you_username and your_passcode can be created on http://http://www.george-smart.co.uk/wiki/APRS_Callpass
+If a valid username and passcode are not suppled it will exit immediately.
+
 If installing on an arm based system this can be achieved by:
 
 - sudo apt-get install python-tz sqlite3
