@@ -192,7 +192,7 @@ def process_log (cursor,db):
                                     VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                     {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
                                     'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
-                 print "GroupID: ", group, " record created"                 
+                 print "GroupID: ", group, " record created ", row_0                
                  if (delta_secs) < lmt_secs:
                      print "++++Same flight"
                      # Record created in flight_group table with current groupID, next record will have same groupID              
@@ -200,30 +200,27 @@ def process_log (cursor,db):
                      # Different flight so start next group ID
                      print "----Different flight" 
                      # Record created in flight_group table with current groupID but next record processed will have next groupID
-                     group = group + 1
-                     print "Number of groups is: ", group   
+                     group = group + 1  
                  i = i + 1
-#                 j = 1
-#                 print "i is: ", i, " j is: ",j
-#                 while j < i:
-#                     print "Move to row: ", j
-#                     row_0 = cursor.next()
-#                     j = j + 1
+                 print "Number of groups is: ", group, " Row count i is: ", i 
             except IndexError:
-                 print "Odd number of rows: ", i 
-                 # Odd number of rows. Index error on accessing rows[i+1] but row_0 not written yet                                
+                 print "IndexError. Access index greater than: ", i
+                 print "GroupID: ", group, " record created ", row_0                
+                 # Index error on accessing rows[i+1] but row_0 not written yet                                
                  cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
                                 VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
                                 {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]}) 
-                 break 
-            # Even number of rows but row_1 not written 
-            print "Even number of rows: ", i        
-            cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                            VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
-                            {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
-                            'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7]})
-            break 
+                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
+                 group = group + 1 
+                 print "GroupID now: ", group
+#                 break 
+        # Even number of rows but row_1 not written 
+#        print "Even number of rows: ", i        
+#        cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
+#                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+#                        {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+#                        'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7]})
+#        break 
     db.commit()
     print "-------Phase 2 End-------"
     # Phase 3.  This sums the flight durations for each of the flight groups
@@ -267,7 +264,7 @@ def process_log (cursor,db):
         return
     
     i = 1
-    while i <= max_groupID:
+    while i < max_groupID:
         
         cursor.execute('''SELECT max(max_altitude) FROM flight_group WHERE groupID=? ''', (i,))
         r = cursor.fetchone()

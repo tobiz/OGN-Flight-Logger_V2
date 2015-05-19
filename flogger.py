@@ -500,7 +500,7 @@ try:
 			print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
 			# close socket -- not needed. Create new one at sunrise
 			sock.shutdown(0)
-			sock.close()
+			sock.close() 
 			#
 			# Sleep till sunrise
 			# Then open new socket, set ephem date to new day
