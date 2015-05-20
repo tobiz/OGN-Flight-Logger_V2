@@ -41,6 +41,12 @@
 #				1) APRS user and APRS passcode have to be supplied on the command line and not in settings
 #				2) Changes to flogger_process_log to correct errors - still in testing
 #
+# 20150520		Fourth working version (V0.1.0)
+#				1) On aircraft stop set altitude to initial value else highest value for any flight of the day
+#				   will be the one compared against as the maximum and not the max for a specific flight.
+#				   Bug 20150520-1 Assigned
+#				2) Flights table only contains flights for one day and not all previous days flights
+#				   Bug 20150520-2 Assigned
 #
 # To be done:	1) Tidy up code, remove all redundant testing comments
 #				2) A lot more testing - some features might still not work!
@@ -51,7 +57,7 @@
 #				   if the wind speed and airspeed are the same but opposite, eg when ridge flying. The algorithm could use
 #				   the altitude as well, eg if ground speed is zero but altitude is greater than home airfield altitude then
 #				   'we're flying'. Note this still has issues!
-#				6) Need to consider sending 'keep alives' when in the sleep state.
+#				6) Need to consider sending 'keep alives' when in the sleep state. Solved, not needed
 #				7) There's a problem concerning character codes when building the flarm database which needs solving, only show in 1 record
 #
 
@@ -259,7 +265,7 @@ def APRS_connect (settings):
 	
 	try:
 #		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
-		s = "user %s pass %s vers OGN_Flogger 0.0.3 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+		s = "user %s pass %s vers OGN_Flogger 0.1.1 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #		print "Socket connect string is: ", s
 		sock.send(s)
 	except Exception, e:
@@ -778,6 +784,13 @@ try:
 							(fl_end_date, fl_end_time_str, fl_duration_time_str, max_altitude, 0, rowid))
 				print "Updated flight_log2", src_callsign, " Row: ", rowid
 				nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']  # ie set to '0')
+#
+# Bug 20150520-1
+# Re-initialise altitude for stopped aircraft to zero
+#
+				print "Bug Bug 20150520-1. Re-initialise altitude in nvalues & nprev_vals for: ", src_callsign
+				nprev_vals[src_callsign]['altitude'] = 0
+				nvalues[src_callsign]['altitude'] = 0 
 				
 				# Check updated record
 				print "Check fields in flight_log2: ", src_callsign, " Row: ", rowid
