@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `launch_types` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flights`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flights` ;
+--DROP TABLE IF EXISTS `flights` ;
 
 CREATE TABLE IF NOT EXISTS `flights` (
   `id` INT NULL DEFAULT NULL,
