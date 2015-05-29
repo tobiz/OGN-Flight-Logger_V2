@@ -516,11 +516,6 @@ try:
 			date = datetime.datetime.now()
 			location.date = ephem.Date(datetime.datetime.now())
 			next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
-#
-# Dump flights table as cvs file
-#
-			print "Dump flights table"
-			dump_flights()
 			
 			print "Location Date now: ", location.date, " Next sunrise is: ", next_sunrise
 			wait_time = location.next_rising(ephem.Sun(), date).datetime() - datetime_now
