@@ -48,6 +48,16 @@
 #				2) Flights table only contains flights for one day and not all previous days flights
 #				   Bug 20150520-2 Assigned
 #
+# 20150527		Fifth working version (V0.1.1)
+#				Test version for:
+#				1) Bug 20150520-1
+#				2) Bug 20150520-2
+#
+# 20150529		First beta test version (V0.2.0)
+#				1) Bug 20150520-1	Solved
+#				2) Bug 20150520-2	Solved
+#				3) Enhancement - dump days flights table as .csv file
+#
 # To be done:	1) Tidy up code, remove all redundant testing comments
 #				2) A lot more testing - some features might still not work!
 #				3) Consider how this may be run as a service with standard start, stop etc options
@@ -78,6 +88,7 @@ from open_db import opendb
 import ephem
 from flogger_process_log import process_log
 import argparse
+from flogger_dump_flights import dump_flights
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nprev_vals = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
@@ -126,7 +137,7 @@ def CheckPrev(callsignKey, dataKey, value):
 		nprev_vals[callsignKey] = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0}
 		nprev_vals[callsignKey][dataKey] = value
 		print "nprev_vals for callsignKey: ", callsignKey, " is: ", nprev_vals[callsignKey]
-		print "nprev_vals is now: ", nprev_vals
+#		print "nprev_vals is now: ", nprev_vals
 	return
 
 def CheckVals(callsignKey, dataKey, value):
@@ -139,7 +150,7 @@ def CheckVals(callsignKey, dataKey, value):
 		nvalues[callsignKey] = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0}
 		nvalues[callsignKey][dataKey] = value
 		print "nvalues for callsignKey: ", callsignKey, " is: ", nvalues[callsignKey]
-		print "nvalues is now: ", nvalues
+#		print "nvalues is now: ", nvalues
 	return
 
 def isDayLight ():
@@ -199,18 +210,19 @@ def is_dst(zonename):
     return now.astimezone(tz).dst() != timedelta(0)
    
 def fleet_check_new(callsign):
+	print "In fleet check for: ", callsign
 	cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
 	row = cursor.fetchone()
 	cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =?''', (callsign,))
 	row1 = cursor.fetchone()
 	if row1 == None:
-		print "Registration not found: ", callsign
+		print "Registration not found in flarm_db: ", callsign
 	# Temporarily use local aircraft db	
 	if row <> None:
-		print "Aircraft: ", callsign, " found at: ", row[0]
+		print "Aircraft: ", callsign, " found at in aircraft db: ", row[0]
 		return True
 	else:
-		print "Aircraft: ", callsign, " not found"
+		print "Aircraft: ", callsign, " not found insert in local aircraft db"
 		cursor.execute('''INSERT INTO aircraft(registration,type,model,owner,airfield ,flarm_id)
 							VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
 							{'registration':callsign, 'type':"", 'model': "", 'owner':"",'airfield': settings.FLOGGER_AIRFIELD_NAME, 'flarm_id':callsign})
@@ -265,7 +277,7 @@ def APRS_connect (settings):
 	
 	try:
 #		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
-		s = "user %s pass %s vers OGN_Flogger 0.1.1 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+		s = "user %s pass %s vers OGN_Flogger 0.2.0 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #		print "Socket connect string is: ", s
 		sock.send(s)
 	except Exception, e:
@@ -467,7 +479,14 @@ try:
 		else:
 			print "Is it light at Location? No", location, " Ephem date is: ", ephem.Date(location.date), " Next sunrise at: ", location.next_rising(ephem.Sun())
 			process_log(cursor,db)
-			# Delete entries from daily flight logging tables
+#
+# Dump flights table as cvs file
+#
+			print "Dump flights table"
+			dump_flights()
+#			
+# Delete entries from daily flight logging tables
+#
 			try:
 				cursor.execute('''DELETE FROM flight_log''')
 				print "Delete flight_log table ok"
@@ -497,6 +516,11 @@ try:
 			date = datetime.datetime.now()
 			location.date = ephem.Date(datetime.datetime.now())
 			next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
+#
+# Dump flights table as cvs file
+#
+			print "Dump flights table"
+			dump_flights()
 			
 			print "Location Date now: ", location.date, " Next sunrise is: ", next_sunrise
 			wait_time = location.next_rising(ephem.Sun(), date).datetime() - datetime_now
@@ -726,6 +750,7 @@ try:
 # 			print "Line ", i, " ", packet[0].orig_packet
 			
 #			if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] <> 0:
+			print "Test for was stopped now moving"
 			if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
 
 				# aircraft was stopped, now isn't
@@ -736,13 +761,44 @@ try:
 				nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']
 				
 #			if nprev_vals[src_callsign]['speed'] <> 0 and nvalues[src_callsign]['speed'] == 0:
+			print "Test for was moving is now stopped"
 			if nprev_vals[src_callsign]['speed'] > V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL:
 				# aircraft was moving is now stopped
 				print "Aircraft ", src_callsign, " was moving, now stopped. Update record for end date & time"
 				# Find latest record for this callsign
+#
+# Bug 20150520-1 Test Start
+#				
+				try:
+					cursor.execute('''SELECT max(id) FROM flight_log2 WHERE src_callsign =?''', (src_callsign,))
+					r = cursor.fetchone()
+					try:
+						rowid = r[0]
+						cursor.execute('''SELECT sdate, stime, max_altitude FROM flight_log2 WHERE ROWID =?''', rowid)
+						row = cursor.fetchone()
+						print "Test Bug 20150520-1 ok, row is: ", row
+					except:
+						print "Select for sdate/stime failed for: ", rowid
+				except:
+					print "Select max(id) failed for: ", src_callsign
+#
+# Bug 20150520-1 Test End
+#
+					
 				cursor.execute('''SELECT sdate, stime, max_altitude FROM flight_log2 WHERE 
 								ROWID IN (SELECT max(id) FROM flight_log2 WHERE src_callsign =? )''', (src_callsign,))
 				row = cursor.fetchone()
+#
+# Bug 20150520-1 Start
+# Re-initialise altitude for stopped aircraft to zero. And above row is None
+#
+				if row == None:
+					print "Bug 20150520-1. We have a problem with: ", src_callsign
+					continue
+#
+# Bug 20150520-1 End
+#
+				
 				for r in row:
 					print "Returned row for callsign: ", src_callsign, " is: ", r
 # 				end_time = datetime.strptime(fl_time,'%H:%M:%S') 
@@ -783,12 +839,12 @@ try:
 				cursor.execute('''UPDATE flight_log2 SET edate=?, etime=?, duration=?, max_altitude=?, speed=? WHERE ROWID=?''',
 							(fl_end_date, fl_end_time_str, fl_duration_time_str, max_altitude, 0, rowid))
 				print "Updated flight_log2", src_callsign, " Row: ", rowid
-				nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']  # ie set to '0')
+				nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']  # ie set to '0'
 #
 # Bug 20150520-1
 # Re-initialise altitude for stopped aircraft to zero
 #
-				print "Bug Bug 20150520-1. Re-initialise altitude in nvalues & nprev_vals for: ", src_callsign
+				print "Bug 20150520-1. Re-initialise altitude in nvalues & nprev_vals for: ", src_callsign
 				nprev_vals[src_callsign]['altitude'] = 0
 				nvalues[src_callsign]['altitude'] = 0 
 				
@@ -796,6 +852,7 @@ try:
 				print "Check fields in flight_log2: ", src_callsign, " Row: ", rowid
 				cursor.execute('''SELECT ROWID, sdate, stime, edate, etime, duration, max_altitude FROM flight_log2 WHERE 
 								ROWID IN (SELECT max(id) FROM flight_log2 WHERE src_callsign =? )''', (src_callsign,))
+				
 				row = cursor.fetchone()
 				for r in row:
 					print "Returned row for callsign: ", src_callsign, " is: ", r
@@ -821,7 +878,7 @@ try:
 					nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']
 					continue
 				
-# 			print "Values for callsign: ", src_callsign, " Values are: ", nvalues[src_callsign], " Prev_vals are: ", nprev_vals[src_callsign]
+ 			print "Values for callsign Commit: ", src_callsign, " Values are: ", nvalues[src_callsign], " Prev_vals are: ", nprev_vals[src_callsign]
 			db.commit()		
 		print "-----------------End of Packet: ", i, " ------------------------------"
 	libfap.fap_free(packet)

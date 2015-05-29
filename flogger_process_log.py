@@ -270,11 +270,73 @@ def process_log (cursor,db):
         r = cursor.fetchone()
         max_altitude = r[0]
         print "Max altitude from group: ", i, " is: ", r[0]
+
+#
+# New way of doing it
+#          
+        # A multi row group can have a total flight time, where flight time is the
+        # sum of the row durations, less than the difference between the start and end time of the group
+        # since landing and takeoff times less the 2min (say) are being counted as a single flight.
+        # It can be argued that the actual flight time should be the difference between the group start and
+        # end times, if it isn't the final data will seem to have errors.
+        # Hence check for a multi row group and if yes then take use max(etime) - min(stime).
+        # Good news is the summation code can be removed!
+        # Do:
+        # rows = cursor.fetchall()
+        # row_count = len(cursor.fetchall())
+        # if row_count > 1:
+        # cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=? ''', (i,))
+        # row = cursor.fetchone()
+        # total_duration = row[1] - row[0]
+        # But beware of the subtaction being ok and getting the time in the right format in the end
         
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
                      FROM flight_group WHERE groupID=?
                      ORDER BY sdate, stime ''', (i,))
         rows = cursor.fetchall()
+        row_count = len(rows)
+        if row_count > 1:
+            # Multi row group
+            print "Multi row group size: ", row_count
+        else:
+            # Single row group, ie single flight
+            print "Single row group size: ", row_count
+        
+        cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=?''', (i,))
+        times = cursor.fetchone()
+        try:
+            print "stime is: ", times[0], "etime is: ", times[1]
+            stime = datetime.strptime(times[0], "%H:%M:%S")
+            etime = datetime.strptime(times[1], "%H:%M:%S")  
+            print "stime is: ", stime, " etime is: ", etime  
+            try:
+                duration = etime - stime
+                print "subtract failed for: ", etime, " from: ", stime
+            except:
+                print "subtract failed for duration = etime - stime: "
+        except:
+            print "Min/max time processing failed"
+            
+        # Each set of group records has same value for sdate, edate, callsign and registration 
+        try:              
+            cursor.execute('''SELECT DISTINCT sdate, edate, src_callsign, registration FROM flight_group WHERE groupID=?''', (i,))
+            data = cursor.fetchone()
+            print "Flight results for group: ", i, " is: ", data
+            sdate           = data[0]
+            edate           = data[1]
+            callsign        = data[2]
+            registration    = data[3]
+        except:
+            print "Group data selection failed"
+
+#
+# Old way of doing it
+#            
+        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
+                     FROM flight_group WHERE groupID=?
+                     ORDER BY sdate, stime ''', (i,))        
+        rows = cursor.fetchall()
+          
         total_duration = time.strptime("0:0:0", "%H:%M:%S")
     #    print "total duration tuple is: ", total_duration
     #    total_duration = time.mktime(total_duration)
@@ -293,8 +355,7 @@ def process_log (cursor,db):
             callsign = row[5]       
             print "@@@@@ Next row @@@@@@@"
             
-        cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=? ''', (i,)) 
-        
+        cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=? ''', (i,))      
         r = cursor.fetchone()
         print "Start time is: ", r[0], " End time is: ", r[1], " Duration is: ", total_duration 
         cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)

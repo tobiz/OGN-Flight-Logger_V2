@@ -15,8 +15,8 @@ To install OGN Flight Logger the following prerequisites are required
 To run flogger first set up the parameters in settings.py then call 'flogger.py'.  Flogger.py will
 run continuously (perhaps it should be a 'service'?) logging flights during day, ie between sunrise
 and sunset. After sunset it processes the days log to determine which log entries constitute actual flights
-and those which are ground movements etc. Once all the flights have been generated into the 'flights' table
-flogger determines when the next sunrise time and sleeps until then, ie waits.
+and those which are ground movements etc. Once all the flights have been generated into the 'flights' table and
+the days flights dumped as a .csv file, flogger determines when the next sunrise time and sleeps until then, ie waits.
 
 OGN-Flight-Logger must be called using: python flogger.py your_username your_passcode,
 where you_username and your_passcode can be created on http://http://www.george-smart.co.uk/wiki/APRS_Callpass
