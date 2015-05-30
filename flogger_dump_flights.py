@@ -10,25 +10,36 @@ import pytz
 from datetime import timedelta
 import csv
 
+#
+# See http://stackoverflow.com/questions/17556450/sqlite3-python-export-from-sqlite-to-csv-text-file-does-not-exceed-20k
+#
+
 def dump_flights():
     print "Start flights table dump"
-    db = sqlite3.connect(settings.FLOGGER_DB_NAME)
-    #Get a cursor object
-    cursor = db.cursor()
-    
-    cursor.execute('''SELECT max(sdate) FROM flights''')
-    max_row = cursor.fetchone()
-    if max_row <> (None,):
-        max_date = datetime.datetime.strptime(max_row[0], "%y/%m/%d")
+    try:
+        db = sqlite3.connect(settings.FLOGGER_DB_NAME)
+        #Get a cursor object
+        cursor = db.cursor()
+    except:
+        print "Failed to connect to db"
+        
+    try:
+        cursor.execute('''SELECT max(sdate) FROM flights''')
+        max_row = cursor.fetchone()
+    except:
+        print "failed to select max(sdate) FROM flights"
+        
+    if max_row <> (None,): 
+        max_date = "".join(max_row[0:3])        #max_row[0:3] is sdate
         print "Last record date in flights is: ", max_date
     else:
         print "No records in flights so set date to today"
         today = datetime.date.today().strftime("%y/%m/%d")
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
+        print "max_date is: ", max_date
          
     cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-    
-    
+
     start_time = datetime.datetime.now()
     csv_path = str(start_time) + "_flights.csv"
     print "csv file name is: ", csv_path
@@ -41,6 +52,7 @@ def dump_flights():
         # Write data.
         print "Output data"
         csv_writer.writerows(cursor)
+    csv_file.close()
     print "End flights table dump"
     return
 

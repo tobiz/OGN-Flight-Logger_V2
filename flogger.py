@@ -58,6 +58,9 @@
 #				2) Bug 20150520-2	Solved
 #				3) Enhancement - dump days flights table as .csv file
 #
+# 20150530		Correction to first beta test version (V0.2.1)
+#				1) Correction to dump flights to .csv - to make it work!
+#
 # To be done:	1) Tidy up code, remove all redundant testing comments
 #				2) A lot more testing - some features might still not work!
 #				3) Consider how this may be run as a service with standard start, stop etc options
