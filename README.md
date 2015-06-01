@@ -31,3 +31,7 @@ If installing on an arm based system this can be achieved by:
 - sudo apt-get install pythonX-dev where X is version of python being used
 - sudo apt-get install python-pip
 - sudo pip install pyephem 
+
+I'm currently developing and testing on
+- a Raspberry Pi P2 Model B under Rasparian (Debian Linux 7.8) and 
+- a desktop running Kubuntu 14.04
