@@ -34,4 +34,4 @@ If installing on an arm based system this can be achieved by:
 
 I'm currently developing and testing on
 - a Raspberry Pi P2 Model B under Rasparian (Debian Linux 7.8) and 
-- a desktop running Kubuntu 14.04
+- a desktop running Kubuntu 14.04 
