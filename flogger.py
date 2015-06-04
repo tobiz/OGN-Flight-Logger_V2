@@ -61,6 +61,10 @@
 # 20150530		Correction to first beta test version (V0.2.1)
 #				1) Correction to dump flights to .csv - to make it work!
 #
+# 20150604		Added enhancements to version V0.2 (V0.2.2)
+#				1) Allowance for short duration flight
+#				2) Use of geocoding to determine airfield position data - proposed by D.Spreitz
+#
 # To be done:	1) Tidy up code, remove all redundant testing comments
 #				2) A lot more testing - some features might still not work!
 #				3) Consider how this may be run as a service with standard start, stop etc options
@@ -92,6 +96,7 @@ import ephem
 from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
+from flogger_get_coords import get_coords
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nprev_vals = 	{"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
@@ -280,7 +285,7 @@ def APRS_connect (settings):
 	
 	try:
 #		sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
-		s = "user %s pass %s vers OGN_Flogger 0.2.0 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+		s = "user %s pass %s vers OGN_Flogger 0.2.2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #		print "Socket connect string is: ", s
 		sock.send(s)
 	except Exception, e:
@@ -402,42 +407,27 @@ next_sunset = location.next_setting(ephem.Sun(), date)
 print "Sunrise today: ", date, " is: ", next_sunrise
 print "Sunset today: ", date, " is: ", next_sunset
 
-"""
 #	
 #-----------------------------------------------------------------
-# Connect to the APRS server to receive flarm data	
+# Determine location details, latitude, longitude and elevation
 #-----------------------------------------------------------------
 #
 
-# create socket & connect to server
-try:
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	set_keepalive(sock, after_idle_sec=60, interval_sec=3, max_fails=5)
-	sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
-except Exception, e:
-	print "Socket failure on connect: ", e
-print "Socket sock connected"
-
-try:
-	# logon to OGN APRS network	
-	# sock.send('user %s pass %s vers Python_Example 0.0.1 filter e/SuttonBnk\n ' % (settings.APRS_USER, settings.APRS_PASSCODE) )
-	sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))	
-	# print 'user %s pass %s vers Python_Example 0.0.1 filter %s ' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) 
-	# filter =  'user %s pass %s vers Python_Example_0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER)
-	# print "Filter string is: ", filter
-	# sock.send('user %s pass %s vers Python_Example 0.0.1 filter %s' % (settings.APRS_USER, settings.APRS_PASSCODE, settings.APRS_FILTER) )	
-	# sock.send(filter)
-	# 54.13.728N  001.12.580W 
-	# r/33/-96/25
-	# r/54.13.728/-001.12.580/25 # 25Km of Sutton Bank
-	# 54.228833,-1.209639
-except Exception, e:
-	print "Socket send failure: ", e
-	exit()
-print "Socket send ok"
-
-"""
-# Make the connection to the server
+if settings.FLOGGER_AIRFIELD_DETAILS <> "":
+	loc = get_coords(settings.FLOGGER_AIRFIELD_DETAILS)
+	settings.FLOGGER_LATITUDE 	= loc[0]
+	settings.FLOGGER_LONGITUDE 	= loc[1]
+	settings.FLOGGER_QNH 		= loc[2]
+	print "Location is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]	
+else:
+	print "Use location data from settings"	
+	
+#	
+#-----------------------------------------------------------------
+# Make the connection to the APRS server
+#-----------------------------------------------------------------
+#
+	
 start_time = datetime.datetime.now()
 keepalive_time = time.time()
 #sock_file = sock.makefile()

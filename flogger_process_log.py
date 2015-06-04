@@ -56,7 +56,6 @@ print "MINTIME is: ", MINTIME
 #-----------------------------------------------------------------
 #
 def process_log (cursor,db):
-    MINTIME = time.strptime("0:5:0", "%H:%M:%S")       # 5 minutes minimum flight time
     MINTIME = time.strptime(settings.FLOGGER_MIN_FLIGHT_TIME, "%H:%M:%S")       # 5 minutes minimum flight time
     print "MINTIME is: ", MINTIME
     cursor.execute('''SELECT max(sdate) FROM flight_log''')
@@ -112,7 +111,17 @@ def process_log (cursor,db):
                                     'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8]})
                 print "Row copied"
             else:
-                print "====Ignore row, flight time too short: ", row[4]
+                print "xxxx Flight duration less than or equal to MINTIME: ", duration, " Check altitude xxxx"
+                # Note this needs a major enhancement to store the altitude at take off
+                # For now make it simple. Needs better solution, eg add takeoff alt to db
+                if row[6] <= FLOGGER_QNH + FLOGGER_QFE_MIN:
+                    print "====Ignore row, flight time too short and too low. Time: ", row[4], " alt: ", row[6]
+                else:
+                    print "++++Accept row, short flight but ok min height. Time: ", row[4], " alt: ", row[6] 
+                    cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
+                                    VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
+                                    {'sdate':row[0], 'stime':row[1], 'edate': row[2], 'etime':row[3],
+                                    'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8]})
         else:
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
     print "-------Phase 1 End--------"
