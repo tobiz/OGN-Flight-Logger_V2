@@ -66,7 +66,7 @@
 #                2) Use of geocoding to determine airfield position data - proposed by D.Spreitz
 #                3) Added dependencies in README for geopy and geocoder (D.Spreitz)
 #                4) Generalised logging file names. (D.Spreitz)
-#                5) Some code tidying
+#                5) Some code tidying 
 #
 # To be done:    1) Tidy up code, remove all redundant testing comments
 #                2) A lot more testing - some features might still not work!
