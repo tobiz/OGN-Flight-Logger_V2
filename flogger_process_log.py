@@ -193,14 +193,7 @@ def process_log (cursor,db):
                                 'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
                  group = group + 1 
                  print "GroupID now: ", group
-#                 break 
-        # Even number of rows but row_1 not written 
-#        print "Even number of rows: ", i        
-#        cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-#                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
-#                        {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
-#                        'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7]})
-#        break 
+
     db.commit()
     print "-------Phase 2 End-------"
     #    
