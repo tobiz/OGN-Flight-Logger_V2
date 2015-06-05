@@ -56,3 +56,6 @@ FLOGGER_DB_NAME = "flogger.sql3"                                # Name of file f
 FLOGGER_FLARMNET_DB_URL = "http://www.flarmnet.org/files/data.fln" # URL of Flarmnet database
 FLOGGER_AIRFIELD_NAME = "SuttonBnk"                             # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_QFE_MIN = 15                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~50 ft
+FLOGGER_LOG_PATH =  "/mnt/spreitznas/OGN/logs"			        # Path where log files are stored
+
+
