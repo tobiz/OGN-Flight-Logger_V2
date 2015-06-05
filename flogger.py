@@ -64,6 +64,9 @@
 # 20150604        Added enhancements to version V0.2 (V0.2.2)
 #                1) Allowance for short duration flight
 #                2) Use of geocoding to determine airfield position data - proposed by D.Spreitz
+#                3) Added dependencies in README for geopy and geocoder (D.Spreitz)
+#                4) Generalised logging file names. (D.Spreitz)
+#                5) Some code tidying
 #
 # To be done:    1) Tidy up code, remove all redundant testing comments
 #                2) A lot more testing - some features might still not work!
@@ -286,7 +289,7 @@ def APRS_connect (settings):
     
     try:
 #        sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))    
-        s = "user %s pass %s vers OGN_Flogger 0.2.2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+        s = "user %s pass %s vers OGN_Flogger 0.2.2-2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #        print "Socket connect string is: ", s
         sock.send(s)
     except Exception, e:
@@ -321,49 +324,7 @@ settings.APRS_USER = args.user
 settings.APRS_PASSCODE = args.passcode
 
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
-"""
-try:
-    # Creates or opens a file called mydb with a SQLite3 DB
-    db = sqlite3.connect('flogger.sql3')
-    # Get a cursor object
-    cursor = db.cursor()
-    # Check if table users does not exist and create it if not
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                      users(id INTEGER PRIMARY KEY, first_name TEXT, surname TEXT, phone TEXT, email TEXT unique, password TEXT)''')
-    # Check if table for holding flight logging data exist and create it not
-#    cursor.execute('''CREATE TABLE IF NOT EXISTS
-#                      flight_log(id INTEGER PRIMARY KEY, date TEXT, time TEXT, src_callsign TEXT, 
-#                                  reg_no TEXT, latitude TEXT, longitude TEXT, altitude TEXT, course TEXT, speed TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        aircraft(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,owner TEXT,airfield TEXT,flarm_id TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_times(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,
-                            flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_log2(id INTEGER PRIMARY KEY AUTOINCREMENT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                        src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')    
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                        src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')            
-    
-#    for k, v in aircraft.iteritems():
-#        print "Key is: ", k, " value is: ", v
-#        cursor.execute('''INSERT INTO aircraft(registration,type,model,owner,airfield ,flarm_id)
-#                            VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
-#                            {'registration':k, 'type':"", 'model': "", 'owner':"",'airfield': "Sutton Bank", 'flarm_id':k})
 
-    # Commit the changes
-    db.commit()
-# Catch the exception
-except Exception as e:
-    # Roll back any change if something goes wrong
-    db.rollback()
-    raise e
-# finally:
-    # Close the db connection
-#    db.close()
-print "Database and tables open"
-"""
 #
 #-----------------------------------------------------------------
 # Build flogger db using schema
