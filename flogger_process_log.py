@@ -10,43 +10,6 @@ import sqlite3
 import pytz
 from datetime import timedelta
 
-"""
-# Creates or opens a file called mydb with a SQLite3 DB
-db = sqlite3.connect('flogger.sql3')
-# Get a cursor object
-cursor = db.cursor()
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    aircraft(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,owner TEXT,airfield TEXT,flarm_id TEXT)''')
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    flight_times(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,
-                        flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
-cursor.execute('''DROP TABLE flight_log_final''')
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
-cursor.execute('''DROP TABLE flight_log''')
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    flight_log(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
-cursor.execute('''DROP TABLE flight_group''')
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    flight_group(id INTEGER PRIMARY KEY, groupID TEXT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''')
-cursor.execute('''DROP TABLE flights''') 
-cursor.execute('''CREATE TABLE IF NOT EXISTS
-                    flights(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                            src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 
-#cursor.execute('''DELETE FROM flight_log''') 
-
-MINTIME = time.strptime("0:5:0", "%H:%M:%S")       # 5 minutes minimum flight time
-print "MINTIME is: ", MINTIME
-
-# Need to find the highest date record in flight_log and for each record in flight_log_final
-# if this has a date greater than this then process it to check whether it should be added
-#
-
-"""
-
 #
 #-----------------------------------------------------------------
 # Process the log of each record in 'flight_log' into table 'flights'
@@ -61,6 +24,10 @@ def process_log (cursor,db):
     cursor.execute('''SELECT max(sdate) FROM flight_log''')
     row = cursor.fetchone()
     print "row is: ", row
+    #    
+    #-----------------------------------------------------------------
+    # Phase 1 processing    
+    #-----------------------------------------------------------------
     #
     # The following takes into account the situation when there are no records in flight_log
     # and there is therefore no highest date record. Note it does require that this code is
@@ -126,7 +93,11 @@ def process_log (cursor,db):
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
     print "-------Phase 1 End--------"
     db.commit()  
-    
+    #    
+    #-----------------------------------------------------------------
+    # Phase 2 processing    
+    #-----------------------------------------------------------------
+    #
     # Phase 2 processing
     # For some records for each flight the end time and next start time are too close together
     # to be independent flights.
@@ -232,6 +203,11 @@ def process_log (cursor,db):
 #        break 
     db.commit()
     print "-------Phase 2 End-------"
+    #    
+    #-----------------------------------------------------------------
+    # Phase 3 processing    
+    #-----------------------------------------------------------------
+    #
     # Phase 3.  This sums the flight durations for each of the flight groups
     # hence resulting in the actual flight start, end times and duration
     print "+++++++Phase 3 Start+++++++"
@@ -288,7 +264,7 @@ def process_log (cursor,db):
         # since landing and takeoff times less the 2min (say) are being counted as a single flight.
         # It can be argued that the actual flight time should be the difference between the group start and
         # end times, if it isn't the final data will seem to have errors.
-        # Hence check for a multi row group and if yes then take use max(etime) - min(stime).
+        # Hence check for a multi row group and if yes then use max(etime) - min(stime).
         # Good news is the summation code can be removed!
         # Do:
         # rows = cursor.fetchall()

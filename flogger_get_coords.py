@@ -9,6 +9,8 @@
 #
 from geopy.geocoders import Nominatim
 import geocoder
+from geopy.exc import GeocoderTimedOut
+import time
 
 def get_coords(address):
     while True:
@@ -17,9 +19,9 @@ def get_coords(address):
             location = geolocator.geocode(address)
             ele = geocoder.elevation(address)
             break
-        except: 'Service timed out'
-        time.sleep(1)
-        print 'Service timed out'
+        except GeocoderTimedOut as e:
+            time.sleep(1)
+            print 'Geocoder Service timed out'
     
     return location.latitude, location.longitude, ele.meters
 #loc = get_coords("Yorkshire Gliding Club UK")
