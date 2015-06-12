@@ -68,10 +68,10 @@
 #                4) Generalised logging file names. (D.Spreitz)
 #                5) Some code tidying 
 #
-# To be done:    1) Tidy up code, remove all redundant testing comments
+# To be done:    1) Tidy up code, remove all redundant testing comments (but see TBD #4)
 #                2) A lot more testing - some features might still not work!
 #                3) Consider how this may be run as a service with standard start, stop etc options
-#                4) Consider adding full logging with levels
+#                4) Consider adding full logging with levels. See http://pymotw.com/2/logging/
 #                5) Review the algorithm to determine if aircraft is on the ground. At the moment it determines
 #                   this by the GPS ground speed being zero (ie below a defined value); the ground speed could be zero
 #                   if the wind speed and airspeed are the same but opposite, eg when ridge flying. The algorithm could use
@@ -490,8 +490,12 @@ try:
             wait_time_secs = int(wait_time.total_seconds()) + 600 
             print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             # close socket -- not needed. Create new one at sunrise
-            sock.shutdown(0)
-            sock.close() 
+            try:
+                print "Shutdown socket"
+                sock.shutdown(0)
+                sock.close() 
+            except:
+                print "Shutdown socket failed, sleep anyway"
             #
             # Sleep till sunrise
             # Then open new socket, set ephem date to new day
@@ -521,6 +525,7 @@ try:
                 keepalive_time = current_time
             except Exception, e:
                 print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
+                keepalive_time = current_time
         else:
             print "No keepalive sent"
                 
@@ -550,7 +555,7 @@ try:
             print "Read returns zero length string on iteration: ", i
             # Wait 20 seconds
             time.sleep(20)
-            continue
+#            continue
             try:
                 sock.shutdown(0)
             except socket.error, e:
@@ -567,7 +572,9 @@ try:
             except Errno:
                 print "Connection refused. Errno: ", Errno
                 exit()        
-            sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+#            sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+            s = "user %s pass %s vers OGN_Flogger 0.2.2-2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+            sock.send(s)
             # Make the connection to the server
             sock_file = sock.makefile()
 # Delete following line when not running in test mode
