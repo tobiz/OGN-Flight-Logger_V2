@@ -1,4 +1,6 @@
 # OGN-Flight-Logger
+DEVELOPMENT IS NOW CONTINUING AS: OGN-Flight-Logger_V2
+
 Python APRS/OGN program to log flight times, durations and maximum heights achieved
 
 This python program creates an SQlite db of flights from a given location and aircraft list 
