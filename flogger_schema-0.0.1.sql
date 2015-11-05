@@ -8,7 +8,7 @@
 -- -----------------------------------------------------
 -- Table `mydb`.`users`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `users` ;
+----DROP TABLE IF EXISTS `users` ;
 
 -- CREATE TABLE IF NOT EXISTS `mydb`.`users` (
 CREATE TABLE IF NOT EXISTS users (
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- -----------------------------------------------------
 -- Table `mydb`.`aircraft`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `aircraft` ;
+----DROP TABLE IF EXISTS `aircraft` ;
 
 CREATE TABLE IF NOT EXISTS `aircraft` (
   `id` INT NULL DEFAULT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `aircraft` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_log` ;
+----DROP TABLE IF EXISTS `flight_log` ;
 
 CREATE TABLE IF NOT EXISTS `flight_log` (
   `id` INT NULL DEFAULT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `flight_log` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_group`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_group` ;
+----DROP TABLE IF EXISTS `flight_group` ;
 
 CREATE TABLE IF NOT EXISTS `flight_group` (
   `id` INT NULL DEFAULT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `flight_group` (
 -- -----------------------------------------------------
 -- Table `mydb`.`launch_types`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `launch_types` ;
+----DROP TABLE IF EXISTS `launch_types` ;
 
 CREATE TABLE IF NOT EXISTS `launch_types` (
   `id` INT NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `launch_types` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flights`
 -- -----------------------------------------------------
---DROP TABLE IF EXISTS `flights` ;
+----DROP TABLE IF EXISTS `flights` ;
 
 CREATE TABLE IF NOT EXISTS `flights` (
   `id` INT NULL DEFAULT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `flights` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log_final`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_log_final` ;
+----DROP TABLE IF EXISTS `flight_log_final` ;
 
 CREATE TABLE IF NOT EXISTS `flight_log_final` (
   `id` INT NULL DEFAULT NULL,

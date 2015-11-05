@@ -52,16 +52,12 @@ docs/_build/
 
 # PyBuilder
 target/
-/SB_data-20150224
-/SB_data2015-02-25 01:08:56.042760
-/SB_data2015-02-25 08:05:27.310586
-/SB_data2015-02-25 10:36:59.386343
-/SB_data2015-02-25 10:48:29.114566
-/SB_data2015-02-25 10:48:44.052477
-/SB_data2015-02-25 10:59:10.713608
-/SB_data2015-02-25 11:00:26.115832
-/SB_data2015-02-25 12:29:34.604625
-/SB_data2015-02-25 13:00:58.472853
-/SB_data2015-02-25 15:06:25.230242
-/SB_data2015-02-25 15:06:48.287488
+/SB_data-*
+OGN_data
+OGN_data_txt
+flarm_data
+flogger.db
+flogger.sql3
+
 /flogger.sql3
+/flogger_dump_flights.py

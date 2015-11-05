@@ -17,7 +17,7 @@ def opendb (schema_file, cursor):
     cur = db.cursor()
     cursor[0] = cur
     
-    # Drop tables if they exist in the database 
+    # --DROP tables if they exist in the database 
     floggerSchema = open(schema_file)
 #    print "OGN-Flight-Logger-Schema.sql open ok"
     print "opendb: ", schema_file, " open ok"
@@ -38,7 +38,7 @@ def opendb (schema_file, cursor):
     print "opendb: Flogger Databases built"
     return True
 
-#cur = [0]    # cur is mutable
-#r = opendb("flogger_schema-0.0.1.sql", cur)  
-#r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
-#print "End: ", r, ". cur is: ", cur
+# cur = [0]    # cur is mutable
+# r = opendb("flogger_schema-0.0.1.sql", cur)  
+# r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
+# print "End: ", r, ". cur is: ", cur

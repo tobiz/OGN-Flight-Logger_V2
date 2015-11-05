@@ -1,4 +1,7 @@
 
+# 20150921            Problem! If the pair after a "Same flight" pair is found to be a "Different flight" then it will be 
+#                     given the group_id  of the last "Same flight, ie wrong!  Next needs to given the next value of group_id 
+# 20150922            Modified the total flight time code for a flight group
 
 
 import settings
@@ -9,17 +12,32 @@ from time import mktime
 import sqlite3
 import pytz
 from datetime import timedelta
+import gpxTracks
+
+def addFinalTrack(cursor, flight_no, track_no, longitude, latitude, altitude, course, speed, timeStamp):
+    #    
+    #-----------------------------------------------------------------
+    # Add gps track data to trackFinal record if settings.FLOGGER_TRACK is "Y" ie yes    
+    #-----------------------------------------------------------------
+    #
+
+    if settings.FLOGGER_TRACKS == "Y":
+        print "Adding trackFinal data to: %i, %i, %f, %f, %f, %f %f " % (flight_no, track_no, latitude, longitude, altitude, course, speed)
+        cursor.execute('''INSERT INTO trackFinal(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
+            VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',
+            {'flight_no':flight_no, 'track_no':track_no, 'latitude':latitude, 'longitude':longitude, 'altitude':altitude, 'course':course, 'speed':speed, 'timeStamp':timeStamp})
+    return
 
 #
 #-----------------------------------------------------------------
-# Process the log of each record in 'flight_log' into table 'flights'
-# where each flight is take off to landing .
-# Process_log assumes the database tables have been created in the 
+# Process the log of each record in 'flight_log' into table 'flights' to create
+# table flight_log2 where each flight is take off to landing, any ground movements etc.,
+# having been removed. Process_log assumes the database tables have been created in the 
 # calling environment such that only the cursor to the database needs be passed
 #-----------------------------------------------------------------
 #
-def process_log (cursor,db):
-    MINTIME = time.strptime(settings.FLOGGER_MIN_FLIGHT_TIME, "%H:%M:%S")       # 5 minutes minimum flight time
+def process_log (cursor, db):
+    MINTIME = time.strptime(settings.FLOGGER_MIN_FLIGHT_TIME, "%H:%M:%S")  # 5 minutes minimum flight time
     print "MINTIME is: ", MINTIME
     cursor.execute('''SELECT max(sdate) FROM flight_log''')
     row = cursor.fetchone()
@@ -47,10 +65,10 @@ def process_log (cursor,db):
     print "max_date set to today: ", max_date
       
     
-    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration FROM flight_log_final''')
+    cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration, flight_no FROM flight_log_final''')
     data = cursor.fetchall()
     for row in data:
-        print "Row is: sdate %s, stime %s, edate %s, etime %s, duration %s, src_callsign %s, altitude %s, speed %s, registration %s" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+        print "Flight_log_final row is: sdate %s, stime %s, edate %s, etime %s, duration %s, src_callsign %s, altitude %s, speed %s, registration %s, flight_no: %d" % (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
     #    print "Row is: sdate %s" % row[0] 
     #    print "stime %s " % row[1] 
     #    print "edate %s " % row[2]
@@ -60,6 +78,7 @@ def process_log (cursor,db):
     #    print "altitude %s " % row[6]
     #    print "speed %s"  % row[7]
     #    print "registration %s" % row[8]
+    #    print "flight_no is: %d % row[9]
     
         time_str = row[4].replace("h", "")
         time_str = time_str.replace("m", "")
@@ -71,29 +90,29 @@ def process_log (cursor,db):
         if strt_date >= max_date:
             print "**** Record start date: ", strt_date, " after last flight_log record, copy: ", max_date
             print "Flight duration is: ", duration, " MINTIME is: ", MINTIME
-            delta_alt = (row[6] - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN))
+            delta_alt = (float(row[6]) - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN))
             print "Delta altitude is: ", delta_alt
             if duration > MINTIME:
                 print "#### Copy record. Duration is: ", time_str
-                cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
-                                    VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
+                cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration, flight_no)
+                                    VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration, :flight_no)''',
                                     {'sdate':row[0], 'stime':row[1], 'edate': row[2], 'etime':row[3],
-                                    'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8]})
+                                    'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8], 'flight_no': row[9]})
                 print "Row copied"
 #            else:
-            elif (row[6] - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)) <= 0:
+            elif (float(row[6]) - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)) <= 0:
 #                print "xxxx Flight duration less than or equal to MINTIME: ", duration, " Check altitude xxxx"
                 # Note this needs a major enhancement to store the altitude at take off
                 # For now make it simple. Needs better solution, eg add takeoff alt to db
 #                if row[6] <= (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN):
                 print "====Ignore row, flight time too short and too low. Time: ", row[4], " alt: ", row[6], " QNH Min: ", (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)
 #                else:
-            elif (row[6] - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)) > 0:
+            elif (float(row[6]) - (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)) > 0:
                 print "++++Accept row, short flight but ok min height. Time: ", row[4], " alt: ", row[6], " QNH Min: ", (settings.FLOGGER_QNH + settings.FLOGGER_QFE_MIN)
-                cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
-                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
+                cursor.execute('''INSERT INTO flight_log(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration,flight_no)
+                                VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration,:flight_no)''',
                                 {'sdate':row[0], 'stime':row[1], 'edate': row[2], 'etime':row[3],
-                                'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8]})
+                                'duration': row[4], 'src_callsign':row[5], 'max_altitude':row[6], 'speed':row[7], 'registration':row[8], 'flight_no':row[9]})
         else:
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
     print "-------Phase 1 End--------"
@@ -107,13 +126,12 @@ def process_log (cursor,db):
     # For some records for each flight the end time and next start time are too close together
     # to be independent flights.
     # This phase examines all the records and puts them into groups such that each group has 
-    # an end and start time, such that they are distinct flights ie their end and start times are greater than
-    # TIME_DELTA, and not just therefore data
-    # jiggles (eg moving moving the plane to a new position on the flight line),
+    # an end and start time, such that a group is a distinct flight ie their end and start times are greater than
+    # TIME_DELTA, and not just therefore data jiggles (eg moving moving the plane to a new position on the flight line),
     # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
     
     print "+++++++Phase 2 Start+++++++"
-    TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
+    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
     #
     # Note the following code processes each unique or distinct call_sign ie each group
     # of flights for a call_sign
@@ -121,24 +139,27 @@ def process_log (cursor,db):
     # rows = cursor.fetchall()
     # for call_sign in rows
     
-    group = 0                   # Number of groups set for case there are none
+    group = 0  # Number of groups set for case there are none
     cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
     all_callsigns = cursor.fetchall()
     print "All call_signs: ", all_callsigns
+    same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of first flight group
     for acallsign in all_callsigns:
+        if same_or_different_flight == 1:
+            group += 1
         if group == 0:
-            print "GroupId set to 1"    # Must be at least 1 group since select is not empty 
+            print "GroupId set to 1"  # Must be at least 1 group since select is not empty 
             group = 1
-        call_sign = ''.join(acallsign)                   # callsign is a tuple ie (u'cccccc',) converts ccccc to string
+        call_sign = ''.join(acallsign)  # callsign is a tuple ie (u'cccccc',) converts ccccc to string
         print "Processing for call_sign: ", call_sign
 #        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
 #                       FROM flight_log WHERE src_callsign=?
 #                       ORDER BY sdate, stime ''', (call_sign,)) 
-        #for row in rows: 
+        # for row in rows: 
 #        row_count = len(cursor.fetchall())
 #        print "nos rows is: ", row_count 
           
-        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration 
+        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration , flight_no
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
         
@@ -154,9 +175,10 @@ def process_log (cursor,db):
             n = n + 1
 # Just for testing End
 
-        i = 0                   # First index in a list is 0
+        i = 0  # First index in a list is 0
 #        group = 1               # group is used as the identifier of flights in a group
-        for r in rows:          # This will cycle through all the rows of the select statement
+        same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of a callsign set    
+        for r in rows:  # This will cycle through all the rows of the select statement
 #        while i <= row_count: 
             try:
 #                 row_0 = cursor.next()
@@ -171,33 +193,52 @@ def process_log (cursor,db):
                  delta_secs = time_delta.total_seconds()
                  time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
                  lmt_secs = time_lmt.total_seconds()
-                 print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs     
+                 print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
+                 if same_or_different_flight == 1:
+                     group += 1  #  Previous pair was different flight so increment group_id    
                  # Create a group record for 1st record's data                 
-                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                     {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
+                                    'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
                  print "GroupID: ", group, " record created ", row_0                
                  if (delta_secs) < lmt_secs:
-                     print "++++Same flight"
+                     same_or_different_flight = 0
+                     print "++++Same flight", " same_or_different_flight is:", same_or_different_flight
                      # Record created in flight_group table with current groupID, next record will have same groupID              
                  else:
                      # Different flight so start next group ID
-                     print "----Different flight" 
+                     # Problem! If the next pair results in "Different flight" then it will be given the group_id  of the last
+                     # "Same flight, ie wrong!
+                     same_or_different_flight = 1
+                     print "----Different flight", " same_or_different_flight is:", same_or_different_flight 
                      # Record created in flight_group table with current groupID but next record processed will have next groupID
-                     group = group + 1  
+                     # group = group + 1  
                  i = i + 1
                  print "Number of groups is: ", group, " Row count i is: ", i 
             except IndexError:
                  print "IndexError. Access index greater than: ", i
+                 if same_or_different_flight == 1:
+                     group += 1  #  Previous pair was different flight so increment group_id 
                  print "GroupID: ", group, " record created ", row_0                
                  # Index error on accessing rows[i+1] but row_0 not written yet                                
-                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                 {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7]})
-                 group = group + 1 
-                 print "GroupID now: ", group
+                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
+
+                 # The next flight group must have the next group_ID.  If the last flight of a same callsign set was:
+                 # 1) "different flight" then
+                 #     the group_ID must be incremented and the flight put in a new group.
+                 # If the last flight of the callsign set was 
+                 # 2) "same flight" then 
+                 #    the flight is put in the same group as previous
+                 # But in either case as this is the last flight for a particular callsign set the first flight for the next callsign
+                 # set must be put in a different group.
+                 # Hence in either case 1) or 2) group_ID must be incremented
+                 group += 1
+                 same_or_different_flight = 0       # Set to initial loop start state
+                 print "GroupID now: ", group, " same_or_different_flight is: ", same_or_different_flight
 
     db.commit()
     print "-------Phase 2 End-------"
@@ -208,6 +249,10 @@ def process_log (cursor,db):
     #
     # Phase 3.  This sums the flight durations for each of the flight groups
     # hence resulting in the actual flight start, end times and duration
+    #
+    # As well as summing the flight time in a group it must concatenate the track data
+    # for each flight group member to form the single track
+    #
     print "+++++++Phase 3 Start+++++++"
     
     #
@@ -227,7 +272,7 @@ def process_log (cursor,db):
         t = t1[4] + t2[4] + tm
         if t >= 60:
             tm = t - 60
-            th = int(t/60)
+            th = int(t / 60)
         else:
             tm = t
         th = t1[3] + t2[3] + th
@@ -264,6 +309,8 @@ def process_log (cursor,db):
         # end times, if it isn't the final data will seem to have errors.
         # Hence check for a multi row group and if yes then use max(etime) - min(stime).
         # Good news is the summation code can be removed!
+        # But note the old and new ways give slightly different result.  This is because the old way doesn't include
+        # the time period between the flights in the group but the new way does.
         # Do:
         # rows = cursor.fetchall()
         # row_count = len(cursor.fetchall())
@@ -280,71 +327,106 @@ def process_log (cursor,db):
         row_count = len(rows)
         if row_count > 1:
             # Multi row group
-            print "Multi row group size: ", row_count
+            print "Multi row group size for flight group: ", i, " is: ", row_count
         else:
             # Single row group, ie single flight
-            print "Single row group size: ", row_count
+            print "Single row group size: ", row_count, " Flight group: ", i
         
         cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=?''', (i,))
-        times = cursor.fetchone()
-        try:
-            print "stime is: ", times[0], "etime is: ", times[1]
-            stime = datetime.strptime(times[0], "%H:%M:%S")
-            etime = datetime.strptime(times[1], "%H:%M:%S")  
-            print "stime is: ", stime, " etime is: ", etime  
-            try:
-                duration = etime - stime
-                print "subtract failed for: ", etime, " from: ", stime
+        times = cursor.fetchone()           # times is a tuple 
+        print "Value of times is: ", times, " for flight group: ", i
+        if times <> (None, None):
+            nstime = datetime.datetime.strptime("1900/01/01 " + times[0], '%Y/%m/%d %H:%M:%S')
+            netime = datetime.datetime.strptime("1900/01/01 " + times[1], '%Y/%m/%d %H:%M:%S')  
+            print "nstime is: ", nstime, " netime is: ", netime  
+            duration = str(netime - nstime)
+            print "subtract ok for: ", netime, " from: ", nstime, " Duration is: ", duration
+            total_duration = duration  # Just for now    
+            # Each set of group records has same value for sdate, edate, callsign and registration 
+            try:              
+                cursor.execute('''SELECT DISTINCT sdate, edate, src_callsign, registration FROM flight_group WHERE groupID=?''', (i,))
+                data = cursor.fetchone()
+                print "Flight results for group: ", i, " is: ", data
+                sdate = data[0]
+                edate = data[1]
+                callsign = data[2]
+                registration = data[3]
             except:
-                print "subtract failed for duration = etime - stime: "
-        except:
-            print "Min/max time processing failed"
-            
-        # Each set of group records has same value for sdate, edate, callsign and registration 
-        try:              
-            cursor.execute('''SELECT DISTINCT sdate, edate, src_callsign, registration FROM flight_group WHERE groupID=?''', (i,))
-            data = cursor.fetchone()
-            print "Flight results for group: ", i, " is: ", data
-            sdate           = data[0]
-            edate           = data[1]
-            callsign        = data[2]
-            registration    = data[3]
-        except:
-            print "Group data selection failed"
+                print "Group data selection failed"
+        else:
+            print "No rows in Flight_group"
+            # Can this happen, a group with no flights? Check
+            i += 1
+            continue
 
 #
 # Old way of doing it
-#            
-        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
-                     FROM flight_group WHERE groupID=?
-                     ORDER BY sdate, stime ''', (i,))        
-        rows = cursor.fetchall()
+# 
+           
+#        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
+#                     FROM flight_group WHERE groupID=?
+#                     ORDER BY sdate, stime ''', (i,)) 
+       
+#        rows = cursor.fetchall()
           
-        total_duration = time.strptime("0:0:0", "%H:%M:%S")
+#        total_duration = time.strptime("0:0:0", "%H:%M:%S")
     #    print "total duration tuple is: ", total_duration
     #    total_duration = time.mktime(total_duration)
     #    print "Initial time is: ", total_duration
-        for row in rows:
-            print "Goup: ", i, " row: ", row
-            flight_duration = time.strptime(row[4], "%H: %M: %S")
+#        for row in rows:
+#            print "Goup: ", i, " row: ", row
+#            flight_duration = time.strptime(row[4], "%H: %M: %S")
     #        print "total duration is: ", total_duration
     #        print "flight duration is: ", flight_duration
-            total_duration = time_add(total_duration, flight_duration)
+#            total_duration = time_add(total_duration, flight_duration)
     #        print "total time is: ", total_duration
-            t_d = "%s:%s:%s" % (total_duration[3],total_duration[4],total_duration[5])
-            print "total time is: ", t_d
-            sdate = row[0]
-            edate = row[2]
-            callsign = row[5]       
-            print "@@@@@ Next row @@@@@@@"
-            
-        cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=? ''', (i,))      
+#            t_d = "%s:%s:%s" % (total_duration[3],total_duration[4],total_duration[5])
+#            print "total time is: ", t_d
+#            sdate = row[0]
+#            edate = row[2]
+#            callsign = row[5]       
+#            print "@@@@@ Next row @@@@@@@"
+
+        #
+        # Concatenate the tracks for each flight group into one track into table trackFinal, 
+        # (Note the track table could then be deleted 
+        #
+        print "Start concatentate tracks for group: ", i
+        cursor.execute('''SELECT flight_no, sdate, stime FROM flight_group WHERE groupID=? ORDER BY sdate, stime ''', (i,))        
+        rows = cursor.fetchall()
+        print "Group flight rows are: ", rows 
+        this_flight_no = rows[0][0]  # Use the first flight number of the group 
+        print "this_flight_no is: ", this_flight_no
+        track_no = 0  # Set track_no to zero and increment for each track added for each flight in the group 
+        for flight in rows:
+            print "Concatenate tracks for Flight: ", flight
+            cursor.execute('''SELECT id, flight_no, track_no, latitude, longitude, altitude, course, speed, timeStamp FROM track WHERE flight_no=? ORDER BY timeStamp''', (flight[0],))
+            tracks = cursor.fetchall()
+            for track in tracks:
+#                flight_no = track[1]
+#                track_no = track[2]
+                track_no += 1
+                latitude = track[3]
+                longitude = track[4]
+                altitude = track[5]
+                course = track[6]
+                speed = track[7]
+                timeStamp = track[8]
+#                print "Add to TrackFinal track no: ", track_no
+                addFinalTrack(cursor, this_flight_no, track_no, longitude, latitude, altitude, course, speed, timeStamp)
+        print "End concatenate tracks for group: ", i     
+        
+        
+        
+        
+        cursor.execute('''SELECT min(stime), max(etime), registration, flight_no FROM flight_group WHERE groupID=? ''', (i,))      
         r = cursor.fetchone()
-        print "Start time is: ", r[0], " End time is: ", r[1], " Duration is: ", total_duration 
-        cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration)
-                                    VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration)''',
+        print "Start time is: ", r[0], " End time is: ", r[1], " Duration is: ", total_duration, " Registration is: ", r[2], " Flight_no is: ", r[3]
+        cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                     {'sdate':sdate, 'stime':r[0], 'edate': edate, 'etime':r[1],
-                                    'duration': t_d, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':row[7]}) 
+#                                    'duration': t_d, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':row[7]})
+                                    'duration': total_duration, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':r[2], 'flight_no':r[3]})  
         db.commit()
         i = i + 1
         print "*****Flight logged to flights*********"

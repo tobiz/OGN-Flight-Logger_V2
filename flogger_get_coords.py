@@ -24,5 +24,5 @@ def get_coords(address):
             print 'Geocoder Service timed out'
     
     return location.latitude, location.longitude, ele.meters
-#loc = get_coords("Yorkshire Gliding Club UK")
-#print "latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]
+# loc = get_coords("Yorkshire Gliding Club UK")
+# print "latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]

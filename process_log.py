@@ -20,25 +20,25 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_times(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,
                         flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
-cursor.execute('''DROP TABLE flight_log_final''')
+cursor.execute('''--DROP TABLE flight_log_final''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
-cursor.execute('''DROP TABLE flight_log''')
+cursor.execute('''--DROP TABLE flight_log''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_log(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''') 
-cursor.execute('''DROP TABLE flight_group''')
+cursor.execute('''--DROP TABLE flight_group''')
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flight_group(id INTEGER PRIMARY KEY, groupID TEXT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, registration TEXT)''')
-cursor.execute('''DROP TABLE flights''') 
+cursor.execute('''--DROP TABLE flights''') 
 cursor.execute('''CREATE TABLE IF NOT EXISTS
                     flights(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
                             src_callsign TEXT, max_altitude TEXT, registration TEXT)''') 
-#cursor.execute('''DELETE FROM flight_log''') 
+# cursor.execute('''DELETE FROM flight_log''') 
 
-MINTIME = time.strptime("0:5:0", "%H:%M:%S")       # 5 minutes minimum flight time
+MINTIME = time.strptime("0:5:0", "%H:%M:%S")  # 5 minutes minimum flight time
 print "MINTIME is: ", MINTIME
 
 # Need to find the highest date record in flight_log and for each record in flight_log_final
@@ -110,7 +110,7 @@ db.commit()
 # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
 
 print "Phase 2"
-TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
+TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
 #
 # Note the following code processes each unique or distinct call_sign ie each group
 # of flights for a call_sign
@@ -118,18 +118,18 @@ TIME_DELTA = "0:2:0"        # Time in hrs:min:sec of shortest flight
 # rows = cursor.fetchall()
 # for call_sign in rows
 
-group = 0                   # Number of groups set for case there are none
+group = 0  # Number of groups set for case there are none
 cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
 all_callsigns = cursor.fetchall()
 print "All call_signs: ", all_callsigns
 for acallsign in all_callsigns:
 #    call_sign = "FLRDDE671"
-    call_sign = ''.join(acallsign)                   # callsign is a tuple ie (u'cccccc',) converts ccccc to string
+    call_sign = ''.join(acallsign)  # callsign is a tuple ie (u'cccccc',) converts ccccc to string
     print "Processing for call_sign: ", call_sign
     cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
                    FROM flight_log WHERE src_callsign=?
                    ORDER BY sdate, stime ''', (call_sign,)) 
-    #for row in rows: 
+    # for row in rows: 
     row_count = len(cursor.fetchall())
     print "nos rows is: ", row_count 
       
@@ -140,7 +140,7 @@ for acallsign in all_callsigns:
     group = 1
     while i <= row_count: 
         try:
-             row_0 =cursor.next()
+             row_0 = cursor.next()
              row_1 = cursor.next()
              print "Row pair: ", i
              print "row_0 is: ", row_0
@@ -170,7 +170,7 @@ for acallsign in all_callsigns:
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
              j = 1
-             print "i is: ", i, " j is: ",j
+             print "i is: ", i, " j is: ", j
              while j < i:
                  print "Move to row: ", j
                  row_0 = cursor.next()
@@ -201,7 +201,7 @@ def time_add(t1, t2):
     t = t1[4] + t2[4] + tm
     if t >= 60:
         tm = t - 60
-        th = int(t/60)
+        th = int(t / 60)
     else:
         tm = t
     th = t1[3] + t2[3] + th
@@ -241,7 +241,7 @@ while i <= max_groupID:
 #        print "flight duration is: ", flight_duration
         total_duration = time_add(total_duration, flight_duration)
 #        print "total time is: ", total_duration
-        t_d = "%s:%s:%s" % (total_duration[3],total_duration[4],total_duration[5])
+        t_d = "%s:%s:%s" % (total_duration[3], total_duration[4], total_duration[5])
         print "total time is: ", t_d
         sdate = row[0]
         edate = row[2]

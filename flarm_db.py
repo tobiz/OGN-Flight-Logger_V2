@@ -13,9 +13,11 @@ import string
 import requests
 import sqlite3
 import time
-#import unicodedata
+# import unicodedata
 
-def flarmdb (flarmnet, flogger_db, flarm_data):
+# def flarmdb (flarmnet, flogger_db, flarm_data):
+def flarmdb (flarmnet, cursor, database, flarm_data):
+    dbflarm = database
     try:
         # flarmnet_db is at "http://www.flarmnet.org/files/data.fln"
         flarmnet_db = flarmnet
@@ -39,7 +41,7 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
         exit()
     flm.close()
     
-    #db = open("data.fln", 'r')
+    # db = open("data.fln", 'r')
     db = open(flarm_data, 'r')
     # Read first line and convert to number
     x = db.readline()
@@ -47,20 +49,10 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
     print "First line from FlarmNet data is : ", val
     
     try:
-        # Creates or opens a file called mydb with a SQLite3 DB
-#        dbflarm = sqlite3.connect('flogger.sql3')
-        dbflarm = sqlite3.connect(flogger_db)
         print "Create flarm_db table"
-        # Get a cursor object
-        cursor = dbflarm.cursor()
-#        cursor.execute('''DROP TABLE flarm_db''')
-        cursor.execute('''DELETE FROM flarm_db''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS
                             flarm_db(id INTEGER PRIMARY KEY, flarm_id TEXT, airport STRING, type TEXT, registration TEXT, radio TEXT)''')
         print "flarm_db table created"
-        # Commit the changes
-    #    dbflarm.commit()
-    # Catch the exception
     except Exception as e:
         # Roll back any change if something goes wrong
         print "Failed to create flarm_db"
@@ -77,12 +69,12 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
 #            print "Line length is: ", line_lng
             string = ""
 #            print "read: ", i, " returns: ", line
-            for j in range(0,172,2):
+            for j in range(0, 172, 2):
 #            for j in range(0,line_lng - 1,2):
     #            x = line[j:j+2]
     #            y = int(x, 16)
     #            c = chr(y)
-                c = chr(int(line[j:j+2],16))
+                c = chr(int(line[j:j + 2], 16))
                 string = string + c
             i = i + 1
     #        v.decode("iso-8859-15").encode("utf-8")
@@ -119,15 +111,16 @@ def flarmdb (flarmnet, flogger_db, flarm_data):
                return False
         except:
             print "Number of rows is: ", i - 1
+#            dbflarm.commit()
             dbflarm.commit()
             return True
     return True
-    #dbflarm.commit()
+    # dbflarm.commit()
 
    
-#print "Start build Flarm DB: Test"
-#t1 = time.time() 
-#flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data")
-#t2 = time.time()
-#print "End build Flarm DB in ", t2 - t1 , " seconds"
+# print "Start build Flarm DB: Test"
+# t1 = time.time() 
+# flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data")
+# t2 = time.time()
+# print "End build Flarm DB in ", t2 - t1 , " seconds"
 

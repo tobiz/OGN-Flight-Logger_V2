@@ -96,6 +96,7 @@ import ephem
 from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
+from flogger_dump_tracks import dump_tracks
 from flogger_get_coords import get_coords
 import os
 
@@ -110,10 +111,13 @@ nvalues =     {"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed":
 
 L_SMALL = float(0.001)                      # Small latitude or longitude delta of a 0.001 degree
 A_SMALL = float(0.01)                          # Small altitude delta of 0.01 a metre, ie 1cm
-V_SMALL = float(10.0)                        # Small velocity delta of 10.0 kph counts as zero ie not moving
+#V_SMALL = float(10.0)                        # Small velocity delta of 10.0 kph counts as zero ie not moving
+V_SMALL = float(settings.FLOGGER_V_SMALL)     # Small velocity delta of 10.0 kph counts as zero ie not moving
 QNH_SB = settings.FLOGGER_QNH                 # ASL for Sutton Bank(max 297m) in metres
 frst_time = False
 AIRFIELD = "SuttonBnk"
+flight_no = {}
+track_no = {}
 # Coded     001-099: Gliders, 
 #             101-199: Tugs, 
 #             201-299: Motor Gliders, 
@@ -137,7 +141,7 @@ aircraft = {"G-CKLW": 1, "G-CKLN": 2, "G-CJVZ": 3, "G-CHEF": 4, "G-CKFN": 5,
 # print "Filter is: ", FILTER
 
 def CheckPrev(callsignKey, dataKey, value):
-    print "CheckVals if callsign in nprev_vals: ", callsignKey, " key: ", dataKey, " Value: ", value 
+    print "CheckPrev if callsign in nprev_vals: ", callsignKey, " key: ", dataKey, " Value: ", value 
     if nprev_vals.has_key(callsignKey) == 1:
         print "nprev_vals already has entry: ", callsignKey
     else:
@@ -222,13 +226,19 @@ def fleet_check_new(callsign):
     print "In fleet check for: ", callsign
     cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
     row = cursor.fetchone()
-    cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =?''', (callsign,))
+#    cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =?''', (callsign,))
+    flarm_id = callsign[3:]
+    print "search for flarm_id: ", flarm_id
+#    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (callsign,))
+    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
     row1 = cursor.fetchone()
     if row1 == None:
         print "Registration not found in flarm_db: ", callsign
-    # Temporarily use local aircraft db    
+    else:
+        print "Aircraft: ", callsign, " found in flarm db at: ", row1[0] 
+    # Temporarily use local aircraft db   
     if row <> None:
-        print "Aircraft: ", callsign, " found at in aircraft db: ", row[0]
+        print "Aircraft: ", callsign, " found in aircraft db: ", row[0]
         return True
     else:
         print "Aircraft: ", callsign, " not found insert in local aircraft db"
@@ -301,6 +311,70 @@ def APRS_connect (settings):
     print "APRS connection made"
     return sock
 
+
+def addTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,timeStamp):
+    #    
+    #-----------------------------------------------------------------
+    # Add gps track data to track record if settings.FLOGGER_TRACK is "Y" ie yes    
+    #-----------------------------------------------------------------
+    #
+    dt = str(datetime.datetime.now())           # Get the datetime this track point is created as string
+    sdt = dt[0:10] + "T" + dt[11:19] + "Z"      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ   
+#    sdt = "%sT%sZ" % (dt[0:10],dt[11:19])      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ
+
+    if settings.FLOGGER_TRACKS == "Y":
+        print "Flight_no is: ", flight_no
+        print "Track_no is: ", track_no
+#        This print doesn't work as one of the values is of none-type, not sure why?
+#        print "Adding track data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
+        cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
+            VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
+            {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':sdt})
+    return
+
+##def addFinalTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,timeStamp):
+    #    
+    #-----------------------------------------------------------------
+    # Add gps track data to trackFinal record if settings.FLOGGER_TRACK is "Y" ie yes    
+    #-----------------------------------------------------------------
+    #
+
+#    if settings.FLOGGER_TRACKS == "Y":
+#        print "Adding trackFinal data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
+#        cursor.execute('''INSERT INTO trackFinal(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
+#            VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
+#            {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
+#    return
+    
+def endTrack():
+    return
+
+def CheckTrackData(cursor, flight_no, track_no, callsignKey):
+    print "check flight_no if callsign in flight_no{}: ", flight_no, " Track_no is: ", track_no, " CallsignKey is: ", callsignKey 
+    if flight_no.has_key(callsignKey) == 1:
+        print "flight_no already has entry: ", callsignKey
+    else:
+        try:
+            cursor.execute('''SELECT max(id) FROM flight_log2 WHERE src_callsign =?''', (callsignKey,))
+        except:
+            print "!!!ERROR - No record in flight_log2 for: ", callsignKey
+            # If this crashes need to think about adding record for flight_log2, but why?
+            exit()
+        row_id = cursor.fetchone()[0]  # value of id for row just inserted use as flight_no for flight
+        print "Last row ID of flight_log2 for callsign: ", callsignKey, " inserted was: ", row_id
+        flight_no[src_callsign] = row_id
+        track_no[callsignKey] = 1
+        print "flight_no for callsignKey: ", callsignKey, " is: ", flight_no[callsignKey]
+    return
+
+def check_position_packet (airfield):
+    if  string.find(str(airfield), settings.FLOGGER_AIRFIELD_NAME) <> -1 or \
+        string.find(str(airfield), settings.FLOGGER_ALTERNATIVE_AIRFIELD_NAME) <> -1 and \
+        settings.FLOGGER_ALTERNATIVE_AIRFIELD_NAME <> "":
+        return 0
+    else:
+        return -1
+
 #    
 #----------------------------------------------------------------- 
 # Start of main code    
@@ -369,15 +443,19 @@ print "Database and tables open"
 # Build flogger db using schema
 #-----------------------------------------------------------------
 #
-cur = [0]    # cur is mutable  
-r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
-#cursor = cur
-print "End of building db using schema: ", r, ". cur is: ", cur
 
-#db = sqlite3.connect('flogger.sql3')
+##cur = [0]    # cur is mutable  
+##r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
+#cursor = cur
+##print "End of building db using schema: ", r, ". cur is: ", cur
+
 db = sqlite3.connect(settings.FLOGGER_DB_NAME)
-#Get a cursor object
-cursor = db.cursor()
+cursor = db.cursor()                            # Get a cursor object
+f = open(settings.FLOGGER_DB_SCHEMA, 'rt')      # Open the db schema file for reading
+schema = f.read()
+cursor.executescript(schema)                    # Build flogger db from schema
+print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", settings.FLOGGER_DB_SCHEMA
+
 
 
 #    
@@ -386,7 +464,8 @@ cursor = db.cursor()
 #-----------------------------------------------------------------
 #
 #if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
-if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, settings.FLOGGER_DB_NAME, "flarm_data") == True:
+#if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, settings.FLOGGER_DB_NAME, "flarm_data") == True:
+if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, cursor, db, "flarm_data") == True:
     print "Flarmnet db built"   
 else:
     print "Flarmnet db build failed, exit" 
@@ -489,30 +568,44 @@ try:
 #
             print "Dump flights table"
             dump_flights()
+#
+# Dump tracks from flights table as .gpx
+#
+            print "Dump tracks"
+            dump_tracks(cursor)
 #            
 # Delete entries from daily flight logging tables
 #
             try:
-                cursor.execute('''DELETE FROM flight_log''')
+#                cursor.execute('''DELETE FROM flight_log''')
                 print "Delete flight_log table ok"
             except:
                 print "Delete flight_log table failed or no records in tables"
             try:
-                cursor.execute('''DELETE FROM flight_log2''')
+#                cursor.execute('''DELETE FROM flight_log2''')
                 print "Delete flight_log2 table ok"
             except:
                 print "Delete flight_log2 table failed or no records in tables"
             try:
-                cursor.execute('''DELETE FROM flight_log_final''')
+#                cursor.execute('''DELETE FROM flight_log_final''')
                 print "Delete flight_log_final table ok"
             except:
                 print "Delete flight_log_final table failed or no records in tables"
             try:
-                cursor.execute('''DELETE FROM flight_group''')
+#                cursor.execute('''DELETE FROM flight_group''')
                 print "Delete flight_group table ok"
             except:
                 print "Delete flight_group table failed or no records in tables"
-#                exit
+            try:
+#                cursor.execute('''DELETE FROM flights''')
+                print "Delete flights table ok"
+            except:
+                print "Delete flights table failed or no records in tables"
+            try:
+#                cursor.execute('''DELETE FROM track''')
+                print "Delete track table ok"
+            except:
+                print "Delete track table failed or no records in tables"
             db.commit()
             # Wait for sunrise
 #            wait_time = next_sunrise - datetime_now
@@ -529,7 +622,10 @@ try:
             wait_time_secs = int(wait_time.total_seconds()) + 600 
             print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             # close socket -- not needed. Create new one at sunrise
-            sock.shutdown(0)
+            try:
+                sock.shutdown(0)
+            except socket.error as msg:
+                print "Socket failed to shutdown, ignore. Msg is: " , msg
             sock.close() 
             #
             # Sleep till sunrise
@@ -612,8 +708,11 @@ try:
 # Delete following line when not running in test mode
 #            exit()
             continue
-        
+        #
         # Parse the returned packet into fields
+        # Note this uses a modified version of libfap as the master on
+        # github contains an error
+        #
         packet = libfap.fap_parseaprs(packet_str, len(packet_str), 0)
         print 'Parse packet. Callsign: %s. Packet body: %s' % (packet[0].src_callsign, packet[0].body)
         try:
@@ -699,6 +798,7 @@ try:
         res2 = string.find(str(packet_str), "# logresp")
 #        res3 = string.find(str(packet_str), "SuttonBnk")
         res3 = string.find(str(packet_str), settings.FLOGGER_AIRFIELD_NAME)
+#        res3 = check_position_packet(packet_str)
         if res1 <> -1 :
             print "Comment aprs packet returned: ", packet_str
             print "-----------------End of Packet: ", i, " ------------------------------"    
@@ -750,21 +850,41 @@ try:
 #             print "Line ", i, " ", packet[0].orig_packet
             
 #            if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] <> 0:
-            print "Test for was stopped now moving"
+            print "Test for was stopped now moving. nprevs[speed] is: " + str(nprev_vals[src_callsign]['speed']) + " nvalues[speed] is: "+ str(nvalues[src_callsign]['speed'])
             if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
-
+            # Following test for case when Flarm is switched on for first time when stationary and at an
+            # altitude greater than QNH_SB, ie a special case of initial location. nprev_vals get set to zero when aircraft
+            # first detected by flarm. Doesn't work.  Needs thought
+#            if (nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL) or (nprev_vals[src_callsign]['speed'] == nvalues[src_callsign]['speed'] and  nvalues[src_callsign]['speed']> V_SMALL):
+                print "New test true for switch-on"
                 # aircraft was stopped, now isn't
+                # Enhancement.  At this point create new Track table record for the flight.
+                # Set track_no to current value and increment for use by next new flight.
+                # Flight_no (ie flight_log2 id field) has to copied to the Track table record
+                # each time new track data record for the flight is added.
                 print "Aircraft ", src_callsign, " was stopped, now moving. Create new record"    
-                cursor.execute('''INSERT INTO flight_log2(sdate, stime, edate, etime, duration,    src_callsign, max_altitude, speed, registration)
+                cursor.execute('''INSERT INTO flight_log2(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
                             VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
                             {'sdate':fl_date, 'stime':fl_time, 'edate': "", 'etime':"", 'duration': "", 'src_callsign':src_callsign, 'max_altitude':altitude, 'speed':0, 'registration': registration})
                 nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']
+                
+                print "Storing initial track data"
+                cursor.execute('''SELECT max(id) FROM flight_log2''')
+                lastrow_id = cursor.fetchone()[0]  # value of id for row just inserted use as flight_no for flight
+                print "Last row ID of flight_log2 inserted was: ", lastrow_id
+                flight_no[src_callsign] = lastrow_id
+#                flight_no[src_callsign] = cursor.lastrowid    # Unique value of row just created
+                track_no[src_callsign] = 1                      # Initialise trackpoint number for this flight
+                addTrack(cursor, flight_no[src_callsign],track_no[src_callsign],longitude,latitude,altitude,course,speed,"")
+                track_no[src_callsign] += 1                     # Increment trackpoint number for this flight
                 
 #            if nprev_vals[src_callsign]['speed'] <> 0 and nvalues[src_callsign]['speed'] == 0:
             print "Test for was moving is now stopped"
             if nprev_vals[src_callsign]['speed'] > V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL:
                 # aircraft was moving is now stopped
                 print "Aircraft ", src_callsign, " was moving, now stopped. Update record for end date & time"
+                # Add final track record
+                addTrack(cursor, flight_no[src_callsign],track_no[src_callsign],longitude,latitude,altitude,course,speed,"")
                 # Find latest record for this callsign
 #
 # Bug 20150520-1 Test Start
@@ -785,7 +905,7 @@ try:
 # Bug 20150520-1 Test End
 #
                     
-                cursor.execute('''SELECT sdate, stime, max_altitude FROM flight_log2 WHERE 
+                cursor.execute('''SELECT sdate, stime, max_altitude, id FROM flight_log2 WHERE 
                                 ROWID IN (SELECT max(id) FROM flight_log2 WHERE src_callsign =? )''', (src_callsign,))
                 row = cursor.fetchone()
 #
@@ -806,6 +926,7 @@ try:
                 start_date = row[0]  # In %y/%m/%d format
                 start_time = row[1]  # In %H:%M:%S format
                 max_altitude = row[2]
+                flight = row[3]      # id field of flight_log2
                 
                 fl_end_datetime = datetime.datetime.now()
                 fl_end_date = fl_end_datetime.strftime("%y/%m/%d")
@@ -824,10 +945,10 @@ try:
                 fl_duration_time_str = str(fl_duration_time)
                 print "Start time: ", fl_start_time, "End time: ", fl_end_time_str, "Duration: ", fl_duration_time, " Max altitude: ", max_altitude
                 # Add record to flight_log_final
-                cursor.execute('''INSERT INTO flight_log_final(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration)
-                            VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration)''',
+                cursor.execute('''INSERT INTO flight_log_final(sdate, stime, edate, etime, duration, src_callsign, max_altitude, speed, registration, flight_no)
+                            VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude,:speed, :registration,:flight_no)''',
                             {'sdate':start_date, 'stime':start_time, 'edate': fl_end_date, 'etime':fl_end_time_str,
-                            'duration': fl_duration_time_str, 'src_callsign':src_callsign, 'max_altitude':max_altitude, 'speed':0, 'registration': registration})
+                            'duration': fl_duration_time_str, 'src_callsign':src_callsign, 'max_altitude':max_altitude, 'speed':0, 'registration': registration, 'flight_no': flight})
                 print "Updated flight_log_final", src_callsign
                 
                 
@@ -861,12 +982,21 @@ try:
                 print "-----------------End of Packet: ", i, " ------------------------------"
                 continue
 #            if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] == 0:
+            print "Is Aircraft %s moving? nprev.speed=%d, nvalues.speed=%d, nvalues.altitude=%d" % (src_callsign, nprev_vals[src_callsign]['speed'], nvalues[src_callsign]['speed'], nvalues[src_callsign]['altitude'])        
             if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= QNH_SB:
                 # Aircraft hasn't moved and is not at an altitude greater than Sutton Bank.  
-                print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nvalues[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
+                print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nprev_vals[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
             else:
                 # aircraft is moving. Check whether current altitude is greater than previous
+                # Enhancement. Add new record to Tracks table for this flight here. Track_no for flight is initialised
+                # when flight record is created, initial Track table record for flight is also created at that time
                 print "Aircraft ", src_callsign, " is still moving"
+                # Check whether a track list has been set up.  May have to add flight_log2 record as well??
+                CheckTrackData(cursor, flight_no, track_no, src_callsign)
+                print "Flight details are: ", flight_no[src_callsign]
+                # Add track record for moving aircraft
+                addTrack(cursor, flight_no[src_callsign],track_no[src_callsign],longitude,latitude,altitude,course,speed,"")
+                track_no[src_callsign] += 1                 # Next trackpoint number for this flight
                 print "Old height was: ", nprev_vals[src_callsign]['altitude'], " New height is: ", nvalues[src_callsign]['altitude']
                 if nvalues[src_callsign]['altitude'] > nprev_vals[src_callsign]['altitude']:
                     print "Aircraft ", src_callsign, " is now higher than max height, was: ", nprev_vals[src_callsign]['altitude'], " now: ", nvalues[src_callsign]['altitude']

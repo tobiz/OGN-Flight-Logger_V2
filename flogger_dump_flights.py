@@ -38,7 +38,9 @@ def dump_flights():
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
         print "max_date is: ", max_date
          
-    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+#    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+    cursor.execute("SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+
 
     start_time = datetime.datetime.now()
     csv_path = str(start_time) + "_flights.csv"
