@@ -359,34 +359,6 @@ def process_log (cursor, db):
             i += 1
             continue
 
-#
-# Old way of doing it
-# 
-           
-#        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration
-#                     FROM flight_group WHERE groupID=?
-#                     ORDER BY sdate, stime ''', (i,)) 
-       
-#        rows = cursor.fetchall()
-          
-#        total_duration = time.strptime("0:0:0", "%H:%M:%S")
-    #    print "total duration tuple is: ", total_duration
-    #    total_duration = time.mktime(total_duration)
-    #    print "Initial time is: ", total_duration
-#        for row in rows:
-#            print "Goup: ", i, " row: ", row
-#            flight_duration = time.strptime(row[4], "%H: %M: %S")
-    #        print "total duration is: ", total_duration
-    #        print "flight duration is: ", flight_duration
-#            total_duration = time_add(total_duration, flight_duration)
-    #        print "total time is: ", total_duration
-#            t_d = "%s:%s:%s" % (total_duration[3],total_duration[4],total_duration[5])
-#            print "total time is: ", t_d
-#            sdate = row[0]
-#            edate = row[2]
-#            callsign = row[5]       
-#            print "@@@@@ Next row @@@@@@@"
-
         #
         # Concatenate the tracks for each flight group into one track into table trackFinal, 
         # (Note the track table could then be deleted 
@@ -403,8 +375,6 @@ def process_log (cursor, db):
             cursor.execute('''SELECT id, flight_no, track_no, latitude, longitude, altitude, course, speed, timeStamp FROM track WHERE flight_no=? ORDER BY timeStamp''', (flight[0],))
             tracks = cursor.fetchall()
             for track in tracks:
-#                flight_no = track[1]
-#                track_no = track[2]
                 track_no += 1
                 latitude = track[3]
                 longitude = track[4]
@@ -415,9 +385,6 @@ def process_log (cursor, db):
 #                print "Add to TrackFinal track no: ", track_no
                 addFinalTrack(cursor, this_flight_no, track_no, longitude, latitude, altitude, course, speed, timeStamp)
         print "End concatenate tracks for group: ", i     
-        
-        
-        
         
         cursor.execute('''SELECT min(stime), max(etime), registration, min(flight_no) FROM flight_group WHERE groupID=? ''', (i,))      
         r = cursor.fetchone()
