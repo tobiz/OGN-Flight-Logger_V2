@@ -47,7 +47,7 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 #
 # User defined configuration values
 #
-FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
+FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger_V2.1/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
 FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
 FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named airfield
 FLOGGER_AIRFIELD_DETAILS = ""                                   # Location details for use by geocoder. If blank, "" use LAT, LONG etc
@@ -57,9 +57,9 @@ FLOGGER_DB_NAME = "flogger.sql3.2"                              # Name of file f
 FLOGGER_FLARMNET_DB_URL = "http://www.flarmnet.org/files/data.fln" # URL of Flarmnet database
 FLOGGER_AIRFIELD_NAME = "SuttonBnk"                             # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_QFE_MIN = 25                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~50 ft
-FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger/logs"      # Path where log files are stored 
+FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger_V2.1/logs"      # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
-FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger/tracks"# Folder for .gpx files for flight tracks
+FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
 
 

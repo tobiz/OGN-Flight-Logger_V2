@@ -419,7 +419,7 @@ def process_log (cursor, db):
         
         
         
-        cursor.execute('''SELECT min(stime), max(etime), registration, flight_no FROM flight_group WHERE groupID=? ''', (i,))      
+        cursor.execute('''SELECT min(stime), max(etime), registration, min(flight_no) FROM flight_group WHERE groupID=? ''', (i,))      
         r = cursor.fetchone()
         print "Start time is: ", r[0], " End time is: ", r[1], " Duration is: ", total_duration, " Registration is: ", r[2], " Flight_no is: ", r[3]
         cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)

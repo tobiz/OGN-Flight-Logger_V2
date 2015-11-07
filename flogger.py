@@ -395,49 +395,7 @@ settings.APRS_USER = args.user
 settings.APRS_PASSCODE = args.passcode
 
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
-"""
-try:
-    # Creates or opens a file called mydb with a SQLite3 DB
-    db = sqlite3.connect('flogger.sql3')
-    # Get a cursor object
-    cursor = db.cursor()
-    # Check if table users does not exist and create it if not
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                      users(id INTEGER PRIMARY KEY, first_name TEXT, surname TEXT, phone TEXT, email TEXT unique, password TEXT)''')
-    # Check if table for holding flight logging data exist and create it not
-#    cursor.execute('''CREATE TABLE IF NOT EXISTS
-#                      flight_log(id INTEGER PRIMARY KEY, date TEXT, time TEXT, src_callsign TEXT, 
-#                                  reg_no TEXT, latitude TEXT, longitude TEXT, altitude TEXT, course TEXT, speed TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        aircraft(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,owner TEXT,airfield TEXT,flarm_id TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_times(id INTEGER PRIMARY KEY,registration TEXT,type TEXT,model TEXT,
-                            flarm_id TEXT,date, TEXT,start_time TEXT,duration TEXT,max_altitude TEXT)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_log2(id INTEGER PRIMARY KEY AUTOINCREMENT, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                        src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')    
-    cursor.execute('''CREATE TABLE IF NOT EXISTS
-                        flight_log_final(id INTEGER PRIMARY KEY, sdate TEXT, stime TEXT, edate TEXT, etime TEXT, duration TEXT,
-                        src_callsign TEXT, max_altitude TEXT, speed TEXT, registration TEXT)''')            
-    
-#    for k, v in aircraft.iteritems():
-#        print "Key is: ", k, " value is: ", v
-#        cursor.execute('''INSERT INTO aircraft(registration,type,model,owner,airfield ,flarm_id)
-#                            VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
-#                            {'registration':k, 'type':"", 'model': "", 'owner':"",'airfield': "Sutton Bank", 'flarm_id':k})
 
-    # Commit the changes
-    db.commit()
-# Catch the exception
-except Exception as e:
-    # Roll back any change if something goes wrong
-    db.rollback()
-    raise e
-# finally:
-    # Close the db connection
-#    db.close()
-print "Database and tables open"
-"""
 #
 #-----------------------------------------------------------------
 # Build flogger db using schema
@@ -517,6 +475,12 @@ sock_file = sock.makefile()
 print "libfap_init"
 libfap.fap_init()
 
+#    
+#-----------------------------------------------------------------
+# Set up paths for data, logs and tracks 
+#-----------------------------------------------------------------
+#
+
 SB_DATA = "SB_data" + str(start_time)
 SB_Log = "SB_Log" + str(start_time)
 SB_DATA = str(SB_DATA).replace(" ","_")
@@ -524,12 +488,19 @@ SB_Log = str(SB_Log).replace(" ","_")
 SB_DATA = str(SB_DATA).replace(":","-")
 SB_Log = str(SB_Log).replace(":","-")
 #SB_DATA = "SB_data2015-03-05 14:57:27.980999"
+print "Checking log paths: ", settings.FLOGGER_LOG_PATH
 if settings.FLOGGER_LOG_PATH <> "":
-    if os.path.isdir(settings.FLOGGER_LOG_PATH):
+    if not os.path.isdir(settings.FLOGGER_LOG_PATH):
+        print "Log path is not directory", 
         SB_DATA = os.path.abspath(settings.FLOGGER_LOG_PATH) + "/" + SB_DATA
         SB_Log  = os.path.abspath(settings.FLOGGER_LOG_PATH) + "/" + SB_Log
-    else:
-        print "FLOGGER_LOG_PATH does not exist. Please check settings."
+        try:
+            #print "Creating log folder"
+            os.makedirs(settings.FLOGGER_LOG_PATH)
+            print "Created: ", settings.FLOGGER_LOG_PATH
+        except:
+            print "FLOGGER_LOG_PATH does not exist. Please check settings."
+            exit()    
 print "SB data file is: ", SB_DATA
 print "SB log file is: ", SB_Log
 
@@ -542,6 +513,13 @@ if test == True:
 else:
     datafile = open (SB_DATA, 'w')
     print "In live mode"
+#    
+#-----------------------------------------------------------------
+# Main loop reading data from APRS server and processing records
+# This continues until sunset after which the data recorded is processed
+#-----------------------------------------------------------------
+#
+
 i = 0
 try:
     while 1:
@@ -787,12 +765,6 @@ try:
 #             print "Speed is: ", packet[0].speed[0]
             nvalues[src_callsign]["speed"] = speed        
                   
-#         ti = datetime.datetime.now()
-
-#         src_callsign = packet[0].src_callsign
-#         res = string.find(str(src_callsign), "None")
-#         res = string.find(str(packet[0].src_callsign), "None")
-#         if res == -1:
         # Test the packet to be one for the required field
         res1 = string.find(str(packet_str), "# aprsc")
         res2 = string.find(str(packet_str), "# logresp")
