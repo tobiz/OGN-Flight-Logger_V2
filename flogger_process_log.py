@@ -245,7 +245,7 @@ def process_log (cursor, db):
     #
     # As well as summing the flight time in a group it must concatenate the track data
     # for each flight group member to form the single track
-    # 
+    #  
     #-----------------------------------------------------------------
     #
     print "+++++++Phase 3 Start+++++++"
