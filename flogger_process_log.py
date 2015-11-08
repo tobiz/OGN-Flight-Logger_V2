@@ -152,12 +152,6 @@ def process_log (cursor, db):
             group = 1
         call_sign = ''.join(acallsign)  # callsign is a tuple ie (u'cccccc',) converts ccccc to string
         print "Processing for call_sign: ", call_sign
-#        cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude 
-#                       FROM flight_log WHERE src_callsign=?
-#                       ORDER BY sdate, stime ''', (call_sign,)) 
-        # for row in rows: 
-#        row_count = len(cursor.fetchall())
-#        print "nos rows is: ", row_count 
           
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration , flight_no
                      FROM flight_log WHERE src_callsign=?
@@ -244,14 +238,15 @@ def process_log (cursor, db):
     print "-------Phase 2 End-------"
     #    
     #-----------------------------------------------------------------
-    # Phase 3 processing    
-    #-----------------------------------------------------------------
+    # Phase 3 processing   
     #
-    # Phase 3.  This sums the flight durations for each of the flight groups
+    # This sums the flight durations for each of the flight groups
     # hence resulting in the actual flight start, end times and duration
     #
     # As well as summing the flight time in a group it must concatenate the track data
     # for each flight group member to form the single track
+    # 
+    #-----------------------------------------------------------------
     #
     print "+++++++Phase 3 Start+++++++"
     
@@ -361,7 +356,7 @@ def process_log (cursor, db):
 
         #
         # Concatenate the tracks for each flight group into one track into table trackFinal, 
-        # (Note the track table could then be deleted 
+        # (Note the track table could then be deleted) 
         #
         print "Start concatentate tracks for group: ", i
         cursor.execute('''SELECT flight_no, sdate, stime FROM flight_group WHERE groupID=? ORDER BY sdate, stime ''', (i,))        
