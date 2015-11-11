@@ -39,7 +39,7 @@ def dump_flights():
         print "max_date is: ", max_date
          
 #    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-    cursor.execute("SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+    cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
 
 
     start_time = datetime.datetime.now()

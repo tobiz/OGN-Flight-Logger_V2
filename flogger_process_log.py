@@ -28,6 +28,15 @@ def addFinalTrack(cursor, flight_no, track_no, longitude, latitude, altitude, co
             {'flight_no':flight_no, 'track_no':track_no, 'latitude':latitude, 'longitude':longitude, 'altitude':altitude, 'course':course, 'speed':speed, 'timeStamp':timeStamp})
     return
 
+def txt2time(txt_time):
+    #    
+    #-----------------------------------------------------------------
+    # Retuns a time in txt string of HH:MM:SS in a format for simple arithmetic
+    #-----------------------------------------------------------------
+    #
+    return datetime.datetime.strptime("1900/01/01 " + txt_time, '%Y/%m/%d %H:%M:%S')
+    
+
 #
 #-----------------------------------------------------------------
 # Process the log of each record in 'flight_log' into table 'flights' to create
@@ -328,7 +337,13 @@ def process_log (cursor, db):
             print "Single row group size: ", row_count, " Flight group: ", i
         
         cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=?''', (i,))
-        times = cursor.fetchone()           # times is a tuple 
+        times = cursor.fetchone()           # times is a tuple
+        try: 
+            print "Start new total duration calculation"
+            cursor.execute('''SELECT SUM(txt2time(duration)) AS nduration FROM flight_group WHERE groupID=? AND txt2time(duration) > ?''', (i,txt2time(TIME_DELTA)))
+            print "New total duration calculation is: ", str(nduration)
+        except:
+            print "New duration calc FAILED"
         print "Value of times is: ", times, " for flight group: ", i
         if times <> (None, None):
             nstime = datetime.datetime.strptime("1900/01/01 " + times[0], '%Y/%m/%d %H:%M:%S')
