@@ -3,7 +3,8 @@
 # Function to read OGN Flarm database and create SQLite version for local use.
 # Note this means if a new entry is added to OGN db after flogger has started
 # it won't be included.  
-# 
+#
+# Run at start of each day? 
 #-----------------------------------------------------------------
 #
 import string
@@ -46,8 +47,7 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
 #        print "Line ", i, " is: ", line
         if line == "":
             # Seems to be a blank line at end
-            flarmdb.commit()
-            return True
+            continue
         
         fields = line.split(",")
         nf1 = fields[1].replace("'", "")
@@ -81,16 +81,9 @@ print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", setti
 
 #    
 #-----------------------------------------------------------------
-# Build local database from flarmnet of aircraft    
+# Build local database from OGN of aircraft    
 #-----------------------------------------------------------------
 #
-#if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
-#if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, settings.FLOGGER_DB_NAME, "flarm_data") == True:
-#if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, cursor, db, "flarm_data") == True:
-#    print "Flarmnet db built"   
-#else:
-#    print "Flarmnet db build failed, exit" 
-#    exit()
    
 print "Start build OGN DB: Test"
 t1 = time.time() 

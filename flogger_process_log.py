@@ -340,7 +340,13 @@ def process_log (cursor, db):
         times = cursor.fetchone()           # times is a tuple
         try: 
             print "Start new total duration calculation"
-            cursor.execute('''SELECT SUM(txt2time(duration)) AS nduration FROM flight_group WHERE groupID=? AND txt2time(duration) > ?''', (i,txt2time(TIME_DELTA)))
+#            cursor.execute('''SELECT SUM(txt2time(duration)) AS nduration FROM flight_group WHERE groupID=? AND txt2time(duration) > ?''', (i,txt2time(TIME_DELTA)))
+            cursor.execute('''SELECT duration from flight_group WHERE groupID=?''', (i,))
+            durations = cursor.fetchall()
+            nduration = txt2time("0:0:0")
+            for s in durations:
+                if txt2time(s[0]) > txt2time(TIME_DELTA):
+                    nduration += (txt2time(s[0]) - txt2time("0:0:0"))            
             print "New total duration calculation is: ", str(nduration)
         except:
             print "New duration calc FAILED"

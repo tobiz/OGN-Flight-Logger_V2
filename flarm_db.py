@@ -70,10 +70,6 @@ def flarmdb (flarmnet, cursor, database, flarm_data):
             string = ""
 #            print "read: ", i, " returns: ", line
             for j in range(0, 172, 2):
-#            for j in range(0,line_lng - 1,2):
-    #            x = line[j:j+2]
-    #            y = int(x, 16)
-    #            c = chr(y)
                 c = chr(int(line[j:j + 2], 16))
                 string = string + c
             i = i + 1
@@ -86,14 +82,6 @@ def flarmdb (flarmnet, cursor, database, flarm_data):
                 Airport = Airport.rstrip()
             except:
                 print "Code error ", str(string[27:47])
-#                try:
-#                    s = "%s" % str(string[27:47]).encode("utf-8")
-#                    print s
-#                except:
-#                    print "WRONG ", s
-#                s = unicodedata.name(str(string[27:47]))
-#                Airport = str(string[27:47]).decode("utf-8").encode("utf-16")
-#                Airport = string[27:47]
             Type = str(string[48:69]).decode("iso-8859-15").encode("utf-8")
             Registration = str(string[69:75]).decode("iso-8859-15").encode("utf-8")
             Radio = str(string[79:86]).decode("iso-8859-15").encode("utf-8")

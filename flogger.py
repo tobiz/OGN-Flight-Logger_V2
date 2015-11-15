@@ -226,10 +226,8 @@ def fleet_check_new(callsign):
     print "In fleet check for: ", callsign
     cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
     row = cursor.fetchone()
-#    cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =?''', (callsign,))
     flarm_id = callsign[3:]
     print "search for flarm_id: ", flarm_id
-#    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (callsign,))
     cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
     row1 = cursor.fetchone()
     if row1 == None:
@@ -429,21 +427,7 @@ else:
     print "Flarmnet db build failed, exit" 
     exit()
     
-#    
-#-----------------------------------------------------------------
-# Initialise API for computing sunrise and sunset    
-#-----------------------------------------------------------------
-#
-location = ephem.Observer()
-location.pressure = 0
-location.horizon = '-0:34'    # Adjustments for angle to horizon
 
-location.lat, location.lon = settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE
-date = datetime.datetime.now()
-next_sunrise = location.next_rising(ephem.Sun(), date)
-next_sunset = location.next_setting(ephem.Sun(), date)
-print "Sunrise today: ", date, " is: ", next_sunrise
-print "Sunset today: ", date, " is: ", next_sunset
 
 #    
 #-----------------------------------------------------------------
@@ -453,12 +437,32 @@ print "Sunset today: ", date, " is: ", next_sunset
 
 if settings.FLOGGER_AIRFIELD_DETAILS <> "":
     loc = get_coords(settings.FLOGGER_AIRFIELD_DETAILS)
-    settings.FLOGGER_LATITUDE     = loc[0]
-    settings.FLOGGER_LONGITUDE     = loc[1]
-    settings.FLOGGER_QNH         = loc[2]
+    settings.FLOGGER_LATITUDE       = str(loc[0])   # Held as string
+    settings.FLOGGER_LONGITUDE      = str(loc[1])   # Held as string
+    settings.FLOGGER_QNH            = loc[2]        # Held as number
     print "Location is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]    
 else:
     print "Use location data from settings"    
+    
+#    
+#-----------------------------------------------------------------
+# Initialise API for computing sunrise and sunset    
+#-----------------------------------------------------------------
+#
+location = ephem.Observer()
+location.pressure = 0
+location.horizon = '-0:34'    # Adjustments for angle to horizon
+
+location.lat = settings.FLOGGER_LATITUDE
+location.lon = settings.FLOGGER_LONGITUDE
+
+print "Location for ephem is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", location.lat, " longitude: ", location.lon, " elevation: ", settings.FLOGGER_QNH   
+
+date = datetime.datetime.now()
+next_sunrise = location.next_rising(ephem.Sun(), date)
+next_sunset = location.next_setting(ephem.Sun(), date)
+print "Sunrise today: ", date, " is: ", next_sunrise
+print "Sunset today: ", date, " is: ", next_sunset
     
 #    
 #-----------------------------------------------------------------
@@ -768,9 +772,7 @@ try:
         # Test the packet to be one for the required field
         res1 = string.find(str(packet_str), "# aprsc")
         res2 = string.find(str(packet_str), "# logresp")
-#        res3 = string.find(str(packet_str), "SuttonBnk")
         res3 = string.find(str(packet_str), settings.FLOGGER_AIRFIELD_NAME)
-#        res3 = check_position_packet(packet_str)
         if res1 <> -1 :
             print "Comment aprs packet returned: ", packet_str
             print "-----------------End of Packet: ", i, " ------------------------------"    
@@ -784,13 +786,10 @@ try:
             src_callsign = packet[0].src_callsign
             res = string.find(str(packet[0].src_callsign), "None")
             if string.find(str(packet_str), "GLIDERN1") <> -1 or string.find(str(packet_str), "GLIDERN2") <> -1:
-#             if res == -1:
-#                print "Sutton Bank beacon packet, ignore: ", str(packet_str)
                 print settings.FLOGGER_AIRFIELD_NAME, " beacon packet, ignore: ", str(packet_str)
                 print "-----------------End of Packet: ", i, " ------------------------------"    
                 continue
             else:
-#                print "Sutton Bank aircraft position packet: ", src_callsign
                 print settings.FLOGGER_AIRFIELD_NAME, " aircraft position packet: ", src_callsign
         else:
             print "No match ", packet_str
