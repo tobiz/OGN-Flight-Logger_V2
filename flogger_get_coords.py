@@ -9,7 +9,7 @@
 #
 from geopy.geocoders import Nominatim
 import geocoder
-from geopy.exc import GeocoderTimedOut
+from geopy.exc import GeocoderTimedOut 
 import time
 
 def get_coords(address):
@@ -17,12 +17,14 @@ def get_coords(address):
         try:
             geolocator = Nominatim()
             location = geolocator.geocode(address)
+            if location == None:
+                print "Geocoder Service timed out or Airfield: ", address, " not known by geocode locator service. Check settings"
+                exit(1)
             ele = geocoder.elevation(address)
             break
         except GeocoderTimedOut as e:
             time.sleep(1)
-            print 'Geocoder Service timed out'
+            print "Geocoder Service timed out for Airfield: ", address
+            exit(1)
     
     return location.latitude, location.longitude, ele.meters
-# loc = get_coords("Yorkshire Gliding Club UK")
-# print "latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]

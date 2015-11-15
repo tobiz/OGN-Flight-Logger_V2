@@ -293,10 +293,19 @@ def APRS_connect (settings):
     print "Socket sock connected"
     
     try:
-#        sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))    
-        s = "user %s pass %s vers OGN_Flogger 0.2.2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+#        sock.send('user %s pass %s vers OGN_Flogger 0.0.2 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+
+        APRSparm = ('user %s pass %s vers %s %s filter r/%s/%s/%s\n ' % (settings.APRS_USER, 
+                                                                        settings.APRS_PASSCODE, 
+                                                                        settings.FLOGGER_NAME, 
+                                                                        settings.FLOGGER_VER, 
+                                                                        settings.FLOGGER_LATITUDE, 
+                                                                        settings.FLOGGER_LONGITUDE, 
+                                                                        settings.FLOGGER_RAD)) 
+#        print "APRSparm is: ", APRSparm  
+#        s = "user %s pass %s vers OGN_Flogger 0.2.2 filter r/%s/%s/25\n " % (settings.APRS_USER, settings.APRS_PASSCODE, settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
 #        print "Socket connect string is: ", s
-        sock.send(s)
+        sock.send(APRSparm)
     except Exception, e:
         print "Socket send failure: ", e
         exit()
@@ -419,8 +428,7 @@ print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", setti
 # Build local database from flarmnet of aircraft    
 #-----------------------------------------------------------------
 #
-#if flarmdb("http://www.flarmnet.org/files/data.fln", 'flogger.sql3', "flarm_data") == True:
-#if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, settings.FLOGGER_DB_NAME, "flarm_data") == True:
+
 if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, cursor, db, "flarm_data") == True:
     print "Flarmnet db built"   
 else:
@@ -628,7 +636,6 @@ try:
         current_time = time.time()
         elapsed_time = int(current_time - keepalive_time)
         print "Elapsed time is: ", elapsed_time
-#        if (current_time - keepalive_time) > 900:
         if (current_time - keepalive_time) > settings.FLOGGER_KEEPALIVE_TIME:
             try:
                 print "Socket open for: ", (current_time - keepalive_time), " seconds, send keepalive"
@@ -683,8 +690,17 @@ try:
                 sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
             except Errno:
                 print "Connection refused. Errno: ", Errno
-                exit()        
-            sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+                exit() 
+            APRSparm = ('user %s pass %s vers %s %s filter r/%s/%s/%s\n ' % (settings.APRS_USER, 
+                                                                             settings.APRS_PASSCODE, 
+                                                                             settings.FLOGGER_NAME, 
+                                                                             settings.FLOGGER_VER, 
+                                                                             settings.FLOGGER_LATITUDE, 
+                                                                             settings.FLOGGER_LONGITUDE, 
+                                                                             settings.FLOGGER_RAD)) 
+#            print "APRSparm is: ", APRSparm      
+#            sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+            sock.send(APRSparm)
             # Make the connection to the server
             sock_file = sock.makefile()
 # Delete following line when not running in test mode

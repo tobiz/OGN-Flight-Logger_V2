@@ -13,10 +13,24 @@ import string
 import requests
 import sqlite3
 import time
+import settings
+from flogger_OGN_db import ogndb
 # import unicodedata
 
 # def flarmdb (flarmnet, flogger_db, flarm_data):
 def flarmdb (flarmnet, cursor, database, flarm_data):
+    #    
+    #-----------------------------------------------------------------
+    # Initialise flarm table in local db with Flarm ID to registration mappings.
+    # This can be from Flarmnet or OGN, use OGN by default    
+    #-----------------------------------------------------------------
+    #
+    #
+    if settings.FLOGGER_OGN_DB_URL <> "":
+        print "Use OGN database"
+        ogndb(settings.FLOGGER_OGN_DB_URL, cursor, database, flarm_data)
+        return True
+    print "Use Flarmnet database"   
     dbflarm = database
     try:
         # flarmnet_db is at "http://www.flarmnet.org/files/data.fln"

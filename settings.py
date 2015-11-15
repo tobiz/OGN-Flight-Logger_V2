@@ -63,7 +63,11 @@ FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger_V2.1/logs"      # Path wher
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
 FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
-
+FLOGGER_NAME = "OGN_Flogger"                                        # APRS name to be used
+FLOGGER_VER = "0.2.2"                                           # Flogger version number
+FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
+#FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm to registration mapping database                        
+FLOGGER_OGN_DB_URL = ""                                         # URL of OGN Flarm to registration mapping database                        
 
 
 
