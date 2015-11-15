@@ -12,6 +12,7 @@ import requests
 import sqlite3
 import time
 import settings
+import flogger_OGN_db
 # import unicodedata
 
 # def flarmdb (flarmnet, flogger_db, flarm_data):
@@ -70,12 +71,12 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
 #    print "First line from OGN data is : ", val
     
  
-db = sqlite3.connect(settings.FLOGGER_DB_NAME)
-cursor = db.cursor()                            # Get a cursor object
-f = open(settings.FLOGGER_DB_SCHEMA, 'rt')      # Open the db schema file for reading
-schema = f.read()
-cursor.executescript(schema)                    # Build flogger db from schema
-print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", settings.FLOGGER_DB_SCHEMA
+#db = sqlite3.connect(settings.FLOGGER_DB_NAME)
+#cursor = db.cursor()                            # Get a cursor object
+#f = open(settings.FLOGGER_DB_SCHEMA, 'rt')      # Open the db schema file for reading
+#schema = f.read()
+#cursor.executescript(schema)                    # Build flogger db from schema
+#print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", settings.FLOGGER_DB_SCHEMA
 
 
 
@@ -85,12 +86,12 @@ print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", setti
 #-----------------------------------------------------------------
 #
    
-print "Start build OGN DB: Test"
-t1 = time.time() 
-if ogndb("http://ddb.glidernet.org/download", cursor, db, "flarm_data") == True:
-    print "OGN db built"
-else:
-    print "OGN db build failed, exit"
-t2 = time.time()
-print "End build OGN DB in ", t2 - t1 , " seconds"
+#print "Start build OGN DB: Test"
+#t1 = time.time() 
+#if ogndb("http://ddb.glidernet.org/download", cursor, db, "flarm_data") == True:
+#    print "OGN db built"
+#else:
+#    print "OGN db build failed, exit"
+#t2 = time.time()
+#print "End build OGN DB in ", t2 - t1 , " seconds"
 
