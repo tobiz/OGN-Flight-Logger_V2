@@ -49,7 +49,7 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 #
 FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger_V2.1/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
 FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
-FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named airfield
+FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named OGN receiver airfield 
 #FLOGGER_AIRFIELD_DETAILS = ""                                  # Location details for use by geocoder. If blank, "" use LAT, LONG etc
 FLOGGER_AIRFIELD_DETAILS = "Yorkshire Gliding Club UK"          # Location details for use by geocoder. If blank, "" use LAT, LONG etc
 FLOGGER_MIN_FLIGHT_TIME = "0:4:0"                               # hh:mm:ss
@@ -67,8 +67,20 @@ FLOGGER_NAME = "OGN_Flogger"                                        # APRS name 
 FLOGGER_VER = "0.2.2"                                           # Flogger version number
 FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
 #FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm to registration mapping database                        
-FLOGGER_OGN_DB_URL = ""                                         # URL of OGN Flarm to registration mapping database                        
-
+FLOGGER_OGN_DB_URL = ""                                         # URL of OGN Flarm to registration mapping database  
+#
+# The following fields are used to determine if data from APRS is a position packet from any 1 of up to 3 OGN receivers.
+# The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
+# The list of OGN receivers can be found at http://wiki.glidernet.org/list-of-receivers. The field values are strings for any
+# APRS AIRFIELDS code value.  One or more must be specified.
+# If a value is not needed use a null string, ie "". Coordinates for the primary OGN receiver station are either supplied
+# by FLOGGER_LATITUDE, FLOGGER_LONGITUDE values or if these are not supplied then those returned by a geolocator
+# service using FLOGGER_AIRFIELD_DETAILS. The primary OGN receiver base station coordinates together with the value 
+# of FLOGGER_RAD are used to filter the data received from APRS.
+#                   
+FLOGGER_APRS_BASE_1 = "SuttonBnk"                  
+FLOGGER_APRS_BASE_2 = "UKPOC"           
+FLOGGER_APRS_BASE_3 = "UKRUF"
 
 
 

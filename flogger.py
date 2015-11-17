@@ -374,13 +374,25 @@ def CheckTrackData(cursor, flight_no, track_no, callsignKey):
         print "flight_no for callsignKey: ", callsignKey, " is: ", flight_no[callsignKey]
     return
 
-def check_position_packet (airfield):
-    if  string.find(str(airfield), settings.FLOGGER_AIRFIELD_NAME) <> -1 or \
-        string.find(str(airfield), settings.FLOGGER_ALTERNATIVE_AIRFIELD_NAME) <> -1 and \
-        settings.FLOGGER_ALTERNATIVE_AIRFIELD_NAME <> "":
-        return 0
-    else:
-        return -1
+def check_position_packet (packet_str):  
+    #    
+    #-----------------------------------------------------------------
+    # This function determines if airfield is in the list of APRS 
+    # base stations used for receiving position fixes.
+    #
+    # base_list should be set up as part of the main code initialisation
+    #-----------------------------------------------------------------
+    #
+    
+    base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3]
+    for base in base_list:
+        if string.find(str(packet_str), base) <> -1:
+            print "Found in list of APRS base stations: ", base
+            return base
+    print "Not position packet"
+    return -1
+        
+    
 
 #    
 #----------------------------------------------------------------- 
@@ -788,7 +800,10 @@ try:
         # Test the packet to be one for the required field
         res1 = string.find(str(packet_str), "# aprsc")
         res2 = string.find(str(packet_str), "# logresp")
-        res3 = string.find(str(packet_str), settings.FLOGGER_AIRFIELD_NAME)
+#        res3 = string.find(str(packet_str), settings.FLOGGER_AIRFIELD_NAME)
+#        if check_position_packet(str(packet_str)) <> -1:
+#            print "res3 would be set <> -1"
+        res3 = check_position_packet(str(packet_str))
         if res1 <> -1 :
             print "Comment aprs packet returned: ", packet_str
             print "-----------------End of Packet: ", i, " ------------------------------"    
@@ -798,15 +813,19 @@ try:
             print "-----------------End of Packet: ", i, " ------------------------------"    
             continue
         if res3 <> -1 :
-            print "---------!!!!!! Comment",  settings.FLOGGER_AIRFIELD_NAME, " packet returned: ", packet_str    
+#            print "---------!!!!!! Comment",  settings.FLOGGER_AIRFIELD_NAME, " packet returned: ", packet_str 
+            print "---------!!!!!! Comment",  res3, " packet returned: ", packet_str       
             src_callsign = packet[0].src_callsign
             res = string.find(str(packet[0].src_callsign), "None")
             if string.find(str(packet_str), "GLIDERN1") <> -1 or string.find(str(packet_str), "GLIDERN2") <> -1:
-                print settings.FLOGGER_AIRFIELD_NAME, " beacon packet, ignore: ", str(packet_str)
+#                print settings.FLOGGER_AIRFIELD_NAME, " beacon packet, ignore: ", str(packet_str)
+                print res3, " beacon packet, ignore: ", str(packet_str)
                 print "-----------------End of Packet: ", i, " ------------------------------"    
                 continue
             else:
-                print settings.FLOGGER_AIRFIELD_NAME, " aircraft position packet: ", src_callsign
+#                print settings.FLOGGER_AIRFIELD_NAME, " aircraft position packet: ", src_callsign
+                print res3, " aircraft position packet: ", src_callsign
+                
         else:
             print "No match ", packet_str
             print "-----------------End of Packet: ", i, " ------------------------------"    

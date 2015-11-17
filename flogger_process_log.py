@@ -343,14 +343,15 @@ def process_log (cursor, db):
 #            cursor.execute('''SELECT SUM(txt2time(duration)) AS nduration FROM flight_group WHERE groupID=? AND txt2time(duration) > ?''', (i,txt2time(TIME_DELTA)))
             cursor.execute('''SELECT duration from flight_group WHERE groupID=?''', (i,))
             durations = cursor.fetchall()
+            print "durations is: ", durations
             nduration = txt2time("0:0:0")
             for s in durations:
-                if txt2time(s[0]) > txt2time(TIME_DELTA):
-                    nduration += (txt2time(s[0]) - txt2time("0:0:0"))            
+                if txt2time(s) > txt2time(TIME_DELTA):
+                    nduration += (txt2time(s) - txt2time("0:0:0"))            
             print "New total duration calculation is: ", str(nduration)
         except:
-            print "New duration calc FAILED"
-        print "Value of times is: ", times, " for flight group: ", i
+            print "New duration calc FAILED. txt2time(s) is: ", txt2time(s), "txt2time(TIME_DELTA) is: ", txt2time(TIME_DELTA)
+        print "Value of times are: ", times, " for flight group: ", i
         if times <> (None, None):
             nstime = datetime.datetime.strptime("1900/01/01 " + times[0], '%Y/%m/%d %H:%M:%S')
             netime = datetime.datetime.strptime("1900/01/01 " + times[1], '%Y/%m/%d %H:%M:%S')  
