@@ -82,6 +82,6 @@ FLOGGER_APRS_BASE_1 = "SuttonBnk"
 FLOGGER_APRS_BASE_2 = "UKPOC"           
 FLOGGER_APRS_BASE_3 = "UKRUF"
 
-
+ 
 
 

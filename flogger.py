@@ -384,8 +384,7 @@ def check_position_packet (packet_str):
     #-----------------------------------------------------------------
     #
     
-    base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3]
-    for base in base_list:
+    for base in APRS_base_list:
         if string.find(str(packet_str), base) <> -1:
             print "Found in list of APRS base stations: ", base
             return base
@@ -462,7 +461,15 @@ if settings.FLOGGER_AIRFIELD_DETAILS <> "":
     settings.FLOGGER_QNH            = loc[2]        # Held as number
     print "Location is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]    
 else:
-    print "Use location data from settings"    
+    print "Use location data from settings"   
+    
+#    
+#-----------------------------------------------------------------
+# Set up list of APRS base stations to be used
+#-----------------------------------------------------------------
+#    
+    
+APRS_base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3] 
     
 #    
 #-----------------------------------------------------------------
@@ -561,6 +568,9 @@ try:
         s.compute(location)
         twilight = -6 * ephem.degree    # Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
         if s.alt > twilight:
+#        t = False
+#        if t:
+
             print "Is it light at Location? Yes", location, " Ephem date is: ", ephem.Date(location.date), " Next sunset at: ", location.next_setting(ephem.Sun())
         else:
             print "Is it light at Location? No", location, " Ephem date is: ", ephem.Date(location.date), " Next sunrise at: ", location.next_rising(ephem.Sun())

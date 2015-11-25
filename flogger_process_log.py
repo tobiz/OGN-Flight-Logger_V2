@@ -22,7 +22,7 @@ def addFinalTrack(cursor, flight_no, track_no, longitude, latitude, altitude, co
     #
 
     if settings.FLOGGER_TRACKS == "Y":
-        print "Adding trackFinal data to: %i, %i, %f, %f, %f, %f %f " % (flight_no, track_no, latitude, longitude, altitude, course, speed)
+#        print "Adding trackFinal data to: %i, %i, %f, %f, %f, %f %f " % (flight_no, track_no, latitude, longitude, altitude, course, speed)
         cursor.execute('''INSERT INTO trackFinal(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
             VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',
             {'flight_no':flight_no, 'track_no':track_no, 'latitude':latitude, 'longitude':longitude, 'altitude':altitude, 'course':course, 'speed':speed, 'timeStamp':timeStamp})
@@ -34,7 +34,10 @@ def txt2time(txt_time):
     # Retuns a time in txt string of HH:MM:SS in a format for simple arithmetic
     #-----------------------------------------------------------------
     #
-    return datetime.datetime.strptime("1900/01/01 " + txt_time, '%Y/%m/%d %H:%M:%S')
+    print "txt2time param is: ", txt_time
+    res = datetime.datetime.strptime("1900/01/01 " + str(txt_time), '%Y/%m/%d %H:%M:%S')
+    print "txt2time result is: ", res
+    return res
     
 
 #
@@ -340,17 +343,30 @@ def process_log (cursor, db):
         times = cursor.fetchone()           # times is a tuple
         try: 
             print "Start new total duration calculation"
-#            cursor.execute('''SELECT SUM(txt2time(duration)) AS nduration FROM flight_group WHERE groupID=? AND txt2time(duration) > ?''', (i,txt2time(TIME_DELTA)))
             cursor.execute('''SELECT duration from flight_group WHERE groupID=?''', (i,))
             durations = cursor.fetchall()
-            print "durations is: ", durations
-            nduration = txt2time("0:0:0")
+            d0 = datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+            nduration = datetime.timedelta(hours=d0.hour, minutes=d0.minute, seconds=d0.second)
+            print "durations is: ", durations, " nduration is: ", nduration, " or: ", str(nduration)  
+            t_d1 = datetime.datetime.strptime(TIME_DELTA.replace(" ", ""), "%H:%M:%S")
+            dt1 = datetime.timedelta(hours=t_d1.hour, minutes=t_d1.minute, seconds=t_d1.second)
+            print "t_d1 is: ", t_d1, " dt1 is: ", str(dt1)
+            
             for s in durations:
-                if txt2time(s) > txt2time(TIME_DELTA):
-                    nduration += (txt2time(s) - txt2time("0:0:0"))            
-            print "New total duration calculation is: ", str(nduration)
+                print "S is:", s, " s[0] is: ", s[0]
+                t_d2 = datetime.datetime.strptime(s[0].replace(" ", ""), "%H:%M:%S")
+                dt2 = datetime.timedelta(hours=t_d2.hour, minutes=t_d2.minute, seconds=t_d2.second)
+                print "dt2 is: ", dt2, " or: ", str(dt2)
+                if dt2 > dt1 :
+                    nduration += dt2 
+                    print "nduration is now: ", nduration, " or: ", str(nduration)           
+#            print "New total duration calculation is: ", str(nduration)
         except:
-            print "New duration calc FAILED. txt2time(s) is: ", txt2time(s), "txt2time(TIME_DELTA) is: ", txt2time(TIME_DELTA)
+            print "New duration calc FAILED"
+            
+        total_duration = str(nduration)                 # Was a time delta type, convert to string
+        print "New method total duration is: ", total_duration
+        
         print "Value of times are: ", times, " for flight group: ", i
         if times <> (None, None):
             nstime = datetime.datetime.strptime("1900/01/01 " + times[0], '%Y/%m/%d %H:%M:%S')
