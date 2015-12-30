@@ -26,6 +26,7 @@ def flarmdb (flarmnet, cursor, database, flarm_data):
     #-----------------------------------------------------------------
     #
     #
+    print "flarmdb use: ", settings.FLOGGER_OGN_DB_URL
     if settings.FLOGGER_OGN_DB_URL <> "":
         print "Use OGN database"
         ogndb(settings.FLOGGER_OGN_DB_URL, cursor, database, flarm_data)

@@ -97,6 +97,7 @@ from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
 from flogger_dump_tracks import dump_tracks
+from flogger_dump_tracks import dump_tracks2
 from flogger_get_coords import get_coords
 import os
 
@@ -224,16 +225,27 @@ def is_dst(zonename):
    
 def fleet_check_new(callsign):
     print "In fleet check for: ", callsign
-    cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
-    row = cursor.fetchone()
-    flarm_id = callsign[3:]
-    print "search for flarm_id: ", flarm_id
-    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
+#    cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+#    row = cursor.fetchone()
+#    flarm_id = callsign[3:]
+#    print "search for flarm_id: ", flarm_id
+#    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
+    if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+        fleet_name = "Fleet Name not used"
+        cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? ''', (callsign,callsign[3:],))
+    else:
+        fleet_name = settings.FLOGGER_AIRFIELD_NAME
+        cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? AND airport=?''', (callsign,callsign[3:],settings.FLOGGER_AIRFIELD_NAME,))
+    #cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? AND airport=?''', (callsign,callsign[3:],settings.FLOGGER_AIRFIELD_NAME,))
     row1 = cursor.fetchone()
     if row1 == None:
-        print "Registration not found in flarm_db: ", callsign
+        print "Registration not found in flarm_db: ", callsign, " for: ", fleet_name
+        return False
     else:
-        print "Aircraft: ", callsign, " found in flarm db at: ", row1[0] 
+        print "Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name
+    return True
+
+
     # Temporarily use local aircraft db   
     if row <> None:
         print "Aircraft: ", callsign, " found in aircraft db: ", row[0]
@@ -584,7 +596,7 @@ try:
 # Dump tracks from flights table as .gpx
 #
             print "Dump tracks"
-            dump_tracks(cursor)
+            dump_tracks2(cursor)
 #            
 # Delete entries from daily flight logging tables
 #

@@ -350,16 +350,16 @@ def process_log (cursor, db):
             print "durations is: ", durations, " nduration is: ", nduration, " or: ", str(nduration)  
             t_d1 = datetime.datetime.strptime(TIME_DELTA.replace(" ", ""), "%H:%M:%S")
             dt1 = datetime.timedelta(hours=t_d1.hour, minutes=t_d1.minute, seconds=t_d1.second)
-            print "t_d1 is: ", t_d1, " dt1 is: ", str(dt1)
+#            print "t_d1 is: ", t_d1, " dt1 is: ", str(dt1)
             
             for s in durations:
-                print "S is:", s, " s[0] is: ", s[0]
+#                print "S is:", s, " s[0] is: ", s[0]
                 t_d2 = datetime.datetime.strptime(s[0].replace(" ", ""), "%H:%M:%S")
                 dt2 = datetime.timedelta(hours=t_d2.hour, minutes=t_d2.minute, seconds=t_d2.second)
-                print "dt2 is: ", dt2, " or: ", str(dt2)
+#                print "dt2 is: ", dt2, " or: ", str(dt2)
                 if dt2 > dt1 :
                     nduration += dt2 
-                    print "nduration is now: ", nduration, " or: ", str(nduration)           
+#                    print "nduration is now: ", nduration, " or: ", str(nduration)           
 #            print "New total duration calculation is: ", str(nduration)
         except:
             print "New duration calc FAILED"

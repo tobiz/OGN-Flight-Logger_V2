@@ -67,51 +67,7 @@ def dump_tracks(cursor):
         print "-------End dump tracks to gpx file--------"
         
         print "-------Start new dump tracks to gpx file from trackFile table--------"
-#        cursor.execute('''SELECT max(flight_no) FROM trackFinal ''')
-#        cursor.execute('''SELECT flight_no FROM trackFinal ORDER BY flight_no''')
-#        flight_no = cursor.fetchall()
-#        for aflight in 
-#        flight_cnt = cursor.fetchone()[0]
-#        print "Number of flights in trackFinal is: ", flight_cnt
-#        i = 1
-#        track_file_name = "%s/%s_track.new%d.gpx" % (settings.FLOGGER_TRACKS_FOLDER, gpx_path, i)
-#        print "New trackfile name is: ", track_file_name
-#        while i < flight_cnt:
-#            cursor.execute('''SELECT sdate, stime, duration, registration, max_altitude FROM flights WHERE flight_no=?''', (i,))
-#            flight_data = cursor.fetchone()
-#            print "Flight_data is: ", flight_data
-#            if flight_data <> None:
-#                sdate = flight_data[0]
-#                stime = flight_data[1]
-#                duration = flight_data[2]
-#                registration = flight_data[3]
-#                max_altitude = flight_data[4]
-#                cursor.execute('''SELECT flight_no, track_no, latitude,longitude,altitude,course,speed,timeStamp 
-#                                        FROM trackFinal WHERE flight_no=? ORDER BY flight_no, track_no''', (i,))
-#                tracks = cursor.fetchall()
-#                nxt_track = gpxTrack(i, track_file_name, "test", sdate, stime, duration, registration, max_altitude)
-#                nxt_track.AddTrackSeg("Track1") 
-#                for track_point in tracks:
-#                    flight_no = track_point[0]
-#                    track_no = track_point[1]
-#                    latitude = track_point[2]
-#                    longitude = track_point[3]
-#                    altitude = track_point[4]
-    #                 course = track_point[5]
-    #                 speed = track_point[6]
-#                    timeStamp = track_point[7]
-#                    nxt_track.AddTrackPnt(longitude, latitude, altitude, timeStamp)
-#                nxt_track.EndTrackSeg()
-#                nxt_track.EndTrack()
-#                i += 1
-#            else:
-#                print "We have a problem, no flights records!"
-#                break
-            #
-            # Insert the track file name into the record for this flight
-            #
-#            print "Updating flights table, flight_no: ", flight_no, "track_file_name: ", track_file_name
-#            cursor.execute('''UPDATE flights SET track_file_name=? WHERE flight_no=?''', (track_file_name, flight_no)) 
+
         dump_tracks2(cursor)
         print "-------End new dump tracks to gpx file from trackFile table--------"
   
