@@ -402,6 +402,19 @@ def check_position_packet (packet_str):
             return base
     print "Not position packet"
     return -1
+
+def delete_table (table):
+    parm = "DELETE FROM %s" % (table)
+    try:
+#        print "Delete parm is: ", parm
+#        cursor.execute('''DELETE FROM flight_log''')
+#        cursor.execute('DELETE FROM ?', (table,))
+        cursor.execute(parm)
+        print "New Delete %s table ok" % (table)
+    except:
+#        print "Delete flight_log table failed or no records in tables"
+        print "New Delete %s table failed or no records in tables" % (table)      
+    return
         
     
 
@@ -432,19 +445,12 @@ settings.APRS_PASSCODE = args.passcode
 #-----------------------------------------------------------------
 #
 
-##cur = [0]    # cur is mutable  
-##r = opendb(settings.FLOGGER_DB_SCHEMA, cur)
-#cursor = cur
-##print "End of building db using schema: ", r, ". cur is: ", cur
-
 db = sqlite3.connect(settings.FLOGGER_DB_NAME)
 cursor = db.cursor()                            # Get a cursor object
 f = open(settings.FLOGGER_DB_SCHEMA, 'rt')      # Open the db schema file for reading
 schema = f.read()
 cursor.executescript(schema)                    # Build flogger db from schema
 print "End of building db: ", settings.FLOGGER_DB_NAME, " using schema: ", settings.FLOGGER_DB_SCHEMA
-
-
 
 #    
 #-----------------------------------------------------------------
@@ -457,8 +463,6 @@ if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, cursor, db, "flarm_data") == True:
 else:
     print "Flarmnet db build failed, exit" 
     exit()
-    
-
 
 #    
 #-----------------------------------------------------------------
@@ -481,13 +485,14 @@ else:
 #-----------------------------------------------------------------
 #    
     
-APRS_base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3] 
+APRS_base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3,settings.FLOGGER_APRS_BASE_4,] 
     
 #    
 #-----------------------------------------------------------------
 # Initialise API for computing sunrise and sunset    
 #-----------------------------------------------------------------
 #
+
 location = ephem.Observer()
 location.pressure = 0
 location.horizon = '-0:34'    # Adjustments for angle to horizon
@@ -556,6 +561,7 @@ if test == True:
 else:
     datafile = open (SB_DATA, 'w')
     print "In live mode"
+    
 #    
 #-----------------------------------------------------------------
 # Main loop reading data from APRS server and processing records
@@ -600,36 +606,60 @@ try:
 #            
 # Delete entries from daily flight logging tables
 #
-            try:
+#            try:
 #                cursor.execute('''DELETE FROM flight_log''')
-                print "Delete flight_log table ok"
-            except:
-                print "Delete flight_log table failed or no records in tables"
-            try:
+#                print "Delete flight_log table ok"
+#            except:
+#                print "Delete flight_log table failed or no records in tables"
+#            try:
+#                p = "DELETE FROM flight_log"
+#                cursor.execute('''DELETE FROM flight_log''')
+#                cursor.execute(p)
+#                print "2nd Delete flight_log table ok"
+#            except:
+#                print "2nd Delete flight_log table failed or no records in tables"
+#            print "New Delete"
+            
+            delete_table("flight_log")
+            delete_table("flight_log2")
+            delete_table("flight_log_final")
+            delete_table("flight_group")
+            delete_table("flights")
+            delete_table("track")
+            delete_table("trackFinal")
+            
+            
+#            try:
 #                cursor.execute('''DELETE FROM flight_log2''')
-                print "Delete flight_log2 table ok"
-            except:
-                print "Delete flight_log2 table failed or no records in tables"
-            try:
+#                print "Delete flight_log2 table ok"
+#            except:
+#                print "Delete flight_log2 table failed or no records in tables"
+#            delete_table("flight_log2")
+#            try:
 #                cursor.execute('''DELETE FROM flight_log_final''')
-                print "Delete flight_log_final table ok"
-            except:
-                print "Delete flight_log_final table failed or no records in tables"
-            try:
+#                print "Delete flight_log_final table ok"
+#            except:
+#                print "Delete flight_log_final table failed or no records in tables"
+#            try:
 #                cursor.execute('''DELETE FROM flight_group''')
-                print "Delete flight_group table ok"
-            except:
-                print "Delete flight_group table failed or no records in tables"
-            try:
+#                print "Delete flight_group table ok"
+#            except:
+#                print "Delete flight_group table failed or no records in tables"
+#            try:
 #                cursor.execute('''DELETE FROM flights''')
-                print "Delete flights table ok"
-            except:
-                print "Delete flights table failed or no records in tables"
-            try:
+#                print "Delete flights table ok"
+#            except:
+#                print "Delete flights table failed or no records in tables"
+#            try:
 #                cursor.execute('''DELETE FROM track''')
-                print "Delete track table ok"
-            except:
-                print "Delete track table failed or no records in tables"
+#                print "Delete track table ok"
+#            except:
+#                print "Delete track table failed or no records in tables"
+#            try:
+#                cursor.execute('''DELETE FROM trackFinal''')
+#                print "Delete trackFinal table ok"
+#            except:
+#                print "Delete trackFinal table failed or no records in tables"
             db.commit()
             # Wait for sunrise
 #            wait_time = next_sunrise - datetime_now
@@ -855,7 +885,7 @@ try:
         
         # Check if callsign is in the fleet 
         if fleet_check_new(str(src_callsign)) == False:
-            print "Aircraft ", src_callsign, " not in ", settings.FLOGGER_AIRFIELD_NAME, " , ignore"
+            print "Aircraft ", src_callsign, " not registered at ", settings.FLOGGER_AIRFIELD_NAME, " , ignore"
             print "-----------------End of Packet: ", i, " ------------------------------"
             continue
         else:
