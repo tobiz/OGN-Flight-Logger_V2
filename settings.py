@@ -56,8 +56,8 @@ FLOGGER_MIN_FLIGHT_TIME = "0:4:0"                               # hh:mm:ss
 FLOGGER_KEEPALIVE_TIME = 900                                    # Interval in seconds for sending tcp/ip keep alive on socket connection
 FLOGGER_DB_NAME = "flogger.sql3.2"                              # Name of file for flogger SQLite3 database
 FLOGGER_FLARMNET_DB_URL = "http://www.flarmnet.org/files/data.fln" # URL of Flarmnet database
-FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm database                      
-FLOGGER_OGN_DB_URL = ""                                         # URL of OGN Flarm to registration mapping database  
+FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm database  or blank for don't use                    
+#FLOGGER_OGN_DB_URL = ""                                        # URL of OGN Flarm to registration mapping database  
 #FLOGGER_AIRFIELD_NAME = "SuttonBnk"                            # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
 FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
@@ -67,7 +67,7 @@ FLOGGER_TRACKS = "Y"                                            # If Y flight tr
 FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
 FLOGGER_NAME = "OGN_Flogger"                                    # Name to be displayed on APRS
-FLOGGER_VER = "0.2.2"                                           # Flogger version number
+FLOGGER_VER = "0.2.3"                                           # Flogger version number
 FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
 #FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm to registration mapping database  
 #
@@ -84,6 +84,20 @@ FLOGGER_APRS_BASE_1 = "SuttonBnk"
 FLOGGER_APRS_BASE_2 = "UKPOC"           
 FLOGGER_APRS_BASE_3 = "UKRUF"         
 FLOGGER_APRS_BASE_4 = "Linton"
+
+
+# Coded       001-099: Gliders, 
+#             101-199: Tugs, 
+#             201-299: Motor Gliders, 
+#             301-399: Other
+# Note. No reason for coding these values other than, 'why not!'
+FLOGGER_FLEET_LIST = {"G-BJIV":1, "G-CHEF":2, "G-CHVR":3, "G-CKFN":4, "G-CKJH":5, 
+                      "G-CKLW":6, "G-CJVZ":7, "G-DDKC":8, "G-DDPO":9,  
+                      "G-BETM":101, "G-CIOF":102, "G-MOYR":103, 
+                      "G-OSUT":201, 
+                      }
+
+
 
 
 

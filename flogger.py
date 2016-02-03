@@ -394,25 +394,26 @@ def check_position_packet (packet_str):
     #
     # base_list should be set up as part of the main code initialisation
     #-----------------------------------------------------------------
-    #
-    
+    #  
     for base in APRS_base_list:
         if string.find(str(packet_str), base) <> -1:
             print "Found in list of APRS base stations: ", base
             return base
-    print "Not position packet"
+    print "Not found base station in packet"
     return -1
 
-def delete_table (table):
+def delete_table (table): 
+    #    
+    #-----------------------------------------------------------------
+    # This function deletes the SQLite3 table 
+    # with the name supplied by "table".
+    #-----------------------------------------------------------------
+    #
     parm = "DELETE FROM %s" % (table)
     try:
-#        print "Delete parm is: ", parm
-#        cursor.execute('''DELETE FROM flight_log''')
-#        cursor.execute('DELETE FROM ?', (table,))
         cursor.execute(parm)
         print "New Delete %s table ok" % (table)
     except:
-#        print "Delete flight_log table failed or no records in tables"
         print "New Delete %s table failed or no records in tables" % (table)      
     return
         
@@ -482,11 +483,15 @@ else:
 #    
 #-----------------------------------------------------------------
 # Set up list of APRS base stations to be used
+# (Note this code could be nicer but will do for now)
 #-----------------------------------------------------------------
 #    
     
-APRS_base_list = [settings.FLOGGER_APRS_BASE_1, settings.FLOGGER_APRS_BASE_2, settings.FLOGGER_APRS_BASE_3,settings.FLOGGER_APRS_BASE_4,] 
-    
+APRS_base_list = [settings.FLOGGER_APRS_BASE_1, 
+                  settings.FLOGGER_APRS_BASE_2, 
+                  settings.FLOGGER_APRS_BASE_3,
+                  settings.FLOGGER_APRS_BASE_4,] 
+
 #    
 #-----------------------------------------------------------------
 # Initialise API for computing sunrise and sunset    

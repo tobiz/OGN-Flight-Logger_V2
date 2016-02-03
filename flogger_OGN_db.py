@@ -15,8 +15,15 @@ import settings
 import flogger_OGN_db
 # import unicodedata
 
-# def flarmdb (flarmnet, flogger_db, flarm_data):
+
 def ogndb (ognurl, cursor, flarmdb, flarm_data):
+    #    
+    #-----------------------------------------------------------------
+    # This function reads the file of Flarm units registered on OGN and
+    # uses this to build the flarm_db. 
+    # It takes data from units which are registered for aircraft that are to be logged                 
+    #-----------------------------------------------------------------
+    #  
     try:
         print "Create flarm_db table"
         cursor.execute('''CREATE TABLE IF NOT EXISTS
@@ -29,10 +36,10 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
 #        raise e 
     try:
         # OGN flarm db is at "http://ddb.glidernet.org/download"
-        ogn_db = ognurl
+        ogn_db = settings.FLOGGER_OGN_DB_URL
         r = requests.get(ogn_db)
-    except:
-        print "Failed to connect to OGN db, exit"
+    except Exception as e:
+        print "Failed to connect to OGN db, reason: %s. Exit" % (e)
         exit()
     print "OGN db accessed"   
     
@@ -44,25 +51,24 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
     for line in lines:
         if i == 1:
             i += 1
-            continue
+            continue        # Discard first line
 #        print "Line ", i, " is: ", line
         if line == "":
             # Seems to be a blank line at end
-            continue
+            continue        # Discard last line
         
-        fields = line.split(",")
-        nf1 = fields[1].replace("'", "")
-        nf0 = fields[0].replace("'", "")
-        nf3 = fields[3].replace("'", "")
+        fields = line.split(",")                # Split line into fields on comma boundaries then remove any quote marks
+        nf1 = fields[1].replace("'", "")        # Flarm ID
+        nf0 = fields[0].replace("'", "")        # Aircraft Type
+        nf3 = fields[3].replace("'", "")        # Aircraft Registration
 #        print "Line: ", i, " Fields: ", nf1, " ", nf0, " ", nf3
         try:
-            cursor.execute('''INSERT INTO flarm_db(flarm_id, type, registration)
-                               VALUES(:flarm_id, :type, :registration)''',
-                                {'flarm_id': nf1, 'type': nf0, 'registration': nf3})
-        except :
-           print "Flarm_db insert failed "
-#               dbflarm.commit()
-#               return False
+            if settings.FLOGGER_FLEET_LIST.has_key(nf3):
+                cursor.execute('''INSERT INTO flarm_db(flarm_id, airport, type, registration)
+                               VALUES(:flarm_id, :airport, :type, :registration)''',
+                                {'flarm_id': nf1, 'airport': settings.FLOGGER_AIRFIELD_NAME, 'type': nf0, 'registration': nf3})
+        except Exception as e:
+           print "Flarm_db insert failed. Reason: %s " % (e)
         i += 1
     flarmdb.commit()
     return True
