@@ -47,7 +47,17 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 #
 # User defined configuration values
 #
-FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger_V2.1/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
+
+#
+# This value for base Directory for relative files, ie: 
+# - flogger_schema-1.0.4.sql
+# - logs
+# - tracks
+FLOGGER_BS = "/home/pjr/git/OGN-Flight-Logger_V2.1/"        
+                                                                
+
+#FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger_V2.1/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
+FLOGGER_DB_SCHEMA =  FLOGGER_BS + "flogger_schema-1.0.4.sql"    # File holding SQLite3 database schema      
 FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
 FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named OGN receiver airfield 
 #FLOGGER_AIRFIELD_DETAILS = ""                                  # Location details for use by geocoder. If blank, "" use LAT, LONG etc
@@ -62,13 +72,16 @@ FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Fla
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
 FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
 FLOGGER_QFE_MIN = 25                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~50 ft
-FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger_V2.1/logs" # Path where log files are stored 
+#FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger_V2.1/logs" # Path where log files are stored 
+FLOGGER_LOG_PATH =  FLOGGER_BS + "logs"                         # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
-FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
+#FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
+FLOGGER_TRACKS_FOLDER = FLOGGER_BS + "tracks"                   # Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
 FLOGGER_NAME = "OGN_Flogger"                                    # Name to be displayed on APRS
 FLOGGER_VER = "0.2.3"                                           # Flogger version number
 FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
+FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record
 #FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm to registration mapping database  
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.

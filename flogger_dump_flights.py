@@ -43,7 +43,7 @@ def dump_flights():
 
 
     start_time = datetime.datetime.now()
-    csv_path = str(start_time) + "_flights.csv"
+    csv_path = settings.FLOGGER_FLIGHTS_LOG + str(start_time) + "_flights.csv"
     print "csv file name is: ", csv_path
     
     with open(csv_path, "wb") as csv_file:
