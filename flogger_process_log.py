@@ -139,7 +139,7 @@ def process_log (cursor, db):
     # to be independent flights.
     # This phase examines all the records and puts them into groups such that each group has 
     # an end and start time, such that a group is a distinct flight ie their end and start times are greater than
-    # TIME_DELTA, and not just therefore data jiggles (eg moving moving the plane to a new position on the flight line),
+    # TIME_DELTA, and not just therefore data jiggles (eg moving the plane to a new position on the flight line),
     # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
     
     print "+++++++Phase 2 Start+++++++"

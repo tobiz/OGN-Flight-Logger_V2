@@ -15,6 +15,13 @@ import csv
 #
 
 def dump_flights():
+    #    
+    #-----------------------------------------------------------------
+    # This function converts and dumps todays' flights
+    # as a csv file.  If there are no flight records in flights table
+    # it exists without creating a csv file.
+    #-----------------------------------------------------------------
+    #
     print "Start flights table dump"
     try:
         db = sqlite3.connect(settings.FLOGGER_DB_NAME)
@@ -31,12 +38,32 @@ def dump_flights():
         
     if max_row <> (None,): 
         max_date = "".join(max_row[0:3])        #max_row[0:3] is sdate
-        print "Last record date in flights is: ", max_date
+        print "Dump flights to csv. Last record date in flights is: ", max_date
+#         cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+        cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+        start_time = datetime.datetime.now()
+        csv_path = settings.FLOGGER_FLIGHTS_LOG + str(start_time) + "_flights.csv"
+        print "csv file name is: ", csv_path       
+        with open(csv_path, "wb") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            # Write headers.
+            print "Output header"
+            csv_writer.writerow([i[0] for i in cursor.description])
+            # Write data.
+            print "Output data"
+            csv_writer.writerows(cursor)
+        csv_file.close()
+#        print "End flights table dump"
+#        return
     else:
         print "No records in flights so set date to today"
         today = datetime.date.today().strftime("%y/%m/%d")
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
         print "max_date is: ", max_date
+#        return
+    
+    print "End flights table dump"
+    return
          
 #    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
     cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))

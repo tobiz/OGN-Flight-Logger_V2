@@ -21,7 +21,7 @@ import ephem
 from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
-from flogger_dump_tracks import dump_tracks
+#from flogger_dump_tracks import dump_tracks
 from flogger_get_coords import get_coords
 import os
 
@@ -132,6 +132,7 @@ def fleet_check_new(callsign):
     # Checks whether supplied callsign is in the aircraft table  
     #-----------------------------------------------------------------
     #
+    print "Function fleet_check_new"
     print "In fleet check for: ", callsign
     cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign, callsign,))
     row = cursor.fetchone()
@@ -165,22 +166,42 @@ def callsign_trans(callsign):
     # returns the original callsign 
     #-----------------------------------------------------------------
     #
-    cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign, callsign,))
-    if callsign.startswith("FLR"):
+    print "Function callsing_trans"
+    # Old version
+#    cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign, callsign,))
+#    if callsign.startswith("FLR"):
         # Callsign starts with "FLR" so remove it
-        callsign = "%s" % callsign[3:]
-        print "Removing FLR string.  Callsign is now: ", callsign
-    cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (callsign,))
-    row = cursor.fetchone()   
+#        callsign = "%s" % callsign[3:]
+#        print "Removing FLR string.  Callsign is now: ", callsign
+#    cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (callsign,))
+#    row = cursor.fetchone()   
+#    if row <> None:
+        # Registration found for flarm_id so return registration
+#        registration = "%s" % row
+#       print "In flarmnet db return: ", registration
+#        return registration
+#    else:
+        # Registration not found for flarm_id so return flarm_id
+#        print "Not in flarmnet db return: ", callsign
+#        return callsign
+    
+    cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+    if callsign.startswith("FLR") or callsign.startswith("ICA") :
+        # Callsign starts with "FLR" or ICA so remove it
+        str = callsign[3:]
+        ncallsign = "%s" % str
+        print "Removing FLR or ICA string.  Callsign is now: ", ncallsign
+    cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (ncallsign,))
+    row = cursor.fetchone() 
     if row <> None:
         # Registration found for flarm_id so return registration
         registration = "%s" % row
-        print "In flarmnet db return: ", registration
+        print "In flarm db return: ", registration
         return registration
     else:
         # Registration not found for flarm_id so return flarm_id
-        print "Not in flarmnet db return: ", callsign
-        return callsign
+        print "Not in flarm db return: ", callsign
+        return ncallsign
     
 def APRS_connect (settings):
     #    
@@ -228,7 +249,7 @@ def addTrack(cursor, flight_no, track_no, longitude, latitude, altitude, course,
         print "Adding track data to: %i, %i, %f, %f, %f, %f %f " % (flight_no, track_no, latitude, longitude, altitude, course, speed)
         cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
             VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',
-            {'flight_no':flight_no, 'track_no':track_no, 'latitude':latitude, 'longitude':longitude, 'altitude':altitude, 'course':course, 'speed':speed, 'timeStamp':sdt})
+            {'flight_no':flight_no, 'track_no':track_no, 'latitude':latitude, 'longitude':longitude, 'altitude':altitude, 'course':course, 'speed':speed, 'timeStamp':timeStamp})
     return
     
 def endTrack():
@@ -258,3 +279,18 @@ def CheckTrackData(cursor, callsignKey):
         track_no[callsignKey] = 1
         print "flight_no for callsignKey: ", callsignKey, " is: ", flight_no[callsignKey]
     return  True
+
+def delete_table (table): 
+    #    
+    #-----------------------------------------------------------------
+    # This function deletes the SQLite3 table 
+    # with the name supplied by "table".
+    #-----------------------------------------------------------------
+    #
+    parm = "DELETE FROM %s" % (table)
+    try:
+        cursor.execute(parm)
+        print "New Delete %s table ok" % (table)
+    except:
+        print "New Delete %s table failed or no records in tables" % (table)      
+    return
