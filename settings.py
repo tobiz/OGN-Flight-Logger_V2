@@ -55,7 +55,7 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 # - tracks
 FLOGGER_BS = "/home/pjr/git/OGN-Flight-Logger_V2.1/"        
                                                                 
-
+FLOGGER_MODE = ""                                               # Test or live mode
 #FLOGGER_DB_SCHEMA = "/home/pjr/git/OGN-Flight-Logger_V2.1/flogger_schema-1.0.4.sql" # File holding SQLite3 database schema      
 FLOGGER_DB_SCHEMA =  FLOGGER_BS + "flogger_schema-1.0.4.sql"    # File holding SQLite3 database schema      
 FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
@@ -81,8 +81,7 @@ FLOGGER_V_SMALL = 10.0                                          # Lowest moving 
 FLOGGER_NAME = "OGN_Flogger"                                    # Name to be displayed on APRS
 FLOGGER_VER = "0.2.3"                                           # Flogger version number
 FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
-FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record
-#FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm to registration mapping database  
+FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record  
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
