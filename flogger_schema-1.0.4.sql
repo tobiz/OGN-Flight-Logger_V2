@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS `flarm_db`(
  	`airport` STRING NULL DEFAULT NULL, 
  	`type` TEXT NULL DEFAULT NULL, 
  	`registration` TEXT NULL DEFAULT NULL, 
- 	`radio` TEXT NULL DEFAULT NULL);
+ 	`radio` TEXT NULL DEFAULT NULL); 
 
   
 
