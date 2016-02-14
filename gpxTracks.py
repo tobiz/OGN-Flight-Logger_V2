@@ -37,6 +37,8 @@
 #    </trk>
 #</gpx>
 
+#from time import *
+
 class gpxTrack:
 #    def __init__(self, TrackNo, TrackFile, TrackName):
     def __init__(self, TrackNo, TrackFile, TrackName, Sdate, Stime, Duration, Registration, MaxAltitude):
@@ -69,9 +71,11 @@ class gpxTrack:
         self.positionNos = self.positionNos + 1                       # Compute next position name number
         self.positionName = "Position %d" % (self.positionNos)   # Form next positionName string
         self.timeStamp = timeStamp
-        self.trackpnt = "\t\t\t<trkpt lon=\"" + str(self.longitude) + "\" lat=\"" + str(self.latitude) + "\">\n" + "\t\t\t\t<ele>" + str(self.elevation) + "</ele>\n\t\t\t\t<time>" + self.timeStamp + "</time>\n\t\t\t\t<name>" + self.positionName + "</name>\n\t\t\t</trkpt>\n"
+#        self.trackpnt = "\t\t\t<trkpt lon=\"" + str(self.longitude) + "\" lat=\"" + str(self.latitude) + "\">\n" + "\t\t\t\t<ele>" + str(self.elevation) + "</ele>\n\t\t\t\t<time>" + self.timeStamp + "</time>\n\t\t\t\t<name>" + self.positionName + "</name>\n\t\t\t</trkpt>\n"
         #self.trackpnt = "\t\t\t<trkpt lon=\"" + str(self.longitude) + "\" lat=\"" + str(self.latitude) + "\">\n" + "\t\t\t\t<ele>" + str(self.elevation) + "</ele>\n\t\t\t\t<name>" + self.positionName + "</name>\n\t\t\t</trkpt>\n"
 #        self.trackpnt = "\t\t\t<trkpt lat=\"" + str(self.latitude) + "\" lon=\"" + str(self.longitude) + "\">\n" + "\t\t\t\t<ele>" + str(self.elevation) + "</ele>\n\t\t\t\t<name>" + self.positionName + "</name>\n\t\t\t</trkpt>\n"
+        
+        self.trackpnt = "\t\t\t<trkpt lon=\"%s\" lat=\"%s\">\n\t\t\t\t<ele>%s</ele>\n\t\t\t\t<time>%s</time>\n\t\t\t\t<name>%s</name>\n\t\t\t</trkpt>\n" % (str(self.longitude), str(self.latitude), str(self.elevation), self.timeStamp, self.positionName)
 
         self.track.write(self.trackpnt)
         

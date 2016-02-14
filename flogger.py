@@ -341,7 +341,7 @@ def addTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,
 
     if settings.FLOGGER_TRACKS == "Y":
         print "Flight_no is: ", flight_no
-        print "Track_no is: ", track_no
+        print "Track point nos is: ", track_no
 #        This print doesn't work as one of the values is of none-type, not sure why?
 #        print "Adding track data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
         cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
@@ -407,6 +407,9 @@ def delete_table (table):
     # with the name supplied by "table".
     #-----------------------------------------------------------------
     #
+    if settings.FLOGGER_MODE == "test":
+        print "Test only. Table %s not deleted" % (table)
+        return
     parm = "DELETE FROM %s" % (table)
     try:
         cursor.execute(parm)
@@ -425,16 +428,19 @@ def delete_table (table):
 
 #
 # User and passcode now mandatory positional parameters
+# Mode is an optional positional parameter, default is "live"
 #
 
 parser = argparse.ArgumentParser()
 parser.add_argument("user", help="user and passcode must be supplied, see http://www.george-smart.co.uk/wiki/APRS_Callpass for how to obtain")
 parser.add_argument("passcode", help="user and passcode must be supplied", type=int)
+parser.add_argument("mode", help="mode is test or live, test modifies behaviour to add output for testing", default="live")
 args = parser.parse_args()
-print "user=", args.user, " passcode=", args.passcode
+print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode
 
 settings.APRS_USER = args.user
 settings.APRS_PASSCODE = args.passcode
+settings.FLOGGER_MODE = args.mode
 
 # Creates or opens a file called flogger.sql3 as an SQLite3 DB
 
@@ -607,16 +613,20 @@ try:
         else:
             print "Is it light at Location? No", location, " Ephem date is: ", ephem.Date(location.date), " Next sunrise at: ", location.next_rising(ephem.Sun())
             process_log(cursor,db)
+
+#
+# Dump tracks from flights table as .gpx
+# This updates each flight in flights table with trackfile name
+#
+            print "Dump tracks"
+            dump_tracks2(cursor, db)
+            
 #
 # Dump flights table as cvs file
 #
             print "Dump flights table"
             dump_flights()
-#
-# Dump tracks from flights table as .gpx
-#
-            print "Dump tracks"
-            dump_tracks2(cursor)
+            
 #            
 # Delete entries from daily flight logging tables
 #
