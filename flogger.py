@@ -107,6 +107,7 @@ from flogger_signals import sig_handler
 import signal
 import os
 
+
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nprev_vals =     {"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
                  "G-CKFN": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0}
@@ -417,6 +418,29 @@ def delete_table (table):
     except:
         print "New Delete %s table failed or no records in tables" % (table)      
     return
+
+def delete_flogger_file(folder, filename, days):
+    #    
+    #-----------------------------------------------------------------
+    # This function deletes the file filename  in folder folder
+    # if it has a creation time of up and including more than days old
+    #-----------------------------------------------------------------
+    #
+    if days <= 0:
+        print "Don't delete old files, return"
+        return
+    
+    now = time.time()
+    flist = os.listdir(folder)
+    for f in flist:
+#        print "Filename is: ", f, " Pathname is: ", os.path.join(folder, f), " st_mtime is: ", os.stat(os.path.join(folder, f)).st_mtime
+        full_file = os.path.join(folder, f)
+        file_find = string.find(full_file, filename) <> -1
+        file_time = os.stat(full_file).st_mtime 
+        if (file_find == True) and (file_time <= now - days * 86400):
+            print "Remove file: ", full_file
+            os.remove(full_file)
+    return
         
     
 
@@ -665,16 +689,19 @@ try:
             print "Next sunrise at: ", location.next_rising(ephem.Sun(), date).datetime(), " Datetime now is: ", datetime_now
             # Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
             wait_time_secs = int(wait_time.total_seconds()) + 600 
-            print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             # close socket -- not needed. Create new one at sunrise
             try:
                 sock.shutdown(0)
             except socket.error as msg:
                 print "Socket failed to shutdown, ignore. Msg is: " , msg
             sock.close() 
+            
+            delete_flogger_file(settings.FLOGGER_TRACKS_FOLDER, "track", settings.FLOGGER_DATA_RETENTION)
+            delete_flogger_file(settings.FLOGGER_BS, "flights.csv", settings.FLOGGER_DATA_RETENTION)
             #
             # Sleep till sunrise
             # Then open new socket, set ephem date to new day
+            print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             time.sleep(wait_time_secs)
             # Sun has now risen so recommence logging flights
             location.date = ephem.Date(datetime.datetime.now())
