@@ -14,7 +14,7 @@
 -- -----------------------------------------------------
 -- Table `mydb`.`users`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `users` ;
+--DROP TABLE IF EXISTS `users` ;
 
 CREATE TABLE IF NOT EXISTS users (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- -----------------------------------------------------
 -- Table `mydb`.`aircraft`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `aircraft` ;
+--DROP TABLE IF EXISTS `aircraft` ;
 
 CREATE TABLE IF NOT EXISTS `aircraft` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `aircraft` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_log` ;
+--DROP TABLE IF EXISTS `flight_log` ;
 
 CREATE TABLE IF NOT EXISTS `flight_log` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `flight_log` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log2`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_log2` ;
+--DROP TABLE IF EXISTS `flight_log2` ;
 
 CREATE TABLE IF NOT EXISTS `flight_log2` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `flight_log2` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_group`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_group` ;
+--DROP TABLE IF EXISTS `flight_group` ;
 
 CREATE TABLE IF NOT EXISTS `flight_group` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `flight_group` (
 -- -----------------------------------------------------
 -- Table `mydb`.`launch_types`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `launch_types` ; 
+--DROP TABLE IF EXISTS `launch_types` ; 
 
 CREATE TABLE IF NOT EXISTS `launch_types` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `launch_types` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flights`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flights` ;
+--DROP TABLE IF EXISTS `flights` ;
 
 CREATE TABLE IF NOT EXISTS `flights` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `flights` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log_final`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flight_log_final` ;
+--DROP TABLE IF EXISTS `flight_log_final` ;
 
 CREATE TABLE IF NOT EXISTS `flight_log_final` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `flight_log_final` (
 -- -----------------------------------------------------
 -- Table `mydb`.`track`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `track` ;
+--DROP TABLE IF EXISTS `track` ;
 
 CREATE TABLE IF NOT EXISTS `track` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `track` (
 -- -----------------------------------------------------
 -- Table `mydb`.`trackFinal`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `trackFinal` ;
+--DROP TABLE IF EXISTS `trackFinal` ;
 
 CREATE TABLE IF NOT EXISTS `trackFinal` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS `trackFinal` (
 -- -----------------------------------------------------
 -- Table `mydb`.`flarm_db`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `flarm_db` ;
+--DROP TABLE IF EXISTS `flarm_db` ;
   
 CREATE TABLE IF NOT EXISTS `flarm_db`(
  	`id` INTEGER PRIMARY KEY AUTOINCREMENT, 
