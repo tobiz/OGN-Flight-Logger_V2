@@ -9,7 +9,8 @@
 # Phase 1 will just collect the data. 
 # Phase 2 will process the data into a new table
 # Phase 3 will then format that information with the intention of
-# it being used to be checked against the manual log books.
+#         it being used to be checked against the manual log books.
+# Phase 4 will remove old flight and track file older than a certain date
 # The intention is that it will collect the data between the hours of daylight, 
 # producing the summary at the end of the day.
 # This program could be run on a Raspberry Pi as it is so low powered
@@ -119,9 +120,7 @@ nvalues =     {"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed":
 
 L_SMALL = float(0.001)                      # Small latitude or longitude delta of a 0.001 degree
 A_SMALL = float(0.01)                          # Small altitude delta of 0.01 a metre, ie 1cm
-#V_SMALL = float(10.0)                        # Small velocity delta of 10.0 kph counts as zero ie not moving
 V_SMALL = float(settings.FLOGGER_V_SMALL)     # Small velocity delta of 10.0 kph counts as zero ie not moving
-QNH_SB = settings.FLOGGER_QNH                 # ASL for Sutton Bank(max 297m) in metres
 frst_time = False
 AIRFIELD = "SuttonBnk"
 flight_no = {}
@@ -137,16 +136,6 @@ aircraft = {"G-CKLW": 1, "G-CKLN": 2, "G-CJVZ": 3, "G-CHEF": 4, "G-CKFN": 5,
             "FLRDDF9C4": 301, "FLRDDE5FC": 302, "FLRDDBF13": 303, "FLRDDA884": 304, "FLRDDA886": 305, "FLRDDACAE": 306, "FLRDDA7E9": 307,
             "FLRDDABF7": 308, "FLRDDE671": 309} 
 
-
-    
-    
-# FILTER = "\'user %s pass %s vers Python_Example 0.0.1 filter e/" + AIRFIELD + "\\n\'" + " % (settings.APRS_USER, settings.APRS_PASSCODE)"
-
-        
-# sock.send('user %s pass %s vers Python_Example 0.0.1 filter e/Bicester\n' % (settings.APRS_USER, settings.APRS_PASSCODE) )    
-
-
-# print "Filter is: ", FILTER
 
 def CheckPrev(callsignKey, dataKey, value):
     print "CheckPrev if callsign in nprev_vals: ", callsignKey, " key: ", dataKey, " Value: ", value 
@@ -422,8 +411,10 @@ def delete_table (table):
 def delete_flogger_file(folder, filename, days):
     #    
     #-----------------------------------------------------------------
-    # This function deletes the file filename  in folder folder
-    # if it has a creation time of up and including more than days old
+    # This function deletes the files whose name contain filename in folder folder
+    # if they were created up to and including the number of days in the past 
+    # specified by the days parameter.
+    # If days is zero then no deletions are performed
     #-----------------------------------------------------------------
     #
     if days <= 0:
@@ -652,21 +643,8 @@ try:
             dump_flights()
             
 #            
-# Delete entries from daily flight logging tables
+# Delete entries from daily flight logging tables etc
 #
-#            try:
-#                cursor.execute('''DELETE FROM flight_log''')
-#                print "Delete flight_log table ok"
-#            except:
-#                print "Delete flight_log table failed or no records in tables"
-#            try:
-#                p = "DELETE FROM flight_log"
-#                cursor.execute('''DELETE FROM flight_log''')
-#                cursor.execute(p)
-#                print "2nd Delete flight_log table ok"
-#            except:
-#                print "2nd Delete flight_log table failed or no records in tables"
-#            print "New Delete"
             
             delete_table("flight_log")
             delete_table("flight_log2")
@@ -695,12 +673,18 @@ try:
             except socket.error as msg:
                 print "Socket failed to shutdown, ignore. Msg is: " , msg
             sock.close() 
-            
+#
+# Delete historic files as specified
+#            
+            print "+++++++Phase 4 Start+++++++" 
             delete_flogger_file(settings.FLOGGER_TRACKS_FOLDER, "track", settings.FLOGGER_DATA_RETENTION)
             delete_flogger_file(settings.FLOGGER_BS, "flights.csv", settings.FLOGGER_DATA_RETENTION)
-            #
-            # Sleep till sunrise
-            # Then open new socket, set ephem date to new day
+            print "-------Phase 4 End-------"
+            
+#
+# Sleep till sunrise
+# Then open new socket, set ephem date to new day
+#
             print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             time.sleep(wait_time_secs)
             # Sun has now risen so recommence logging flights
@@ -711,8 +695,8 @@ try:
             start_time = datetime.datetime.now()
             keepalive_time = time.time()
             sock = APRS_connect(settings)
-            sock_file = sock.makefile()        # Note both sock & sock_file get used
-            i = 0                 # Count of todays APRS reads reset
+            sock_file = sock.makefile()         # Note both sock & sock_file get used
+            i = 0                               # Count of todays APRS reads reset
             continue
                     
         current_time = time.time()
@@ -939,7 +923,7 @@ try:
             print "Test for was stopped now moving. nprevs[speed] is: " + str(nprev_vals[src_callsign]['speed']) + " nvalues[speed] is: "+ str(nvalues[src_callsign]['speed'])
             if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
             # Following test for case when Flarm is switched on for first time when stationary and at an
-            # altitude greater than QNH_SB, ie a special case of initial location. nprev_vals get set to zero when aircraft
+            # altitude greater than settings.FLOGGER_QNH, ie a special case of initial location. nprev_vals get set to zero when aircraft
             # first detected by flarm. Doesn't work.  Needs thought
 #            if (nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL) or (nprev_vals[src_callsign]['speed'] == nvalues[src_callsign]['speed'] and  nvalues[src_callsign]['speed']> V_SMALL):
                 print "New test true for switch-on"
@@ -1069,7 +1053,7 @@ try:
                 continue
 #            if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] == 0:
             print "Is Aircraft %s moving? nprev.speed=%d, nvalues.speed=%d, nvalues.altitude=%d" % (src_callsign, nprev_vals[src_callsign]['speed'], nvalues[src_callsign]['speed'], nvalues[src_callsign]['altitude'])        
-            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= QNH_SB:
+            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= settings.FLOGGER_QNH:
                 # Aircraft hasn't moved and is not at an altitude greater than Sutton Bank.  
                 print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nprev_vals[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
             else:
