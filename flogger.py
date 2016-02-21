@@ -679,7 +679,7 @@ try:
             print "+++++++Phase 4 Start+++++++" 
             delete_flogger_file(settings.FLOGGER_TRACKS_FOLDER, "track", settings.FLOGGER_DATA_RETENTION)
             delete_flogger_file(settings.FLOGGER_BS, "flights.csv", settings.FLOGGER_DATA_RETENTION)
-            print "-------Phase 4 End-------"
+            print "-------Phase 4 End-------" 
             
 #
 # Sleep till sunrise
