@@ -70,18 +70,18 @@ FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Fla
 #FLOGGER_OGN_DB_URL = ""                                        # URL of OGN Flarm to registration mapping database  
 #FLOGGER_AIRFIELD_NAME = "SuttonBnk"                            # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
+                                                                # If blank, "" then all aircraft in db are included in logs & tracks
 FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
-FLOGGER_QFE_MIN = 25                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~50 ft
-#FLOGGER_LOG_PATH =  "/home/pjr/git/OGN-Flight-Logger_V2.1/logs" # Path where log files are stored 
+FLOGGER_QFE_MIN = 30                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~100 ft
 FLOGGER_LOG_PATH =  FLOGGER_BS + "logs"                         # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
-#FLOGGER_TRACKS_FOLDER = "/home/pjr/git/OGN-Flight-Logger_V2.1/tracks"# Folder for .gpx files for flight tracks
 FLOGGER_TRACKS_FOLDER = FLOGGER_BS + "tracks"                   # Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
 FLOGGER_NAME = "OGN_Flogger"                                    # Name to be displayed on APRS
 FLOGGER_VER = "0.2.3"                                           # Flogger version number
 FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
 FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record  
+FLOGGER_DATA_RETENTION = 7                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results

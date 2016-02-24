@@ -44,3 +44,10 @@ I'm currently developing and testing on
 
 Flogger has been updated to optionally record flight tracks and output these as .gpx files.
 This enhancement is still in development.  This feature is controlled in the settings.py file
+
+Flogger will now optionally take inputs from upto 4 base stations.  It also has an option to delete flight and track .csv files after
+they are "n" days old.  Track points are sorted and output to .csv files based on the logged time from the Flarm unit itself (assumes Flarms
+use GPS time in each trackpoint).
+
+This now in the latter stages of development, it still logs a lot of test output but his will eventually be controlled by an option
+from the cmd line and/or configuration file
