@@ -357,7 +357,7 @@ def endTrack():
     return
 
 def CheckTrackData(cursor, flight_no, track_no, callsignKey):
-    print "check flight_no if callsign in flight_no{}: ", flight_no, " Track_no is: ", track_no, " CallsignKey is: ", callsignKey 
+#    print "check flight_no if callsign in flight_no{}: ", flight_no, " Track_no is: ", track_no, " CallsignKey is: ", callsignKey 
     if flight_no.has_key(callsignKey) == 1:
         print "flight_no already has entry: ", callsignKey
     else:
