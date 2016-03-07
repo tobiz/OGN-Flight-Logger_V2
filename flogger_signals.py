@@ -24,7 +24,7 @@ def sig_handler(db, cursor):
         # Dump tracks from flights table as .gpx
         #
         print "Dump tracks"
-        dump_tracks2(cursor)
+        dump_tracks2(cursor, db)
         #            
         # Delete entries from daily flight logging tables
         #           
