@@ -107,6 +107,7 @@ from flogger_get_coords import get_coords
 from flogger_signals import sig_handler
 import signal
 import os
+from flogger_dump_IGC import dump_IGC
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -228,7 +229,7 @@ def fleet_check_new(callsign):
 #    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
     if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
         fleet_name = "Fleet Name: Not used"
-        cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? ''', (callsign,callsign[3:],))
+        cursor.execute('''SELECT ROWID, registration FROM flarm_db WHERE registration =? OR flarm_id =? ''', (callsign,callsign[3:],))
     else:
         fleet_name = settings.FLOGGER_AIRFIELD_NAME
         cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? AND airport=?''', (callsign,callsign[3:],settings.FLOGGER_AIRFIELD_NAME,))
@@ -239,6 +240,10 @@ def fleet_check_new(callsign):
         return False
     else:
         print "Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name
+        reg = callsign_trans(callsign)
+        if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
+            print "Don't log tug: %s" % reg
+            return False
     return True
 
 
@@ -635,6 +640,7 @@ try:
 #
             print "Dump tracks"
             dump_tracks2(cursor, db)
+            dump_IGC(cursor, db)
             
 #
 # Dump flights table as cvs file
