@@ -71,23 +71,7 @@ def IGC_track_header(file_name, date, registration):
     with open(file_name, 'w') as fp:
         IGC_fp = aerofiles.igc.Writer(fp)
         
-    hdate = date[4:] + date[2:4] + date[0:2]
-#    header = "AXXX Flogger v2.1\n \
-#    HFDTE%s\n \
-#    HFFXA035\n \
-#    HFPLTPILOTINCHARGE: Not recorded\n \
-#    HFCM2CREW2: Not recorded\n \
-#    HFGTYGLIDERTYPE: Not recorded\n \
-#    HFGIDGLIDERID:%s\n \
-#    HFDTM100GPSDATUM: WGS-1984\n \
-#    HFRFWFIRMWAREVERSION: Not recorded\n \
-#    HFRHWHARDWAREVERSION: Not recorded\n \
-#    HFFTYFRTYPE: sim_logger by Ian Forster-Lewis\n \
-#    HFGPSGPS: Not recorded\n \
-#    HFPRSPRESSALTSENSOR: Not recorded\n \
-#    HFCIDCOMPETITIONID: Not recorded\n \
-#    HFCCLCOMPETITIONCLASS: Not recorded\n" % (hdate, registration)
-    
+    hdate = date[4:] + date[2:4] + date[0:2]        # Rearrange date from YYMMDD to DDMMYY 
     header = {'manufacturer_code': 'OGN Flogger',\
               'logger_id': ' V2.1',\
               'date': hdate,\
@@ -105,23 +89,24 @@ def IGC_track_header(file_name, date, registration):
               'competition_class': 'Not recorded',\
               }
     try:
-        IGC_file.write_headers(header)
+        IGC_fp.write_headers(header)
     except:
         print "Write IGC file header failed"
         return False
     return IGC_fp
-   
 
-
-def IGC_add_track_point(IGC_file, longitude, latitude, altitude, time):
-    print "Write IGC track point"
+def IGC_add_track_point(IGC_fp, longitude, latitude, altitude, time):
+    #
+    # Output a trackpoint in IGC format
+    #
+#    print "Write IGC track point"
     try:
-        writer.write_fix(datetime.time(time[11:13], time[13:15], time[15:]),\
+        IGC_fp.write_fix(datetime.time(time[11:13], time[13:15], time[15:]),\
                          latitude=latitude,\
-                         longitude=long,\
+                         longitude=longitude,\
                          valid=True,\
-                         pressure_alt=1234,\
-                         gps_alt=1432,\
+#                         pressure_alt=altitude,\        # Take default as unknown by OGN Flogger
+                         gps_alt=altitude,\
 #                         extensions=[50, 0, 12],
                          )
     except:
@@ -150,16 +135,14 @@ def dump_IGC(cursor, db):
                 track_file_name = "%s/%s_track.new%d.igc" % (settings.FLOGGER_TRACKS_FOLDER, igc_path, flight_no)
                 print "New IGC trackfile name is: ", track_file_name, " This flight is: ", flight_no
                 cursor.execute('''SELECT sdate, stime, duration, registration, max_altitude FROM flights WHERE flight_no=?''', (flight_no,))
-                flight_data = cursor.fetchone()
-                #
-                
+                flight_data = cursor.fetchone()          
                 if flight_data <> None:  
                     print "Flight_data is: ", flight_data
                     sdate = flight_data[0]
-                    stime = flight_data[1]
-                    duration = flight_data[2]
+#                    stime = flight_data[1]
+#                    duration = flight_data[2]
                     registration = flight_data[3]
-                    max_altitude = flight_data[4]
+#                    max_altitude = flight_data[4]
                     #
                     # When taking track points from multiple beacons the order received over the Internet might not be the same as the timestamp
                     # of the original data when transmitted by the flarm unit.  Hence it is necessary to order the track points by 
@@ -171,19 +154,20 @@ def dump_IGC(cursor, db):
                     i = 3                               # This was just to check something, easiest to leave it here
                     for track_point in tracks:
                         if i <= 2:
-                            print "Trackpoint is: ", track_point
+                            print "IGC Trackpoint is: ", track_point
                             i = i + 1
                         else:
-                            flight_nos = track_point[1]
-                            track_nos = track_point[2]
+#                            flight_nos = track_point[1]
+#                            track_nos = track_point[2]
                             latitude = track_point[3]
                             longitude = track_point[4]
                             altitude = track_point[5]
-                            course = track_point[6]
-                            speed = track_point[7]
+#                            course = track_point[6]
+#                            speed = track_point[7]
                             timeStamp = track_point[8]
                             #print "timeStamp is: ", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timeStamp))
                             if IGC_add_track_point(IGC_fp, longitude, latitude, altitude, time.strftime("%Y-%m-%d %H%M%S", time.localtime(timeStamp))) == False :  # Convert timeStamp float to string
+                                print "IGC_add_track_point failed"
                                 return
                 
                 else:
