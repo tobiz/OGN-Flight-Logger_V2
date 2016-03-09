@@ -37,6 +37,7 @@ If installing on an arm based system this can be achieved by:
 - sudo pip install pyephem 
 - sudo pip install geopy
 - sudo pip install geocoder
+- sudo pip install aerofiles
 
 I'm currently developing and testing on
 - a Raspberry Pi P2 Model B under Rasparian (Debian Linux 7.8) and 
@@ -47,7 +48,14 @@ This enhancement is still in development.  This feature is controlled in the set
 
 Flogger will now optionally take inputs from upto 4 base stations.  It also has an option to delete flight and track .csv files after
 they are "n" days old.  Track points are sorted and output to .csv files based on the logged time from the Flarm unit itself (assumes Flarms
-use GPS time in each trackpoint).
+use GPS time in each trackpoint).  This is to over come a potential issue using multiple base stations when the track points might not be received in the same
+time order as they were sent from the flarm units.
 
 This now in the latter stages of development, it still logs a lot of test output but his will eventually be controlled by an option
 from the cmd line and/or configuration file
+
+Added an option to output IGC format track files. This requires aerofiles.py to be installed (see above).  Several optional fields in the 
+header are set to "Not recorded" as these can not be known by OGN Flogger, however if this data was input prior to launch it could, but
+that's another development..... Note the files output are not 'certified'.
+
+Added an option to specify number of hours before sunset that processing the flight logs should commence.
