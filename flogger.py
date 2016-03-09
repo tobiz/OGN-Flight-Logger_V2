@@ -619,8 +619,11 @@ try:
         next_sunrise = location.next_rising(ephem.Sun(), date).datetime()
         previous_sunset = location.previous_setting(ephem.Sun(), date).datetime()
         next_sunset = location.next_setting(ephem.Sun(), date).datetime()
-        # Set datetime to current time
-        location.date = ephem.Date(datetime.datetime.now())
+        # Set datetime to current time + FLOGGER_LOG_TIME_DELTA to start processing flight log 
+        # that number of hours before sunset
+        log_datetime = datetime.datetime.now() + datetime.timedelta(hours=settings.FLOGGER_LOG_TIME_DELTA)
+#        print "Log datetime is: ", log_datetime
+        location.date = ephem.Date(log_datetime)
         print "Ephem date is: ", location.date
         s = ephem.Sun()
         s.compute(location)
@@ -671,8 +674,9 @@ try:
             print "Location Date now: ", location.date, " Next sunrise is: ", next_sunrise
             wait_time = location.next_rising(ephem.Sun(), date).datetime() - datetime_now
             print "Next sunrise at: ", location.next_rising(ephem.Sun(), date).datetime(), " Datetime now is: ", datetime_now
-            # Wait an additional 10 min more before resuming. Just a bit of security, not an issue as unlikely to start flying so early
-            wait_time_secs = int(wait_time.total_seconds()) + 600 
+            # Wait an additional 2 hours (in seconds) more before resuming. 
+            # Just a bit of security, not an issue as unlikely to start flying so early
+            wait_time_secs = int(wait_time.total_seconds()) + (2 * 60 * 60) 
             # close socket -- not needed. Create new one at sunrise
             try:
                 sock.shutdown(0)
@@ -682,7 +686,7 @@ try:
 #
 # Delete historic files as specified
 #            
-            print "+++++++Phase 4 Start+++++++" 
+            print "+++++++Phase 4 Start Delete out of date files+++++++" 
             delete_flogger_file(settings.FLOGGER_TRACKS_FOLDER, "track", settings.FLOGGER_DATA_RETENTION)
             delete_flogger_file(settings.FLOGGER_BS, "flights.csv", settings.FLOGGER_DATA_RETENTION)
             print "-------Phase 4 End-------" 
@@ -691,7 +695,7 @@ try:
 # Sleep till sunrise
 # Then open new socket, set ephem date to new day
 #
-            print "Wait till sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
+            print "Wait till ofter sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             time.sleep(wait_time_secs)
             # Sun has now risen so recommence logging flights
             location.date = ephem.Date(datetime.datetime.now())
