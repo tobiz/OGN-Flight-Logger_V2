@@ -54,6 +54,7 @@ time order as they were sent from the flarm units.
 This now in the latter stages of development, it still logs a lot of test output but his will eventually be controlled by an option
 from the cmd line and/or configuration file
 
+9th March 2016 
 Added an option to output IGC format track files. This requires aerofiles.py to be installed (see above).  Several optional fields in the 
 header are set to "Not recorded" as these can not be known by OGN Flogger, however if this data was input prior to launch it could, but
 that's another development..... Note the files output are not 'certified'.
