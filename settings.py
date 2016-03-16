@@ -83,7 +83,8 @@ FLOGGER_RAD = "25"                                              # APRS radius in
 FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record  
 FLOGGER_DATA_RETENTION = 7                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
 FLOGGER_LOG_TUGS = "N"                                          # Don't log tug flights if "N"
-FLOGGER_TRACKS_IGC = "Y"                                       # Dump flight tracks in IGC format if "Y" else no
+FLOGGER_TRACKS_IGC = "Y"                                        # Dump flight tracks in IGC format if "Y" else no
+FLOGGER_LOG_TIME_DELTA = 1                                      # Number of hours before sunset to start processing flight log
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
