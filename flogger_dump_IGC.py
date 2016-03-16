@@ -51,6 +51,17 @@
 # B1101555206300N00006061WA0060300576
 #
 # This uses aerofiles so do as root eg sudo pip install aerofiles
+#
+#    REQUIRED_HEADERS = [
+#        'manufacturer_code',
+#        'logger_id',
+#        'date',
+#        'logger_type',
+#        'gps_receiver',
+#    ]
+#
+# Note.  The 3-letter code used for manufacturer_code is XXX, see IGC spec, section 2.5.6, note 2
+#
 
 
 import settings
@@ -68,30 +79,53 @@ def IGC_track_header(file_name, date, registration):
     #
     # Writes the header to an IGC format file using aerofiles
     #
-    with open(file_name, 'w') as fp:
-        IGC_fp = aerofiles.igc.Writer(fp)
-        
-    hdate = date[4:] + date[2:4] + date[0:2]        # Rearrange date from YYMMDD to DDMMYY 
-    header = {'manufacturer_code': 'OGN Flogger',\
-              'logger_id': ' V2.1',\
-              'date': hdate,\
-              'fix_accuracy': 50,\
-              'pilot': 'Not recorded',\
+#    print "IGC_track_header: ", file_name, " Date: ", date, " Reg: ", registration
+    fp = open(file_name, 'w')
+    IGC_fp = aerofiles.igc.Writer(fp)
+          
+    hdate = datetime.date(int(date[0:2])+2000, int(date[3:5]), int(date[6:]))  # Rearrange date from DDMMYY to YYMMDD 
+#    hdate = datetime.date(int(date[6:]), int(date[3:5]), int(date[0:2])+2000)  # Rearrange date from DDMMYY to YYMMDD 
+    print "IGC_track_header hdate is: ", hdate
+    header = {'manufacturer_code': 'XXX',      # This is any 3-letter code, for unapproved recorder
+              'logger_id': 'TBX',
+              'date': hdate,
+              'fix_accuracy': 50,
+              'pilot': 'Not recorded',
               'copilot': 'Not recorded',
-              'glider_type': 'Not recorded',\
-              'glider_id': registration,\
-              'firmware_version': 'Not recorded',\
-              'hardware_version': 'Not recorded',\
-              'logger_type': 'Not recorded',\
-              'gps_receiver': 'Not recorded',\
-              'pressure_sensor': 'Not recorded',\
-              'competition_id': 'Not recorded',\
-              'competition_class': 'Not recorded',\
+              'glider_type': 'Not recorded',
+              'glider_id': registration,
+              'firmware_version': 'Not recorded',
+              'hardware_version': 'Not recorded',
+              'logger_type': 'Not recorded',
+              'gps_receiver': 'Not recorded',
+              'pressure_sensor': 'Not recorded',
+              'competition_id': 'Not recorded',
+              'competition_class': 'Not recorded',
               }
+    date = datetime.date(1987, 2, 24)
+    header1 = {
+            'manufacturer_code': 'XCS',         # This is any 3-letter code, eg OGN
+            'logger_id': 'TBX',
+#            'date': datetime.date(1987, 2, 24),
+            'date': date,
+            'fix_accuracy': 50,
+            'pilot': 'Tobias Bieniek',
+            'copilot': 'John Doe',
+            'glider_type': 'Duo Discus',
+            'glider_id': 'D-KKHH',
+            'firmware_version': '2.2',
+            'hardware_version': '2',
+            'logger_type': 'LXNAVIGATION,LX8000F',
+            'gps_receiver': 'uBLOX LEA-4S-2,16,max9000m',
+            'pressure_sensor': 'INTERSEMA,MS5534A,max10000m',
+            'competition_id': '2H',
+            'competition_class': 'Doubleseater'
+        }
     try:
         IGC_fp.write_headers(header)
-    except:
-        print "Write IGC file header failed"
+        print "IGC_write_headers OK"
+    except ValueError as e:
+        print "Write IGC file header failed. ValueError: ", e, " Header= ", header
         return False
     return IGC_fp
 
@@ -100,17 +134,22 @@ def IGC_add_track_point(IGC_fp, longitude, latitude, altitude, time):
     # Output a trackpoint in IGC format
     #
 #    print "Write IGC track point"
+    hh = int(time[11:13])
+    mm = int(time[13:15])
+    ss = int(time[15:])
+#    print "IGC_add_track_point time is: %s:%s:%s" % (hh, mm, ss)
     try:
-        IGC_fp.write_fix(datetime.time(time[11:13], time[13:15], time[15:]),\
-                         latitude=latitude,\
-                         longitude=longitude,\
-                         valid=True,\
+#        IGC_fp.write_fix(datetime.time(time[11:13], time[13:15], time[15:]),
+        IGC_fp.write_fix(datetime.time(hh, mm, ss),
+                         latitude=latitude,
+                         longitude=longitude,
+                         valid=True,
 #                         pressure_alt=altitude,\        # Take default as unknown by OGN Flogger
-                         gps_alt=altitude,\
+                         gps_alt=altitude,
 #                         extensions=[50, 0, 12],
                          )
-    except:
-        print "Write IGC track point failed"
+    except ValueError as e:
+        print "Write IGC track point failed. Reason: ", e
         return False    
     return True
 
@@ -150,7 +189,7 @@ def dump_IGC(cursor, db):
                     #
                     cursor.execute('''SELECT * FROM track WHERE flight_no=? ORDER BY timeStamp''', (flight_no,))
                     tracks = cursor.fetchall()
-                    IGC_fp = igc_track_header(track_file_name, sdate, registration)
+                    IGC_fp = IGC_track_header(track_file_name, sdate, registration)
                     i = 3                               # This was just to check something, easiest to leave it here
                     for track_point in tracks:
                         if i <= 2:
@@ -171,7 +210,8 @@ def dump_IGC(cursor, db):
                                 return
                 
                 else:
-                    print "No flight data in Flights table" 
+                    print "No flight data in Flights table"
+#            fp.close() 
         else:
             print "No flights in Trackfinal table"  
     else:
