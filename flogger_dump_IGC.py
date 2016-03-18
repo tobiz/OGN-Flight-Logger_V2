@@ -79,14 +79,15 @@ def IGC_track_header(file_name, date, registration):
     #
     # Writes the header to an IGC format file using aerofiles
     #
-#    print "IGC_track_header: ", file_name, " Date: ", date, " Reg: ", registration
+    print "IGC_track_header: ", file_name, " Date: ", date, " Reg: ", registration
     fp = open(file_name, 'w')
     IGC_fp = aerofiles.igc.Writer(fp)
           
-    hdate = datetime.date(int(date[0:2])+2000, int(date[3:5]), int(date[6:]))  # Rearrange date from DDMMYY to YYMMDD 
+    hdate = datetime.date(int(date[0:2])+2000, int(date[3:5]), int(date[6:]))   # Rearrange date from DDMMYY to YYMMDD. The +2000 is a bit
+                                                                                # of a cheat but should be ok for a while!
 #    hdate = datetime.date(int(date[6:]), int(date[3:5]), int(date[0:2])+2000)  # Rearrange date from DDMMYY to YYMMDD 
     print "IGC_track_header hdate is: ", hdate
-    header = {'manufacturer_code': 'XXX',      # This is any 3-letter code, for unapproved recorder
+    header = {'manufacturer_code': 'XXX',      # XXX is the 3-letter code for unapproved recorder
               'logger_id': 'TBX',
               'date': hdate,
               'fix_accuracy': 50,
@@ -102,25 +103,6 @@ def IGC_track_header(file_name, date, registration):
               'competition_id': 'Not recorded',
               'competition_class': 'Not recorded',
               }
-    date = datetime.date(1987, 2, 24)
-    header1 = {
-            'manufacturer_code': 'XCS',         # This is any 3-letter code, eg OGN
-            'logger_id': 'TBX',
-#            'date': datetime.date(1987, 2, 24),
-            'date': date,
-            'fix_accuracy': 50,
-            'pilot': 'Tobias Bieniek',
-            'copilot': 'John Doe',
-            'glider_type': 'Duo Discus',
-            'glider_id': 'D-KKHH',
-            'firmware_version': '2.2',
-            'hardware_version': '2',
-            'logger_type': 'LXNAVIGATION,LX8000F',
-            'gps_receiver': 'uBLOX LEA-4S-2,16,max9000m',
-            'pressure_sensor': 'INTERSEMA,MS5534A,max10000m',
-            'competition_id': '2H',
-            'competition_class': 'Doubleseater'
-        }
     try:
         IGC_fp.write_headers(header)
         print "IGC_write_headers OK"
