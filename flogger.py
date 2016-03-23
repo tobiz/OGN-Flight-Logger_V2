@@ -429,13 +429,16 @@ def delete_flogger_file(folder, filename, days):
     now = time.time()
     flist = os.listdir(folder)
     for f in flist:
-#        print "Filename is: ", f, " Pathname is: ", os.path.join(folder, f), " st_mtime is: ", os.stat(os.path.join(folder, f)).st_mtime
+#        print "Pathname is: ", os.path.join(folder, f), " st_mtime is: ", os.stat(os.path.join(folder, f)).st_mtime
         full_file = os.path.join(folder, f)
         file_find = string.find(full_file, filename) <> -1
         file_time = os.stat(full_file).st_mtime 
-        if (file_find == True) and (file_time <= now - days * 86400):
-            print "Remove file: ", full_file
+#        print "File_find is: ", file_find, ". File_time is: ", file_time, "Now is: ", now - days * 86400
+        if (file_find == True) and (file_time <= (now - days * 86400)):
+            print "Delete file: ", full_file
             os.remove(full_file)
+#        else:
+#            print "File not deleted: %s" % full_file
     return
         
     
