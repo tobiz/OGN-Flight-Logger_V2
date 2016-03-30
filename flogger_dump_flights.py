@@ -36,14 +36,15 @@ def dump_flights():
     except:
         print "failed to select max(sdate) FROM flights"
         
+    start_time = datetime.datetime.now()
+    csv_path = settings.FLOGGER_FLIGHTS_LOG + str(start_time) + "_flights.csv"
+    print "csv file name is: ", csv_path  
+     
     if max_row <> (None,): 
         max_date = "".join(max_row[0:3])        #max_row[0:3] is sdate
         print "Dump flights to csv. Last record date in flights is: ", max_date
 #         cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-        cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-        start_time = datetime.datetime.now()
-        csv_path = settings.FLOGGER_FLIGHTS_LOG + str(start_time) + "_flights.csv"
-        print "csv file name is: ", csv_path       
+        cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))       
         with open(csv_path, "wb") as csv_file:
             csv_writer = csv.writer(csv_file)
             # Write headers.
@@ -60,10 +61,13 @@ def dump_flights():
         today = datetime.date.today().strftime("%y/%m/%d")
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
         print "max_date is: ", max_date
+        csv_file = open(csv_path, "wb")
+        csv_file.truncate(0)        # Zero length the file
+        csv_file.close()
 #        return
     
     print "End flights table dump"
-    return
+    return csv_path
          
 #    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
     cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
