@@ -60,3 +60,9 @@ header are set to "Not recorded" as these can not be known by OGN Flogger, howev
 that's another development..... Note the files output are not 'certified'.
 
 Added an option to specify number of hours before sunset that processing the flight logs should commence.
+
+Added an option to send the daily flight log to a specified email address in .csv format.
+The cmd line form is:
+flogger.py username passcode mode [-s|--smtp email address of smtp server] [-t|--tx email address of sender] [-r|--rx email address of receiver]
+
+If -s|--smtp is provided then -t|--tx and -r|--rx must be provided
