@@ -82,6 +82,9 @@
 #                    track points that are out of sequence when based on order received due to Internet time delays, hence
 #                    use the GPS timestamp recorded in the data taken and sent by flarm (assumes timestamp is from Flarm!).
 #                 2) Also added graceful exit on Cntrl-C
+#
+# 20160323        1) Added optional output of track data in IGC format
+#                 2) Added optional deletion of old flight .csv and track .csv/.igc files
 
 import socket
 
@@ -101,13 +104,13 @@ import ephem
 from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
-#from flogger_dump_tracks import dump_tracks
 from flogger_dump_tracks import dump_tracks2
 from flogger_get_coords import get_coords
 from flogger_signals import sig_handler
 import signal
 import os
 from flogger_dump_IGC import dump_IGC
+from flogger_email_log import email_log2
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -118,14 +121,14 @@ values = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
 nvalues =     {"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0},
              "G-CKFN": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0, 'maxA': 0}
                 }
-
-L_SMALL = float(0.001)                      # Small latitude or longitude delta of a 0.001 degree
-A_SMALL = float(0.01)                          # Small altitude delta of 0.01 a metre, ie 1cm
-V_SMALL = float(settings.FLOGGER_V_SMALL)     # Small velocity delta of 10.0 kph counts as zero ie not moving
+    
+L_SMALL = float(0.001)                            # Small latitude or longitude delta of a 0.001 degree
+A_SMALL = float(0.01)                             # Small altitude delta of 0.01 a metre, ie 1cm
+V_SMALL = float(settings.FLOGGER_V_SMALL)         # Small velocity delta of 10.0 kph counts as zero ie not moving
 frst_time = False
 AIRFIELD = "SuttonBnk"
-flight_no = {}
-track_no = {}
+flight_no = {}                                      # A dictionary {callsign: flight_no}
+track_no = {}                                       # A dictionary {callsign: track_no}
 # Coded     001-099: Gliders, 
 #             101-199: Tugs, 
 #             201-299: Motor Gliders, 
@@ -343,20 +346,6 @@ def addTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,
             VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
             {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
     return
-
-##def addFinalTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,timeStamp):
-    #    
-    #-----------------------------------------------------------------
-    # Add gps track data to trackFinal record if settings.FLOGGER_TRACK is "Y" ie yes    
-    #-----------------------------------------------------------------
-    #
-
-#    if settings.FLOGGER_TRACKS == "Y":
-#        print "Adding trackFinal data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
-#        cursor.execute('''INSERT INTO trackFinal(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
-#            VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
-#            {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
-#    return
     
 def endTrack():
     return
@@ -458,8 +447,21 @@ parser = argparse.ArgumentParser()
 parser.add_argument("user", help="user and passcode must be supplied, see http://www.george-smart.co.uk/wiki/APRS_Callpass for how to obtain")
 parser.add_argument("passcode", help="user and passcode must be supplied", type=int)
 parser.add_argument("mode", help="mode is test or live, test modifies behaviour to add output for testing", default="live")
+parser.add_argument('-s', '--smtp', help="URL of smtp server")
+parser.add_argument('-t', '--tx', help="email address of sender")
+parser.add_argument('-r', '--rx', help="email address of receiver")
+
 args = parser.parse_args()
-print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode
+print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode, "smtp=", args.smtp
+
+#
+# Check parameters. If an smtp server address is specified then the sender and receiver email
+# addresses must also be supplied either in the call line or the config file
+#
+if (args.smtp == "None" or settings.FLOGGER_SMTP_SERVER_URL == "") and (args.tx == "None" or args.rx == "None" or settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == ""):
+    print "Email parameters or config not valid. smtp=%s, SERVER_UL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
+    (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
+    exit()
 
 settings.APRS_USER = args.user
 settings.APRS_PASSCODE = args.passcode
@@ -647,12 +649,22 @@ try:
             print "Dump tracks"
             dump_tracks2(cursor, db)
             dump_IGC(cursor, db)
+                
             
 #
 # Dump flights table as cvs file
+# If no flights then returns ""
 #
             print "Dump flights table"
-            dump_flights()
+            csv_file = dump_flights()
+#
+# Email flights csv file if required
+# email_log2 sorts out if there are no flights on any one day
+# 
+            if settings.FLOGGER_SMTP_SERVER_URL <> "" or args.smtp <> "None":
+                email_log2(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, csv_file, datetime.date.today())
+            else:
+                print "Don't email flight log, no flights"
             
 #            
 # Delete entries from daily flight logging tables etc
@@ -709,7 +721,9 @@ try:
             keepalive_time = time.time()
             sock = APRS_connect(settings)
             sock_file = sock.makefile()         # Note both sock & sock_file get used
-            i = 0                               # Count of todays APRS reads reset
+            i = 0                               # Count of todays APRS reads reset   
+            flight_no = {}                      # Re-initialise flight_no dictionary at start of day
+            track_no = {}                       # Re-initialise track_no dictionary at start of day
             continue
                     
         current_time = time.time()
