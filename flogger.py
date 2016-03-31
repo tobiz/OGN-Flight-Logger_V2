@@ -452,14 +452,16 @@ parser.add_argument('-t', '--tx', help="email address of sender")
 parser.add_argument('-r', '--rx', help="email address of receiver")
 
 args = parser.parse_args()
-print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode, "smtp=", args.smtp
+print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode, "smtp=", args.smtp, "tx=", args.tx, "rx=", args.rx
 
 #
 # Check parameters. If an smtp server address is specified then the sender and receiver email
 # addresses must also be supplied either in the call line or the config file
 #
-if (args.smtp == "None" or settings.FLOGGER_SMTP_SERVER_URL == "") and (args.tx == "None" or args.rx == "None" or settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == ""):
-    print "Email parameters or config not valid. smtp=%s, SERVER_UL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
+if (args.smtp == "None" and settings.FLOGGER_SMTP_SERVER_URL == ""):
+    print "SMTP url not specified, don't send email"
+elif ((args.tx == "None" or args.rx == "None") and (settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == "")):
+    print "Email option parameters or config not valid. smtp=%s, SERVER_URL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
     (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
     exit()
 
