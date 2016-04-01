@@ -11,6 +11,7 @@ import os
 import datetime
 
 def email_log2(sender, receiver, filepath, date):
+#    print "email_log2 with sender=%s, receiver=%s, filepath=%s" % (sender, receiver, filepath)
     FLIGHT_LOG_FILE = "flight_log.csv"
 #    filepath = path + file
     fpr = open(filepath, "r")
@@ -20,7 +21,7 @@ def email_log2(sender, receiver, filepath, date):
 #    print "Line_list is: ", line_list
     for aline in line_list:
         if aline == "":
-            print "BREAK"
+            print "BREAK end of flights.csv"
             break
 #        print "Aline is: ", aline
         pl = aline.split(",")  
