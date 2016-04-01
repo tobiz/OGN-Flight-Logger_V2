@@ -460,10 +460,20 @@ print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode, "smtp
 #
 if (args.smtp == "None" and settings.FLOGGER_SMTP_SERVER_URL == ""):
     print "SMTP url not specified, don't send email"
-elif ((args.tx == "None" or args.rx == "None") and (settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == "")):
-    print "Email option parameters or config not valid. smtp=%s, SERVER_URL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
-    (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
-    exit()
+else:
+    print "Set to send email"
+    if (args.smtp <> "None"):
+        settings.FLOGGER_SMTP_SERVER_URL = args.smtp
+    if (args.tx <> "None"):
+        settings.FLOGGER_SMTP_TX = args.tx
+    if (args.rx <> "None"):
+        settings.FLOGGER_SMTP_RX = args.rx
+    elif ((args.tx == "None" or args.rx == "None") and (settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == "")):
+        print "Email option parameters or config not valid. smtp=%s, SERVER_URL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
+        (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
+        exit()
+    
+
 
 settings.APRS_USER = args.user
 settings.APRS_PASSCODE = args.passcode
@@ -662,8 +672,9 @@ try:
 #
 # Email flights csv file if required
 # email_log2 sorts out if there are no flights on any one day
+# FLOGGER_SMTP_SERVER_TX is either set in config by user or value taken from cmd line --smtp parm.
 # 
-            if settings.FLOGGER_SMTP_SERVER_URL <> "" or args.smtp <> "None":
+            if settings.FLOGGER_SMTP_SERVER_URL <> "":
                 email_log2(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, csv_file, datetime.date.today())
             else:
                 print "Don't email flight log, no flights"
