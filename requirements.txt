@@ -1,0 +1,9 @@
+aerofiles == 0.3
+geocoder == 1.4.0
+geopy == 1.10.0
+pytz == 2012c
+pycrypto == 2.6.1
+pyephem == 3.7.6.0
+adhocracy_pysqlite == 2.6.3
+Requests == 2.9.1
+ 
