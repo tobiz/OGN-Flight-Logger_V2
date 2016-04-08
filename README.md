@@ -8,13 +8,16 @@ This python program creates an SQlite db of flights from a given location and ai
 
 At the moment this is very much 'in development'
 
-To install OGN Flight Logger the following prerequisites are required
+To install OGN Flight Logger the following prerequisites are required (see requirements.txt for specific details)
 - python-tz
 - sqlite3
 - libfap (Note this is the "C" library libfap, not the python module libfap.py)
 - ephem
 - goecoder
 - geopy
+- requests
+- aerofiles 
+
  
 To run flogger first set up the parameters in settings.py then call 'flogger.py'.  Flogger.py will
 run continuously (perhaps it should be a 'service'?) logging flights during day, ie between sunrise
