@@ -11,20 +11,48 @@ from geopy.geocoders import Nominatim
 import geocoder
 from geopy.exc import GeocoderTimedOut 
 import time
+from geopy.geocoders.base import ERROR_CODE_MAP
+import geopy
 
 def get_coords(address):
-    while True:
-        try:
-            geolocator = Nominatim()
-            location = geolocator.geocode(address)
+#    while True:
+    try:
+#        geolocator = Nominatim(timeout=3, scheme='http')
+        geolocator = geopy.geocoders.GoogleV3(timeout=3)
+        try:   
+            location = geolocator.geocode(address, timeout=3, exactly_one=True)  # Only 1 location for this address
             if location == None:
                 print "Geocoder Service timed out or Airfield: ", address, " not known by geocode locator service. Check settings"
-                exit(1)
+                return False
             ele = geocoder.elevation(address)
-            break
-        except GeocoderTimedOut as e:
-            time.sleep(1)
-            print "Geocoder Service timed out for Airfield: ", address
-            exit(1)
+            print "Geolocator worked"
+            return location.latitude, location.longitude, ele.meters
+        except ERROR_CODE_MAP[400]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[400]
+        except ERROR_CODE_MAP[401]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[401]
+        except ERROR_CODE_MAP[402]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[402]
+        except ERROR_CODE_MAP[403]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[403]
+        except ERROR_CODE_MAP[407]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[407]
+        except ERROR_CODE_MAP[412]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[412]
+        except ERROR_CODE_MAP[413]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[413]
+        except ERROR_CODE_MAP[414]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[414]
+        except ERROR_CODE_MAP[502]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[502]
+        except ERROR_CODE_MAP[503]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[503]
+        except ERROR_CODE_MAP[504]:
+            print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[503]
+        return False
+    except GeocoderTimedOut as e:
+        time.sleep(1)
+        print "Geocoder Service timed out for Airfield: ", address
+        return False
     
-    return location.latitude, location.longitude, ele.meters
+#    return location.latitude, location.longitude, ele.meters

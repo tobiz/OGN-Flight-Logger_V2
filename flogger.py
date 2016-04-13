@@ -458,21 +458,24 @@ print "user=", args.user, " passcode=", args.passcode, "mode=", args.mode, "smtp
 # Check parameters. If an smtp server address is specified then the sender and receiver email
 # addresses must also be supplied either in the call line or the config file
 #
-if (args.smtp == "None" and settings.FLOGGER_SMTP_SERVER_URL == ""):
+if (args.smtp == None and settings.FLOGGER_SMTP_SERVER_URL == ""):
     print "SMTP url not specified, don't send email"
 else:
     print "Set to send email"
-    if (args.smtp <> "None"):
+    if (args.smtp <> None):
         settings.FLOGGER_SMTP_SERVER_URL = args.smtp
-    if (args.tx <> "None"):
+    if (args.tx <> None):
         settings.FLOGGER_SMTP_TX = args.tx
-    if (args.rx <> "None"):
+    if (args.rx <> None):
+        print "args.rx is: ", args.rx
         settings.FLOGGER_SMTP_RX = args.rx
-    elif ((args.tx == "None" or args.rx == "None") and (settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == "")):
+    elif ((args.tx == None or args.rx == None) and (settings.FLOGGER_SMTP_TX == "" or settings.FLOGGER_SMTP_RX == "")):
         print "Email option parameters or config not valid. smtp=%s, SERVER_URL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
         (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
         exit()
-    
+    print "Email parameters are now: smtp=%s, SERVER_URL=%s, tx=%s, rx=%s, SMTP_TX=%s, SMTP_RX=%s" % \
+        (args.smtp, settings.FLOGGER_SMTP_SERVER_URL, args.tx, args.rx, settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX)
+   
 
 
 settings.APRS_USER = args.user
@@ -514,10 +517,17 @@ else:
 
 if settings.FLOGGER_AIRFIELD_DETAILS <> "":
     loc = get_coords(settings.FLOGGER_AIRFIELD_DETAILS)
-    settings.FLOGGER_LATITUDE       = str(loc[0])   # Held as string
-    settings.FLOGGER_LONGITUDE      = str(loc[1])   # Held as string
-    settings.FLOGGER_QNH            = loc[2]        # Held as number
-    print "Location is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]    
+    if loc == False:
+        if settings.FLOGGER_LATITUDE <> "" and settings.FLOGGER_LONGITUDE <> "" and settings.FLOGGER_QNH >=0 :
+            print "Geolocator failed use values from settings"
+        else:
+            print "Geoloactor failed and no values in setting for lat, long, QNH"
+            exit(2)
+    else:
+        settings.FLOGGER_LATITUDE       = str(loc[0])   # Held as string
+        settings.FLOGGER_LONGITUDE      = str(loc[1])   # Held as string
+        settings.FLOGGER_QNH            = loc[2]        # Held as number
+        print "Location is: ", settings.FLOGGER_AIRFIELD_DETAILS, " latitude: ", loc[0], " longitude: ", loc[1], " elevation: ", loc[2]    
 else:
     print "Use location data from settings"   
     
@@ -532,6 +542,8 @@ APRS_base_list = [settings.FLOGGER_APRS_BASE_1,
                   settings.FLOGGER_APRS_BASE_2, 
                   settings.FLOGGER_APRS_BASE_3,
                   settings.FLOGGER_APRS_BASE_4,] 
+
+APRS_base_list = settings.FLOGGER_APRS_BASES 
 
 #    
 #-----------------------------------------------------------------
@@ -675,6 +687,7 @@ try:
 # FLOGGER_SMTP_SERVER_TX is either set in config by user or value taken from cmd line --smtp parm.
 # 
             if settings.FLOGGER_SMTP_SERVER_URL <> "":
+                print "Email today's flight log"
                 email_log2(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, csv_file, datetime.date.today())
             else:
                 print "Don't email flight log, no flights"
