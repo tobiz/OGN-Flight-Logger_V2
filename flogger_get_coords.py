@@ -18,6 +18,7 @@ def get_coords(address):
     try:
 #        geolocator = Nominatim(timeout=3, scheme='http')  # Nominatim seems to have stopped working, see github geopy
         geolocator = geopy.geocoders.GoogleV3(timeout=3)
+#        geolocator = geopy.geocoders.GeocodeFarm(timeout=20)
         try:   
             location = geolocator.geocode(address, timeout=3, exactly_one=True)  # Only 1 location for this address
             if location == None:
@@ -50,6 +51,5 @@ def get_coords(address):
             print " ERROR_CODE_MAP is: ",  ERROR_CODE_MAP[503]
         return False
     except GeocoderTimedOut as e:
-        time.sleep(1)
         print "Geocoder Service timed out for Airfield: ", address
         return False
