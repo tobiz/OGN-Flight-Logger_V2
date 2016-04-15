@@ -208,7 +208,7 @@ def process_log (cursor, db):
                                         VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                         {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
                                         'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
-                     print "GroupID: ", group, " record created ", row_0, "Delta_secs >= lmt_secs: ", delta_secs                  
+                     print "GroupID: ", group, " record created ", row_0, "Delta_secs >= lmt_secs: ", delta_secs                   
                  if (delta_secs) < lmt_secs:
                      same_or_different_flight = 0
                      print "++++Same flight", " same_or_different_flight is:", same_or_different_flight
