@@ -111,6 +111,7 @@ import signal
 import os
 from flogger_dump_IGC import dump_IGC
 from flogger_email_log import email_log2
+from flogger_landout import landout_check
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -1073,6 +1074,10 @@ try:
                             {'sdate':start_date, 'stime':start_time, 'edate': fl_end_date, 'etime':fl_end_time_str,
                             'duration': fl_duration_time_str, 'src_callsign':src_callsign, 'max_altitude':max_altitude, 'speed':0, 'registration': registration, 'flight_no': flight})
                 print "Updated flight_log_final", src_callsign
+#                flogger_landout_check(flight_reg, af_centre, radius, landing_coords, mode)
+                af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+                res =landout_check(src_callsign, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
+                print "Landout check is: ", res
                 
                 
                 # Update flight record in flight_log2
