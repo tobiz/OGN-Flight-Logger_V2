@@ -70,5 +70,5 @@ flogger.py username passcode mode [-s|--smtp email address of smtp server] [-t|-
 
 If -s|--smtp is provided then -t|--tx and -r|--rx must be provided
 
-Included to send email if flight lands outside the take off airfield.  This initial version just uses a circular boundary of a specifiable radius.  Code is included to 
+Included option to send email if flight lands outside the take off airfield.  This initial version just uses a circular boundary of a specifiable radius.  Code is included to 
 send an SMS msg but has not been tested.
