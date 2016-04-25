@@ -20,16 +20,24 @@ from geopy.distance import vincenty
 from flogger_get_coords import get_coords
 from google.directions import GoogleDirections
 
-def landout_check(flight_reg, af_centre, radius, landing_coords, mode):
+def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode):
     #
+    # This function determines if a flight has landed within the vicinity of the airfield take off point.
+    # If not is sends an email to the designated address specifying the landing coordinates, these
+    # can then be used by the recovery team to locate the aircraft using appropriate mapping technology.
+    # The algorithm used is that of a circle of defined radius centred on the originating airfield.
+    # The function is intended to send the msg either by email or SMS but at the moment only email
+    # is supported.  The SMS code is included, has not been tested and requires an account to be created
+    # and of course each SMS msg would be charged to that account.  The provenance of the SMS code is
+    # included if this helps with subsequent development.
     #
-    #
-    print "landout_check called"
+    print "landout_check called. Registration: ", flight_reg, " Start coords: ", af_centre, " End coords: ", landing_coords
     landing_dist = vincenty(af_centre, landing_coords).meters
-    print "Landing distance is: %d" % landing_dist
+    print "Landing distance is: %d metres from airfield centre" % landing_dist
     if landing_dist <= radius:
         print "Landed in airfield"
         return False
+    print "Flight landed out, send msg. Registration: ", flight_reg, " Flight No: ", flight_no
     if mode == "SMS":
         #-----------------------------------
         # Send SMS Text Message using Python
@@ -117,7 +125,7 @@ def landout_check(flight_reg, af_centre, radius, landing_coords, mode):
         txt = "Flight %s landed out at: %s, %s" % (flight_reg, str(landing_coords[0]), str(landing_coords[1]))
         msg['Subject'] =  txt 
         print "Email land out coordinates: ", txt
-        body = txt
+        body = txt + " Flight No: " + str(flight_no)
         msg.attach(MIMEText(body, 'plain'))    
         server = smtplib.SMTP(settings.FLOGGER_SMTP_SERVER_URL, settings.FLOGGER_SMTP_SERVER_PORT)
         text = msg.as_string()
