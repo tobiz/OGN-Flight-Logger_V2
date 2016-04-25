@@ -2,6 +2,9 @@
 # 20150921            Problem! If the pair after a "Same flight" pair is found to be a "Different flight" then it will be 
 #                     given the group_id  of the last "Same flight, ie wrong!  Next needs to given the next value of group_id 
 # 20150922            Modified the total flight time code for a flight group
+#
+# 20160424            Rewrite of phase 2 processing to correct errors. Code could be 'gardened' to make neater and simpler
+# 
 
 
 import settings
@@ -169,21 +172,40 @@ def process_log (cursor, db):
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
         
-        rows = cursor.fetchall()
+        rows = cursor.fetchall()                # rows is all flight records for an aircraft callsign
 #        row_count = len(cursor.fetchall())
         row_count = len(rows)
         print "Number of rows is: ", row_count
-        
-# Just for testing Start
-        n = 1
+#        
+# Just for testing Start.  This dumps all flight records for an aircraft callsign
+#--------------------------------------------------------------------------------
+#
+        n = 0
         for row in rows:
             print "Row ", n, " is: ", row
             n = n + 1
+#
+#--------------------------------------------------------------------------------
 # Just for testing End
 
+
+        # Only 1 flight row for a callsign is a special case
+        if row_count == 1:
+            # Only 1 flight for this callsign, so must be in its own group
+            row_0 = rows[0]
+            group += 1
+            cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
+            print "Only 1 flight for registration: ", row_0[7], " GroupID: ", group, " record created ", row_0
+            # Continue to process next callsign group
+            continue
+#
+        # Row count > 1 so process 2 or more rows
         i = 0  # First index in a list is 0
 #        group = 1               # group is used as the identifier of flights in a group
-        same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of a callsign set    
+#        same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of a callsign set    
         for r in rows:  # This will cycle through all the rows of the select statement
 #        while i <= row_count: 
             try:
@@ -200,52 +222,50 @@ def process_log (cursor, db):
                  time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
                  lmt_secs = time_lmt.total_seconds()
                  print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-                 if same_or_different_flight == 1:
-                     group += 1  #  Previous pair was different flight so increment group_id    
-                 # Create a group record for 1st record's data  
-                 if (delta_secs) >= lmt_secs:                
+#
+# Revised processing, simpler and it works!
+#                                     
+                 # Create a group record for 1st record's data 
+                 if i == 0:             # index i is 0 for first pair of set. A record must be created
                      cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
                                         VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                         {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
                                         'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
-                     print "GroupID: ", group, " record created ", row_0, "Delta_secs >= lmt_secs: ", delta_secs                   
-                 if (delta_secs) < lmt_secs:
-                     same_or_different_flight = 0
-                     print "++++Same flight", " same_or_different_flight is:", same_or_different_flight
-                     # Record created in flight_group table with current groupID, next record will have same groupID              
-                 else:
-                     # Different flight so start next group ID
-                     # Problem! If the next pair results in "Different flight" then it will be given the group_id  of the last
-                     # "Same flight, ie wrong!
-                     same_or_different_flight = 1
-                     print "----Different flight", " same_or_different_flight is:", same_or_different_flight 
-                     # Record created in flight_group table with current groupID but next record processed will have next groupID
-                     # group = group + 1  
-                 i = i + 1
+                     print "GroupID: ", group, " First record created ", row_0   
+                    # Test 2nd record of first pair to see if the time between them is such that it is a different flight
+                    # and therefore a separate record must be created
+                     if (delta_secs) >= lmt_secs: 
+                         # Flight must be in the next group
+                         print "----Different flight"
+                         group += 1 
+                     else:
+                         # Flight must be in the same flight group, time difference too small
+                         print "++++Same flight"             
+                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                    {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+                                    'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7], 'flight_no': row_1[8]})
+                     print "GroupID: ", group, " record created ", row_1, "Delta_secs: ", delta_secs 
+                 else:                   
+                    # Not the first record pair. Only need examine the 2nd record of the pair
+                    # as the first record will have been dealt with
+                     if (delta_secs) >= lmt_secs: 
+                         # Flight must be in the next group
+                         print "----Different flight. Not 1st pair, record is in next group"
+                         group += 1  
+                     else:
+                         print "++++Same flight. Not 1st pair, record is in same group, time difference too small"           
+                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                    {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+                                    'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7], 'flight_no': row_1[8]})
+                     print "GroupID: ", group, " record created ", row_1, "Delta_secs: ", delta_secs 
+                 i = i + 1                      # Increment pair index to process next pair
                  print "Number of groups is: ", group, " Row count i is: ", i 
+                 
             except IndexError:
-                 print "IndexError. Access index greater than: ", i
-                 if same_or_different_flight == 1:
-                     group += 1  #  Previous pair was different flight so increment group_id 
-                 print "GroupID: ", group, " record created ", row_0                
-                 # Index error on accessing rows[i+1] but row_0 not written yet                                
-                 cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
-                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
-                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
-
-                 # The next flight group must have the next group_ID.  If the last flight of a same callsign set was:
-                 # 1) "different flight" then
-                 #     the group_ID must be incremented and the flight put in a new group.
-                 # If the last flight of the callsign set was 
-                 # 2) "same flight" then 
-                 #    the flight is put in the same group as previous
-                 # But in either case as this is the last flight for a particular callsign set the first flight for the next callsign
-                 # set must be put in a different group.
-                 # Hence in either case 1) or 2) group_ID must be incremented
-                 group += 1
-                 same_or_different_flight = 0       # Set to initial loop start state
-                 print "GroupID now: ", group, " same_or_different_flight is: ", same_or_different_flight
+                group += 1
+                print "IndexError. Access index greater than: ", i
 
     db.commit()
     print "-------Phase 2 End-------"
