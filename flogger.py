@@ -101,7 +101,7 @@ from flarm_db import flarmdb
 from pysqlite2 import dbapi2 as sqlite
 from open_db import opendb 
 import ephem
-from flogger_process_log_2 import process_log
+from flogger_process_log import process_log
 import argparse
 from flogger_dump_flights import dump_flights
 from flogger_dump_tracks import dump_tracks2
