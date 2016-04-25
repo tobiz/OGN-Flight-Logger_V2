@@ -101,7 +101,7 @@ from flarm_db import flarmdb
 from pysqlite2 import dbapi2 as sqlite
 from open_db import opendb 
 import ephem
-from flogger_process_log import process_log
+from flogger_process_log_2 import process_log
 import argparse
 from flogger_dump_flights import dump_flights
 from flogger_dump_tracks import dump_tracks2
@@ -1076,7 +1076,7 @@ try:
                 print "Updated flight_log_final", src_callsign
 #                flogger_landout_check(flight_reg, af_centre, radius, landing_coords, mode)
                 af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
-                res =landout_check(src_callsign, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
+                res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
                 print "Landout check is: ", res
                 
                 
