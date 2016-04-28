@@ -430,6 +430,45 @@ def delete_flogger_file(folder, filename, days):
 #        else:
 #            print "File not deleted: %s" % full_file
     return
+
+def connect_APRS(sock):
+    #    
+    #-----------------------------------------------------------------
+    #
+    # This function tries to shutdown the specified sock and if it
+    # fails closes it and then creates a new one and reconnects to the APRS system
+    #    
+    #-----------------------------------------------------------------
+    #
+    try:
+        sock.shutdown(0)
+    except socket.error, e:
+        if 'not connected' in e:
+            print '*** Transport endpoint is not connected ***'
+        print "socket no longer open so can't be closed, create new one"    
+    else:
+        print "Socket still open so close it"
+        sock.close()
+    print "Create new socket"
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
+    except Errno:
+        print "Connection refused. Errno: ", Errno
+        exit() 
+    APRSparm = ('user %s pass %s vers %s %s filter r/%s/%s/%s\n ' % (settings.APRS_USER, 
+                                                                     settings.APRS_PASSCODE, 
+                                                                     settings.FLOGGER_NAME, 
+                                                                     settings.FLOGGER_VER, 
+                                                                     settings.FLOGGER_LATITUDE, 
+                                                                     settings.FLOGGER_LONGITUDE, 
+                                                                     settings.FLOGGER_RAD)) 
+#            print "APRSparm is: ", APRSparm      
+#            sock.send('user %s pass %s vers Python_Example 0.0.1 filter r/+54.228833/-1.209639/25\n ' % (settings.APRS_USER, settings.APRS_PASSCODE))
+    sock.send(APRSparm)
+    # Make the connection to the server
+    sock_file = sock.makefile()
+    return sock_file
         
     
 
@@ -765,6 +804,9 @@ try:
                 keepalive_time = current_time
             except Exception, e:
                 print ('something\'s wrong with socket write. Exception type is %s' % (`e`))
+                sock_file = connect_APRS(sock) 
+                print "New connection to APRS made"
+                continue
         else:
             print "No keepalive sent"
                 
