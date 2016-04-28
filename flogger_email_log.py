@@ -37,7 +37,7 @@ def email_log2(sender, receiver, filepath, date):
     msg = MIMEMultipart() 
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] =  "Flight log for today: %s" % date  
+    msg['Subject'] =  "Flight log for today: %s from %s" % (date, settings.APRS_USER)  
     if os.path.getsize(filepath) == 0:
         print "No file to attach"
         body = "No flights for today: %s" % date
