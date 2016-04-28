@@ -23,7 +23,7 @@ from google.directions import GoogleDirections
 def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode):
     #
     # This function determines if a flight has landed within the vicinity of the airfield take off point.
-    # If not is sends an email to the designated address specifying the landing coordinates, these
+    # If not it sends an email to the designated address specifying the landing coordinates, these
     # can then be used by the recovery team to locate the aircraft using appropriate mapping technology.
     # The algorithm used is that of a circle of defined radius centred on the originating airfield.
     # The function is intended to send the msg either by email or SMS but at the moment only email
