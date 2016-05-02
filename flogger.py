@@ -619,7 +619,11 @@ keepalive_time = time.time()
 sock = APRS_connect(settings)
 sock_file = sock.makefile()
 print "libfap_init"
-libfap.fap_init()
+rtn = libfap.fap_init()
+if rtn <> 0:
+    print "Failed to connect to APRS, check parameters"
+    exit()
+print "Libfap return: ", rtn
 
 #    
 #-----------------------------------------------------------------
