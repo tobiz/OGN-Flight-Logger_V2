@@ -453,8 +453,8 @@ def connect_APRS(sock):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
-    except Errno:
-        print "Connection refused. Errno: ", Errno
+    except Exception, e:
+        print "Connection refused. Errno: ", e
         exit() 
     APRSparm = ('user %s pass %s vers %s %s filter r/%s/%s/%s\n ' % (settings.APRS_USER, 
                                                                      settings.APRS_PASSCODE, 
@@ -854,8 +854,8 @@ try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 sock.connect((settings.APRS_SERVER_HOST, settings.APRS_SERVER_PORT))
-            except Errno:
-                print "Connection refused. Errno: ", Errno
+            except Exception, e:
+                print "Connection refused. Errno: ", e
                 exit() 
             APRSparm = ('user %s pass %s vers %s %s filter r/%s/%s/%s\n ' % (settings.APRS_USER, 
                                                                              settings.APRS_PASSCODE, 
