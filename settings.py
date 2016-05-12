@@ -56,7 +56,7 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 FLOGGER_BS = "/home/pjr/git/OGN-Flight-Logger_V2.1/"
 #FLOGGER_BS = "/home/pi/workspace/OGN-Flight-Logger_V2.1/"       
                                                                 
-FLOGGER_MODE = ""                                               # Test or live mode
+FLOGGER_MODE = "test"                                               # Test or live mode
 FLOGGER_DB_SCHEMA =  FLOGGER_BS + "flogger_schema-1.0.4.sql"    # File holding SQLite3 database schema      
 FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
 FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named OGN receiver airfield 
