@@ -109,6 +109,7 @@ from flogger_get_coords import get_coords
 from flogger_signals import sig_handler
 import signal
 import os
+import os.path
 from flogger_dump_IGC import dump_IGC
 from flogger_email_log import email_log2
 from flogger_landout import landout_check
@@ -527,8 +528,14 @@ settings.FLOGGER_MODE = args.mode
 #
 #-----------------------------------------------------------------
 # Build flogger db using schema
+# Delete SQLite3 database file if it already exists; stops it getting
+# too large during testing
 #-----------------------------------------------------------------
 #
+
+if os.path.isfile(settings.FLOGGER_DB_NAME):
+    print "SQLite3 db file exists so delete it"
+    os.remove(settings.FLOGGER_DB_NAME)
 
 db = sqlite3.connect(settings.FLOGGER_DB_NAME)
 cursor = db.cursor()                            # Get a cursor object
@@ -747,6 +754,7 @@ try:
             delete_table("flights")
             delete_table("track")
             delete_table("trackFinal")
+            delete_table("flarm_db")
             db.commit()
             # Wait for sunrise
 #            wait_time = next_sunrise - datetime_now
