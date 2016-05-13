@@ -788,7 +788,7 @@ try:
 # Sleep till sunrise
 # Then open new socket, set ephem date to new day
 #
-            print "Wait till ofter sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
+            print "Wait till after sunrise at: ", next_sunrise, " Elapsed time: ", wait_time, ". Wait seconds: ", wait_time_secs
             time.sleep(wait_time_secs)
             # Sun has now risen so recommence logging flights
             location.date = ephem.Date(datetime.datetime.now())
