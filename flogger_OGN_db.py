@@ -62,11 +62,17 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
         nf0 = fields[0].replace("'", "")        # Aircraft Type
         nf3 = fields[3].replace("'", "")        # Aircraft Registration
 #        print "Line: ", i, " Fields: ", nf1, " ", nf0, " ", nf3
+        if nf0 == "I":
+            continue
         try:
             if settings.FLOGGER_FLEET_LIST.has_key(nf3):
-                cursor.execute('''INSERT INTO flarm_db(flarm_id, airport, type, registration)
+                airport = settings.FLOGGER_AIRFIELD_NAME
+            else:
+                airport = "OTHER" 
+            cursor.execute('''INSERT INTO flarm_db(flarm_id, airport, type, registration)
                                VALUES(:flarm_id, :airport, :type, :registration)''',
-                                {'flarm_id': nf1, 'airport': settings.FLOGGER_AIRFIELD_NAME, 'type': nf0, 'registration': nf3})
+#                                {'flarm_id': nf1, 'airport': settings.FLOGGER_AIRFIELD_NAME, 'type': nf0, 'registration': nf3})
+                                {'flarm_id': nf1, 'airport': airport, 'type': nf0, 'registration': nf3})
         except Exception as e:
            print "Flarm_db insert failed. Reason: %s " % (e)
         i += 1
