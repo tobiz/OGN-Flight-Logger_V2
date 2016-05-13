@@ -3,6 +3,10 @@
 # Usage:         This module consists of the main functions used by flogger.py
 #                It's a separate module to keep the size of flogger.py more manageable 
 #
+# 20160513:        This is a bit of a mess!! It should now be updated to contain all the functions
+#                in flogger.py as these are more up to date.  The functions in flogger.py should
+#                then be deleted.
+#
 
 import socket
 from libfap import *
