@@ -35,6 +35,7 @@ def sig_handler(db, cursor):
         delete_table("flights")
         delete_table("track")
         delete_table("trackFinal")
+        delete_table("flarm_db")
         db.commit()
         print "Cntrl-C, exit"
         exit()
