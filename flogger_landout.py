@@ -122,7 +122,7 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
         msg = MIMEMultipart() 
         msg['From'] = fromaddr
         msg['To'] = toaddr
-        txt = "Flight %s landed out at: %s, %s" % (flight_reg, str(landing_coords[0]), str(landing_coords[1]))
+        txt = "%s: Flight %s landed out at: %s, %s" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]))
         msg['Subject'] =  txt 
         print "Email land out coordinates: ", txt
         body = txt + " Flight No: " + str(flight_no)
