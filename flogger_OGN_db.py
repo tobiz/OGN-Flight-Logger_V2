@@ -59,11 +59,11 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
         
         fields = line.split(",")                # Split line into fields on comma boundaries then remove any quote marks
         nf1 = fields[1].replace("'", "")        # Flarm ID
-        nf0 = fields[0].replace("'", "")        # Aircraft Type
+        nf0 = fields[0].replace("'", "")        # Type: - ICAO (I)  - ICAO type address (in practice FLARM device with assigned ICAO address)
+                                                #       - FLARM (F) - obvious  (flarm "hardware" id)
+                                                #       - OGN (O)   - used for OGN trackers 
         nf3 = fields[3].replace("'", "")        # Aircraft Registration
 #        print "Line: ", i, " Fields: ", nf1, " ", nf0, " ", nf3
-        if nf0 == "I":
-            continue
         try:
             if settings.FLOGGER_FLEET_LIST.has_key(nf3):
                 airport = settings.FLOGGER_AIRFIELD_NAME
