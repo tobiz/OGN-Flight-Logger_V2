@@ -249,29 +249,22 @@ def fleet_check_new(callsign):
         if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
             print "Don't log tug: %s" % reg
             return False
+    # At least 1 match for the callsign has been found
     return True
 
-
-    # Temporarily use local aircraft db   
-    if row <> None:
-        print "Aircraft: ", callsign, " found in aircraft db: ", row[0]
-        return True
-    else:
-        print "Aircraft: ", callsign, " not found insert in local aircraft db"
-        cursor.execute('''INSERT INTO aircraft(registration,type,model,owner,airfield ,flarm_id)
-                            VALUES(:registration,:type,:model,:owner,:airfield,:flarm_id)''',
-                            {'registration':callsign, 'type':"", 'model': "", 'owner':"",'airfield': settings.FLOGGER_AIRFIELD_NAME, 'flarm_id':callsign})
-        return True
     
 def callsign_trans(callsign):
-    # Translates a callsign supplied as as flarm_id
+    # Translates a callsign supplied as a flarm_id
     # into the aircraft registration using a local db based on flarmnet or OGN
-    cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
+    # Note if OGN db is being used then callsigns don't start with FLR or ICA, this is denoted by the 'Type' field
+#    cursor.execute('''SELECT registration, flarm_id FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
     if callsign.startswith("FLR") or callsign.startswith("ICA") :
         # Callsign starts with "FLR" or ICA so remove it
         str = callsign[3:]
         ncallsign = "%s" % str
         print "Removing FLR or ICA string.  Callsign is now: ", ncallsign
+    else:
+        ncallsign = "%s" % callsign
     cursor.execute('''SELECT registration FROM flarm_db WHERE flarm_id=? ''', (ncallsign,))
     row = cursor.fetchone() 
     if row <> None:
