@@ -85,6 +85,8 @@
 #
 # 20160323        1) Added optional output of track data in IGC format
 #                 2) Added optional deletion of old flight .csv and track .csv/.igc files
+#
+# 20160514        1) Use $ pipreqs --force /path/to/project to generate requirements.txt for pip install
 
 import socket
 
