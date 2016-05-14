@@ -246,9 +246,10 @@ def fleet_check_new(callsign):
     else:
         print "Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name
         reg = callsign_trans(callsign)
-        if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
-            print "Don't log tug: %s" % reg
-            return False
+        if settings.FLOGGER_FLEET_CHECK <> "N":
+            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
+                print "Don't log tug: %s" % reg
+                return False
     # At least 1 match for the callsign has been found
     return True
 
