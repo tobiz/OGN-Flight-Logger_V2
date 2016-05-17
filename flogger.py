@@ -115,6 +115,7 @@ import os.path
 from flogger_dump_IGC import dump_IGC
 from flogger_email_log import email_log2
 from flogger_landout import landout_check
+from geopy.distance import vincenty
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -1024,13 +1025,19 @@ try:
 #             print "Line ", i, " ", packet[0].orig_packet
             
 #            if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] <> 0:
+#            af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
+#            takeoff_loc = (latitude, longitude)
+            takeoff_dist = vincenty((settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE), (latitude, longitude)).meters
             print "Test for was stopped now moving. nprevs[speed] is: " + str(nprev_vals[src_callsign]['speed']) + " nvalues[speed] is: "+ str(nvalues[src_callsign]['speed'])
-            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
+#            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
+            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL and takeoff_dist < settings.FLOGGER_AIRFIELD_LIMIT:
+                # The previous speed means it was probably stopped, the current speed means it is probably moving and the position is within the airfield
             # Following test for case when Flarm is switched on for first time when stationary and at an
             # altitude greater than settings.FLOGGER_QNH, ie a special case of initial location. nprev_vals get set to zero when aircraft
             # first detected by flarm. Doesn't work.  Needs thought
 #            if (nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL) or (nprev_vals[src_callsign]['speed'] == nvalues[src_callsign]['speed'] and  nvalues[src_callsign]['speed']> V_SMALL):
                 print "New test true for switch-on"
+                print "Takeoff point is: ", (latitude, longitude)
                 # aircraft was stopped, now isn't
                 # Enhancement.  At this point create new Track table record for the flight.
                 # Set track_no to current value and increment for use by next new flight.
