@@ -87,6 +87,8 @@
 #                 2) Added optional deletion of old flight .csv and track .csv/.igc files
 #
 # 20160514        1) Use $ pipreqs --force /path/to/project to generate requirements.txt for pip install
+#
+# 20160518        1) Added attempt to load earlier version Linux libfap if current fails
 
 import socket
 
