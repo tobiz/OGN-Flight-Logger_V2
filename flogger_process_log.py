@@ -226,7 +226,8 @@ def process_log (cursor, db):
 # Revised processing, simpler and it works!
 #                                     
                  # Create a group record for 1st record's data 
-                 if i == 0:             # index i is 0 for first pair of set. A record must be created
+                 if i == 0 :            # index i is 0 for first pair of set. A record must be created
+                                        # Flight time must be greater than minimum 
                      cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
                                         VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                         {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],

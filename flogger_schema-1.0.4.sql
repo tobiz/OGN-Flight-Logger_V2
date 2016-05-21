@@ -191,11 +191,13 @@ DROP TABLE IF EXISTS `flarm_db` ;
   
 CREATE TABLE IF NOT EXISTS `flarm_db`(
  	`id` INTEGER PRIMARY KEY AUTOINCREMENT, 
+ 	`type` TEXT NULL DEFAULT NULL,
  	`flarm_id` TEXT NULL DEFAULT NULL, 
  	`airport` STRING NULL DEFAULT NULL, 
- 	`type` TEXT NULL DEFAULT NULL, 
+ 	`aircraft_model` TEXT NULL DEFAULT NULL, 
  	`registration` TEXT NULL DEFAULT NULL, 
- 	`radio` TEXT NULL DEFAULT NULL); 
+ 	`radio` TEXT NULL DEFAULT NULL,
+ 	`aircraft_type` TEXT NULL DEFAULT NULL); 
  	
 CREATE UNIQUE INDEX `flarm_db_idx` ON `flarm_db`(`id`, `flarm_id`);
 

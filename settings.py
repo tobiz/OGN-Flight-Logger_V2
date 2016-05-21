@@ -66,13 +66,14 @@ FLOGGER_MIN_FLIGHT_TIME = "0:4:0"                               # hh:mm:ss
 FLOGGER_KEEPALIVE_TIME = 900                                    # Interval in seconds for sending tcp/ip keep alive on socket connection
 FLOGGER_DB_NAME = "flogger.sql3.2"                              # Name of file for flogger SQLite3 database
 FLOGGER_FLARMNET_DB_URL = "http://www.flarmnet.org/files/data.fln" # URL of Flarmnet database
-FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm database  or blank for don't use                    
+#FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download"        # URL of OGN Flarm database  or blank for don't use   
+FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download/?t=1"        # URL of OGN Flarm database  or blank for don't use                    
 #FLOGGER_OGN_DB_URL = ""                                        # URL of OGN Flarm to registration mapping database  
 #FLOGGER_AIRFIELD_NAME = "SuttonBnk"                            # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
                                                                 # If blank, "" then all aircraft in db are included in logs & tracks
 FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
-FLOGGER_QFE_MIN = 30                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~100 ft
+FLOGGER_QFE_MIN = 50                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~100 ft
 FLOGGER_LOG_PATH =  FLOGGER_BS + "logs"                         # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
 FLOGGER_TRACKS_FOLDER = FLOGGER_BS + "tracks"                   # Folder for .gpx files for flight tracks
@@ -119,7 +120,18 @@ FLOGGER_FLEET_LIST = {"G-BJIV":1, "G-CHEF":2, "G-CHVR":3, "G-CKFN":4, "G-CKJH":5
                       "G-BETM":101, "G-CIOF":102, "G-MOYR":103, 
                       "G-OSUT":201, 
                       }
-
+#
+# Aircraft types in OGN Database, see https://github.com/glidernet/ogn-ddb/blob/master/index.php#L87
+#
+FLOGGER_AIRCRAFT_CAT = [
+        'None'                  # 0 = Blank
+        'Gliders/motoGliders',  # 1
+        'Planes',               # 2
+        'Ultralights',          # 3
+        'Helicoters',           # 4
+        'Drones/UAV',           # 5
+        'Others',               # 6
+        ]
 
 
 
