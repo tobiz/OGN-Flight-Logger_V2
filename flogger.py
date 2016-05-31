@@ -118,6 +118,7 @@ from flogger_dump_IGC import dump_IGC
 from flogger_email_log import email_log2
 from flogger_landout import landout_check
 from geopy.distance import vincenty
+from flogger_email_msg import email_msg
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -1039,7 +1040,8 @@ try:
             # first detected by flarm. Doesn't work.  Needs thought
 #            if (nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL) or (nprev_vals[src_callsign]['speed'] == nvalues[src_callsign]['speed'] and  nvalues[src_callsign]['speed']> V_SMALL):
                 print "New test true for switch-on"
-                print "Takeoff point is: ", (latitude, longitude)
+                print "Takeoff point is: ", (latitude, longitude), "Distance is: ", takeoff_dist
+                email_msg(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, registration, fl_time)
                 # aircraft was stopped, now isn't
                 # Enhancement.  At this point create new Track table record for the flight.
                 # Set track_no to current value and increment for use by next new flight.
