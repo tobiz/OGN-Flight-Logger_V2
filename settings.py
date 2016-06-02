@@ -108,7 +108,7 @@ FLOGGER_APRS_BASE_2 = "UKPOC"
 FLOGGER_APRS_BASE_3 = "UKRUF"         
 FLOGGER_APRS_BASE_4 = "Linton"
 
-FLOGGER_APRS_BASES = ["SuttonBnk", "UKPOC", "UKRUF", "Linton"]  
+FLOGGER_APRS_BASES = ["SuttonBnk", "UKPOC", "UKRUF", "Linton", "Riponhill"]  
 
 
 # Coded       001-099: Gliders, 
