@@ -59,7 +59,10 @@ def email_log2(sender, receiver, filepath, date):
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
     fpw.close()
-    os.remove(FLIGHT_LOG_FILE)
+    try:
+        os.remove(FLIGHT_LOG_FILE)
+    except Exception, e:
+        print "Remove FLIGHT_LOG_FILE failed, reason: ", e
     return
        
 
