@@ -232,6 +232,13 @@ def is_dst(zonename):
     return now.astimezone(tz).dst() != timedelta(0)
    
 def fleet_check_new(callsign):
+    #
+    # This has become a little confusing! If FLOGGER_FLEET_CHECK == n|N then FLOGGER_AIRFIELD_NAME is not used in
+    # the flarm_db search so a non-fleet aircraft can be found, but the later code checks whether the aircraft
+    # has taken off at FLOGGER_AIRFIELD_NAME; if it hasn't it won't be included in the flights, if it has it will.
+    #
+    # This logic and code needs to be re-thought!
+    #
     print "In fleet check for: ", callsign
 #    cursor.execute('''SELECT ROWID FROM aircraft WHERE registration =? or flarm_id=? ''', (callsign,callsign,))
 #    row = cursor.fetchone()
