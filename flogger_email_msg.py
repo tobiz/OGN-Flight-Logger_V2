@@ -12,7 +12,7 @@ import datetime
 
 def email_msg(sender, receiver, msg, date):
 #    print "Send take off msg"
-    if settings.FLOGGER_TAKEOFF_EMAIL != "y" and settings.FOGGER_TAKEOFF_EMAIL != "Y":
+    if settings.FLOGGER_TAKEOFF_EMAIL != "y" and settings.FLOGGER_TAKEOFF_EMAIL != "Y":
         # Don't send take off email msg
         return
     body = "Msg from %s. %s taken off @ %s" % (settings.APRS_USER, msg, date)  
