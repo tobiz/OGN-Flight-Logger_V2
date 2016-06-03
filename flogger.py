@@ -338,22 +338,27 @@ def APRS_connect (settings):
 def addTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,timeStamp):
     #    
     #-----------------------------------------------------------------
-    # Add gps track data to track record if settings.FLOGGER_TRACK is "Y" ie yes    
+    # Add gps track data to track record if settings.FLOGGER_TRACK is "Y" ie yes 
+    # and if flight_no != None which it will be if flight has not taken off at FLOGGER_AIRFIELD_NAME   
     #-----------------------------------------------------------------
     #
-    dt = str(datetime.datetime.now())           # Get the datetime this track point is created as string
-    sdt = dt[0:10] + "T" + dt[11:19] + "Z"      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ   
+#    dt = str(datetime.datetime.now())           # Get the datetime this track point is created as string
+#    sdt = dt[0:10] + "T" + dt[11:19] + "Z"      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ   
 #    sdt = "%sT%sZ" % (dt[0:10],dt[11:19])      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ
     
 
-    if settings.FLOGGER_TRACKS == "Y":
+    if settings.FLOGGER_TRACKS == "Y" and flight_no != None:
         print "Flight_no is: ", flight_no
         print "Track point nos is: ", track_no
+#        dt = str(datetime.datetime.now())           # Get the datetime this track point is created as string
+#        sdt = dt[0:10] + "T" + dt[11:19] + "Z"      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ   
 #        This print doesn't work as one of the values is of none-type, not sure why?
 #        print "Adding track data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
         cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
             VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
             {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
+    else:
+        print "Don't add track point"
     return
     
 def endTrack():
