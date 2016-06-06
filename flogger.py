@@ -766,7 +766,7 @@ try:
             delete_table("flights")
             delete_table("track")
             delete_table("trackFinal")
-            delete_table("flarm_db")
+            delete_table("flarm_db")        # flarm_db should be rebuilt at start of each day
             db.commit()
             # Wait for sunrise
 #            wait_time = next_sunrise - datetime_now
@@ -811,6 +811,17 @@ try:
             keepalive_time = time.time()
             sock = APRS_connect(settings)
             sock_file = sock.makefile()         # Note both sock & sock_file get used
+            #    
+            #-----------------------------------------------------------------
+            # Build local database from flarmnet of aircraft for today
+            # Note source flarm_db may have changed during previous day 
+            #-----------------------------------------------------------------
+            #
+            if flarmdb(settings.FLOGGER_FLARMNET_DB_URL, cursor, db, "flarm_data") == True:
+                print "Flarmnet db built for today"   
+            else:
+                print "Flarmnet db re-build failed, exit" 
+                exit()
             i = 0                               # Count of todays APRS reads reset   
             flight_no = {}                      # Re-initialise flight_no dictionary at start of day
             track_no = {}                       # Re-initialise track_no dictionary at start of day
