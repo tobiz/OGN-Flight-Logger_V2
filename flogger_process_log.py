@@ -59,6 +59,28 @@ def process_log (cursor, db):
     print "row is: ", row
     #    
     #-----------------------------------------------------------------
+    # Phase 0 processing start  
+    #-----------------------------------------------------------------
+    #
+    # Check flight_log for duplicates and report
+    # There shouldn't be any! For now just report
+    #
+    print "+++++++Phase 0 Start+++++++"
+    cursor.execute('''SELECT DISTINCT sdate, stime, edate, etime, duration, src_callsign, registration FROM flight_log_final''')
+    duplicates = cursor.fetchall()
+    if duplicates <> []:
+        print "*** Duplicates found in flight_log_final", duplicates
+    else:
+        print "*** No duplicates found ***"
+    #    
+    #-----------------------------------------------------------------
+    # Phase 0 processing end 
+    #-----------------------------------------------------------------
+    #
+    
+    
+    #    
+    #-----------------------------------------------------------------
     # Phase 1 processing    
     #-----------------------------------------------------------------
     #
