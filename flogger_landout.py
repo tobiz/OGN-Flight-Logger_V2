@@ -19,6 +19,7 @@ import datetime
 from geopy.distance import vincenty
 from flogger_get_coords import get_coords
 from google.directions import GoogleDirections
+from LatLon import  *
 
 def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode):
     #
@@ -32,12 +33,17 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
     # included if this helps with subsequent development.
     #
     print "landout_check called. Registration: ", flight_reg, " Start coords: ", af_centre, " End coords: ", landing_coords
+    
+    
+    
     landing_dist = vincenty(af_centre, landing_coords).meters
     print "Landing distance is: %d metres from airfield centre" % landing_dist
     if landing_dist <= radius:
         print "Landed in airfield"
         return False
     print "Flight landed out, send msg. Registration: ", flight_reg, " Flight No: ", flight_no
+    landing_point = LatLon(landing_coords[0], landing_coords[1])   # Decimal degrees to object
+    landing_coords = landing_point.to_string('d% %m% %S% %H')   # Coordinates to degrees minutes seconds
     if mode == "SMS":
         #-----------------------------------
         # Send SMS Text Message using Python
@@ -122,7 +128,7 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
         msg = MIMEMultipart() 
         msg['From'] = fromaddr
         msg['To'] = toaddr
-        txt = "%s: Flight %s landed out at: %s, %s" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]))
+        txt = "%s: Flight %s landed out at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
         msg['Subject'] =  txt 
         print "Email land out coordinates: ", txt
         body = txt + " Flight No: " + str(flight_no)
