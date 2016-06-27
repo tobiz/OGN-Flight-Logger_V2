@@ -354,9 +354,12 @@ def addTrack(cursor,flight_no,track_no,longitude,latitude,altitude,course,speed,
 #        sdt = dt[0:10] + "T" + dt[11:19] + "Z"      # Convert to string format for gpx, ie YYYY-MM-DDTHH:MM:SSZ   
 #        This print doesn't work as one of the values is of none-type, not sure why?
 #        print "Adding track data to: %i, %i, %f, %f, %f, %f %f " % (flight_no,track_no,latitude,longitude,altitude,course,speed)
-        cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
-            VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
-            {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
+        try:
+            cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
+                VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
+                {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
+        except:
+            print "Add trackpoint failed on insert: ignore trackpoint"
     else:
         print "Don't add track point"
     return
@@ -1092,8 +1095,11 @@ try:
                 # aircraft was moving is now stopped
                 print "Aircraft ", src_callsign, " was moving, now stopped. Update record for end date & time"
                 # Add final track record
-                addTrack(cursor, flight_no[src_callsign],track_no[src_callsign],longitude,latitude,altitude,course,speed,timestamp)
-                # Find latest record for this callsign
+                try:
+                    addTrack(cursor, flight_no[src_callsign],track_no[src_callsign],longitude,latitude,altitude,course,speed,timestamp)
+                    # Find latest record for this callsign
+                except KeyError, reason:
+                    print "addTrack failed. Trackpoint ignored. Reason: ", reason
 #
 # Bug 20150520-1 Test Start
 #                
