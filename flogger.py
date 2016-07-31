@@ -600,10 +600,10 @@ else:
 #-----------------------------------------------------------------
 #    
     
-APRS_base_list = [settings.FLOGGER_APRS_BASE_1, 
-                  settings.FLOGGER_APRS_BASE_2, 
-                  settings.FLOGGER_APRS_BASE_3,
-                  settings.FLOGGER_APRS_BASE_4,] 
+#APRS_base_list = [settings.FLOGGER_APRS_BASE_1, 
+#                  settings.FLOGGER_APRS_BASE_2, 
+#                  settings.FLOGGER_APRS_BASE_3,
+#                  settings.FLOGGER_APRS_BASE_4,] 
 
 APRS_base_list = settings.FLOGGER_APRS_BASES 
 

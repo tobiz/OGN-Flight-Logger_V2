@@ -58,7 +58,8 @@ FLOGGER_BS = "/home/pjr/git/OGN-Flight-Logger_V2.1/"
                                                                 
 FLOGGER_MODE = "test"                                               # Test or live mode
 FLOGGER_DB_SCHEMA =  FLOGGER_BS + "flogger_schema-1.0.4.sql"    # File holding SQLite3 database schema      
-FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
+#FLOGGER_QNH = 340                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank    
+FLOGGER_QNH = 0                                               # QNH ie ASL in metres for airfield at lat/logitude, if set to 0, elevation is automatically looked up. This is Sutton Bank
 FLOGGER_LATITUDE, FLOGGER_LONGITUDE = '+54.228833', '-1.209639' # Latitude, longitude of named OGN receiver airfield 
 #FLOGGER_AIRFIELD_DETAILS = ""                                  # Location details for use by geocoder. If blank, "" use LAT, LONG etc
 FLOGGER_AIRFIELD_DETAILS = "Yorkshire Gliding Club UK"          # Location details for use by geocoder. If blank, "" use LAT, LONG etc
@@ -73,18 +74,18 @@ FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download/?t=1"        # URL of OG
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
                                                                 # If blank, "" then all aircraft in db are included in logs & tracks
 FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
-FLOGGER_QFE_MIN = 50                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~100 ft
+FLOGGER_QFE_MIN = 100                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~300 ft
 FLOGGER_LOG_PATH =  FLOGGER_BS + "logs"                         # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
 FLOGGER_TRACKS_FOLDER = FLOGGER_BS + "tracks"                   # Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0                                          # Lowest moving speed to be considered as zero kph
 FLOGGER_NAME = "OGN_Flogger"                                    # Name to be displayed on APRS
 FLOGGER_VER = "0.2.3"                                           # Flogger version number
-FLOGGER_RAD = "25"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
+FLOGGER_RAD = "50"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
 FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record  
-FLOGGER_DATA_RETENTION = 7                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
+FLOGGER_DATA_RETENTION = 3                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
 FLOGGER_LOG_TUGS = "N"                                          # Don't log tug flights if "N"
-FLOGGER_TRACKS_IGC = "Y"                                        # Dump flight tracks in IGC format if "Y" else no
+FLOGGER_TRACKS_IGC = "N"                                        # Dump flight tracks in IGC format if "Y" else no
 FLOGGER_LOG_TIME_DELTA = 1                                      # Number of hours before sunset to start processing flight log
 FLOGGER_SMTP_SERVER_URL = ''                                    # URL of smtp server for sending email
 FLOGGER_SMTP_SERVER_PORT = 25                                   # smtp server port number, normally 25
@@ -92,7 +93,8 @@ FLOGGER_SMTP_TX = ""                                            # Flight log sen
 FLOGGER_SMTP_RX = ""                                            # Flight log receiver email addrs 
 FLOGGER_AIRFIELD_LIMIT = 2000                                   # Distance from airfield centre considered a 'Land Out' in metres
 FLOGGER_LANDOUT_MODE = "email"                                  # Send land out msg by "email", "SMS", or "" don't send
-FLOGGER_TAKEOFF_EMAIL = "n"                                     # Send email for each take off if Yes else no
+FLOGGER_TAKEOFF_EMAIL = "Y"                                     # Send email for each take off if Yes else no
+FLOGGER_LOG_LAUNCH_FAILURES = "N"                               # Log launch failures, ie below min time & min height
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
@@ -103,12 +105,13 @@ FLOGGER_TAKEOFF_EMAIL = "n"                                     # Send email for
 # service using FLOGGER_AIRFIELD_DETAILS. The primary OGN receiver base station coordinates together with the value 
 # of FLOGGER_RAD are used to filter the data received from APRS.
 #                   
-FLOGGER_APRS_BASE_1 = "SuttonBnk"                  
-FLOGGER_APRS_BASE_2 = "UKPOC"           
-FLOGGER_APRS_BASE_3 = "UKRUF"         
-FLOGGER_APRS_BASE_4 = "Linton"
 
-FLOGGER_APRS_BASES = ["SuttonBnk", "UKPOC", "UKRUF", "Linton", "Riponhill"]  
+#FLOGGER_APRS_BASE_1 = "SuttonBnk"                  
+#FLOGGER_APRS_BASE_2 = "UKPOC"           
+#FLOGGER_APRS_BASE_3 = "UKRUF"         
+#FLOGGER_APRS_BASE_4 = "Linton"
+
+FLOGGER_APRS_BASES = ["SuttonBnk", "UKPOC", "UKRUF", "Linton", "Riponhill", "Wetherby1"]  
 
 
 # Coded       001-099: Gliders, 
