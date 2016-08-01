@@ -33,7 +33,7 @@ def dump_tracks2(cursor, db):
             print "Number of flights in trackFinal is: ", len(flights)
             for aflight in flights:
                 flight_no = aflight[0]
-                track_file_name = "%s/%s_track.new%d.gpx" % (settings.FLOGGER_TRACKS_FOLDER, gpx_path, flight_no)
+                track_file_name = "%s/%s_flight%d_track.gpx" % (settings.FLOGGER_TRACKS_FOLDER, gpx_path, flight_no)
                 print "New trackfile name is: ", track_file_name, " This flight is: ", flight_no
                 cursor.execute('''SELECT sdate, stime, duration, registration, max_altitude FROM flights WHERE flight_no=?''', (flight_no,))
                 flight_data = cursor.fetchone()
