@@ -40,8 +40,13 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
     print "Landing distance is: %d metres from airfield centre" % landing_dist
     if landing_dist <= radius:
         print "Landed in airfield"
-        return False
-    print "Flight landed out, send msg. Registration: ", flight_reg, " Flight No: ", flight_no
+        if settings.FLOGGER_LANDING_EMAIL == "Y" or settings.FLOGGER_LANDING_EMAIL == "y":
+            landing_status = "landed"
+        else:
+            return False
+    else:
+        landing_status = "landed out"
+        print "Flight landed out, send msg. Registration: ", flight_reg, " Flight No: ", flight_no
     landing_point = LatLon(landing_coords[0], landing_coords[1])   # Decimal degrees to object
     landing_coords = landing_point.to_string('d% %m% %S% %H')   # Coordinates to degrees minutes seconds
     if mode == "SMS":
@@ -122,15 +127,19 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
           return False
     
     if mode == "email":
-        print "Send landout email"
+#        print "Send landout email"
+        print "Send %s email" % landing_status
         fromaddr = settings.FLOGGER_SMTP_TX
         toaddr = settings.FLOGGER_SMTP_RX
         msg = MIMEMultipart() 
         msg['From'] = fromaddr
         msg['To'] = toaddr
-        txt = "%s: Flight %s landed out at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
+#        txt = "%s: Flight %s landed out at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
+        txt = "%s: Flight %s %s at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, landing_status, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
+
         msg['Subject'] =  txt 
-        print "Email land out coordinates: ", txt
+#        print "Email land out coordinates: ", txt
+        print "Email %s coordinates: %s" % (landing_status, txt)
         body = txt + " Flight No: " + str(flight_no)
         msg.attach(MIMEText(body, 'plain'))    
         server = smtplib.SMTP(settings.FLOGGER_SMTP_SERVER_URL, settings.FLOGGER_SMTP_SERVER_PORT)

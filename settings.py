@@ -94,6 +94,7 @@ FLOGGER_SMTP_RX = ""                                            # Flight log rec
 FLOGGER_AIRFIELD_LIMIT = 2000                                   # Distance from airfield centre considered a 'Land Out' in metres
 FLOGGER_LANDOUT_MODE = "email"                                  # Send land out msg by "email", "SMS", or "" don't send
 FLOGGER_TAKEOFF_EMAIL = "Y"                                     # Send email for each take off if Yes else no
+FLOGGER_LANDING_EMAIL = "Y"                                     # Send email for each landing if Yes else no
 FLOGGER_LOG_LAUNCH_FAILURES = "N"                               # Log launch failures, ie below min time & min height
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
