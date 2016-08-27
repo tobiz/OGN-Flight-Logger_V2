@@ -86,7 +86,7 @@ FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv
 FLOGGER_DATA_RETENTION = 3                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
 FLOGGER_LOG_TUGS = "N"                                          # Don't log tug flights if "N"
 FLOGGER_TRACKS_IGC = "N"                                        # Dump flight tracks in IGC format if "Y" else no
-FLOGGER_LOG_TIME_DELTA = 1                                      # Number of hours before sunset to start processing flight log
+FLOGGER_LOG_TIME_DELTA = 0                                      # Number of hours before sunset to start processing flight log
 FLOGGER_SMTP_SERVER_URL = ''                                    # URL of smtp server for sending email
 FLOGGER_SMTP_SERVER_PORT = 25                                   # smtp server port number, normally 25
 FLOGGER_SMTP_TX = ""                                            # Flight log sended email addrs
@@ -96,6 +96,7 @@ FLOGGER_LANDOUT_MODE = "email"                                  # Send land out 
 FLOGGER_TAKEOFF_EMAIL = "Y"                                     # Send email for each take off if Yes else no
 FLOGGER_LANDING_EMAIL = "Y"                                     # Send email for each landing if Yes else no
 FLOGGER_LOG_LAUNCH_FAILURES = "N"                               # Log launch failures, ie below min time & min height
+FLOGGER_LOCATION_HORIZON = '-0:34'                              # Adjustments for angle to horizon for sunset
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results

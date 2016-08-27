@@ -615,7 +615,8 @@ APRS_base_list = settings.FLOGGER_APRS_BASES
 
 location = ephem.Observer()
 location.pressure = 0
-location.horizon = '-0:34'    # Adjustments for angle to horizon
+#location.horizon = '-0:34'    # Adjustments for angle to horizon
+location.horizon = settings.FLOGGER_LOCATION_HORIZON    # Adjustments for angle to horizon
 
 location.lat = settings.FLOGGER_LATITUDE
 location.lon = settings.FLOGGER_LONGITUDE
@@ -874,7 +875,7 @@ try:
             print "Read returns zero length string on iteration: ", i
             # Wait 20 seconds
             time.sleep(20)
-            continue
+#            continue
             try:
                 sock.shutdown(0)
             except socket.error, e:
