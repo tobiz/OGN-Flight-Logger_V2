@@ -119,6 +119,7 @@ from flogger_email_log import email_log2
 from flogger_landout import landout_check
 from geopy.distance import vincenty
 from flogger_email_msg import email_msg
+from flogger_find_tug import find_tug
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -133,6 +134,8 @@ nvalues =     {"G-CKLW": {'latitude': 0, 'longitude': 0, "altitude": 0, "speed":
 L_SMALL = float(0.001)                            # Small latitude or longitude delta of a 0.001 degree
 A_SMALL = float(0.01)                             # Small altitude delta of 0.01 a metre, ie 1cm
 V_SMALL = float(settings.FLOGGER_V_SMALL)         # Small velocity delta of 10.0 kph counts as zero ie not moving
+V_TAKEOFF_MIN = float(settings.FLOGGER_V_TAKEOFF_MIN)
+V_LANDING_MIN = float(settings.FLOGGER_V_LANDING_MIN)
 frst_time = False
 AIRFIELD = "SuttonBnk"
 flight_no = {}                                      # A dictionary {callsign: flight_no}
@@ -740,6 +743,12 @@ try:
             print "Dump tracks"
             dump_tracks2(cursor, db)
             dump_IGC(cursor, db)
+            
+#
+# Experimental. Find tug used for each launch
+#
+            find_tug(cursor, db)
+            print "Find tug phase end"
                 
             
 #
@@ -1060,7 +1069,9 @@ try:
             takeoff_dist = vincenty((settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE), (latitude, longitude)).meters
             print "Test for was stopped now moving. nprevs[speed] is: " + str(nprev_vals[src_callsign]['speed']) + " nvalues[speed] is: "+ str(nvalues[src_callsign]['speed'])
 #            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL:
-            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL and takeoff_dist < settings.FLOGGER_AIRFIELD_LIMIT:
+#            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL and takeoff_dist < settings.FLOGGER_AIRFIELD_LIMIT:
+            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_TAKEOFF_MIN and takeoff_dist < settings.FLOGGER_AIRFIELD_LIMIT:
+
                 # The previous speed means it was probably stopped, the current speed means it is probably moving and the position is within the airfield
             # Following test for case when Flarm is switched on for first time when stationary and at an
             # altitude greater than settings.FLOGGER_QNH, ie a special case of initial location. nprev_vals get set to zero when aircraft
@@ -1092,7 +1103,8 @@ try:
                 
 #            if nprev_vals[src_callsign]['speed'] <> 0 and nvalues[src_callsign]['speed'] == 0:
             print "Test for was moving is now stopped"
-            if nprev_vals[src_callsign]['speed'] > V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL:
+#            if nprev_vals[src_callsign]['speed'] > V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL:
+            if nprev_vals[src_callsign]['speed'] > V_LANDING_MIN and nvalues[src_callsign]['speed'] <= V_LANDING_MIN:
                 # aircraft was moving is now stopped
                 print "Aircraft ", src_callsign, " was moving, now stopped. Update record for end date & time"
                 # Add final track record
@@ -1202,7 +1214,8 @@ try:
                 continue
 #            if nprev_vals[src_callsign]['speed'] == 0 and nvalues[src_callsign]['speed'] == 0:
             print "Is Aircraft %s moving? nprev.speed=%d, nvalues.speed=%d, nvalues.altitude=%d" % (src_callsign, nprev_vals[src_callsign]['speed'], nvalues[src_callsign]['speed'], nvalues[src_callsign]['altitude'])        
-            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= settings.FLOGGER_QNH:
+#            if nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['altitude'] <= settings.FLOGGER_QNH:
+            if nprev_vals[src_callsign]['speed'] <= V_TAKEOFF_MIN and nvalues[src_callsign]['speed'] <= V_TAKEOFF_MIN and nvalues[src_callsign]['altitude'] <= settings.FLOGGER_QNH:
                 # Aircraft hasn't moved and is not at an altitude greater than Sutton Bank.  
                 print "Aircraft: ", src_callsign, " Not moving. Speed was: ", nprev_vals[src_callsign]['speed'], " Speed is: ", nvalues[src_callsign]['speed']
             else:
