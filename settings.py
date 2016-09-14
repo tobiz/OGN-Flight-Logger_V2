@@ -73,7 +73,7 @@ FLOGGER_OGN_DB_URL = "http://ddb.glidernet.org/download/?t=1"        # URL of OG
 #FLOGGER_AIRFIELD_NAME = "SuttonBnk"                            # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED
 FLOGGER_AIRFIELD_NAME = "SUTTON BANK"                           # Name of Flarm base station for airfield. NOTE MUST BE PROVIDED AS in flarmdb record
                                                                 # If blank, "" then all aircraft in db are included in logs & tracks
-FLOGGER_FLEET_CHECK = "N"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
+FLOGGER_FLEET_CHECK = "Y"                                       # Checks Flarm ID is for aircraft fleet of FLOGGER_AIRFIELD_NAME if "Y"
 FLOGGER_QFE_MIN = 100                                            # Minimum altitude in metres attained for inclusion as a flight, ie ~300 ft
 FLOGGER_LOG_PATH =  FLOGGER_BS + "logs"                         # Path where log files are stored 
 FLOGGER_TRACKS = "Y"                                            # If Y flight tracks are recorded. Default is N, ie No tracks logged
@@ -84,12 +84,12 @@ FLOGGER_VER = "0.2.3"                                           # Flogger versio
 FLOGGER_RAD = "50"                                              # APRS radius in km from base station in AIRFIELD_DETAILS
 FLOGGER_FLIGHTS_LOG = FLOGGER_BS + ""                           # Folder for csv file of daily flights record  
 FLOGGER_DATA_RETENTION = 3                                      # Number of days to keep .csv files, ie delete, if "0" keep all files
-FLOGGER_LOG_TUGS = "N"                                          # Don't log tug flights if "N"
+FLOGGER_LOG_TUGS = "Y"                                          # Don't log tug flights if "N"
 FLOGGER_TRACKS_IGC = "N"                                        # Dump flight tracks in IGC format if "Y" else no
 FLOGGER_LOG_TIME_DELTA = 0                                      # Number of hours before sunset to start processing flight log
 FLOGGER_SMTP_SERVER_URL = ''                                    # URL of smtp server for sending email
 FLOGGER_SMTP_SERVER_PORT = 25                                   # smtp server port number, normally 25
-FLOGGER_SMTP_TX = ""                                            # Flight log sended email addrs
+FLOGGER_SMTP_TX = ""                                            # Flight log sender email addrs
 FLOGGER_SMTP_RX = ""                                            # Flight log receiver email addrs 
 FLOGGER_AIRFIELD_LIMIT = 2000                                   # Distance from airfield centre considered a 'Land Out' in metres
 FLOGGER_LANDOUT_MODE = "email"                                  # Send land out msg by "email", "SMS", or "" don't send
@@ -97,6 +97,8 @@ FLOGGER_TAKEOFF_EMAIL = "Y"                                     # Send email for
 FLOGGER_LANDING_EMAIL = "Y"                                     # Send email for each landing if Yes else no
 FLOGGER_LOG_LAUNCH_FAILURES = "N"                               # Log launch failures, ie below min time & min height
 FLOGGER_LOCATION_HORIZON = '-0:34'                              # Adjustments for angle to horizon for sunset
+FLOGGER_V_TAKEOFF_MIN = 10                                      # Min ground speed considered as takenoff. Same as ogn-live (55Km/h)
+FLOGGER_V_LANDING_MIN = 10                                      # Min ground speed considered as landed. Same as ogn-live (40Km/h)
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
@@ -123,7 +125,7 @@ FLOGGER_APRS_BASES = ["SuttonBnk", "UKPOC", "UKRUF", "Linton", "Riponhill", "Wet
 # Note. No reason for coding these values other than, 'why not!'
 FLOGGER_FLEET_LIST = {"G-BJIV":1, "G-CHEF":2, "G-CHVR":3, "G-CKFN":4, "G-CKJH":5, 
                       "G-CKLW":6, "G-CJVZ":7, "G-DDKC":8, "G-DDPO":9,  
-                      "G-BETM":101, "G-CIOF":102, "G-MOYR":103, 
+                      "G-BETM":101, "G-CIOF":102, "G-MOYR":103, "G-BJIV": 104,
                       "G-OSUT":201, 
                       }
 #
