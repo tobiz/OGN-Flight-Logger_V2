@@ -9,7 +9,7 @@
 -- 20150825 Corrected schema for AUTOINCREMENT primary keys
 -- 20150826 Corrected flights table: set aircraft_id, users_id, launch_type,launch_types_idlaunch_types to INT NULL DEFAULT NULL
 -- 20150908 Added fields for concatenating tracks for a flight when processing a group
---
+-- 
 
 -- -----------------------------------------------------
 -- Table `mydb`.`users`
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `flight_log` (
   `max_altitude` TEXT NULL DEFAULT NULL,
   `speed` TEXT NULL DEFAULT NULL,
   'registration' TEXT NULL DEFAULT NULL,
-  'flight_no' INTEGER NULL DEFAULT NULL);
+  'flight_no' INTEGER NULL DEFAULT NULL); 
   
 -- -----------------------------------------------------
 -- Table `mydb`.`flight_log2`
@@ -108,7 +108,9 @@ CREATE TABLE IF NOT EXISTS `launch_types` (
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`flights`
+-- Table `mydb`.`flights` 
+-- 20160907 	Added tug registration and max altitude if
+-- 				flight launched by tug 
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `flights` ;
 
@@ -131,7 +133,10 @@ CREATE TABLE IF NOT EXISTS `flights` (
   `launch_type` INT NULL DEFAULT NULL,
   `launch_types_idlaunch_types` INT NULL DEFAULT NULL,
   'flight_no' INTEGER NULL DEFAULT NULL,
-  'track_file_name' TEXT NULL DEFAULT NULL);
+  'track_file_name' TEXT NULL DEFAULT NULL,
+  'tug_registration' TEXT NULL DEFAULT NULL,
+  'tug_altitude' TEXT NULL DEFAULT NULL,
+  'tug_model' TEXT NULL DEFAULT NULL);
 		
 
 -- -----------------------------------------------------
@@ -185,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `trackFinal` (
   `timeStamp` TIMESTAMP NULL DEFAULT NULL);
   
 -- -----------------------------------------------------
--- Table `mydb`.`flarm_db`
+-- Table `mydb`.`flarm_db` 
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `flarm_db` ;
   

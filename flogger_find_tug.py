@@ -22,7 +22,8 @@ from open_db import opendb
 
 def find_tug(cursor, db):
     print "find_tug called"
-    cursor.execute('''SELECT DISTINCT id, stime, duration, registration, max_altitude FROM flight_log_final ''')
+#    cursor.execute('''SELECT DISTINCT id, stime, duration, registration, max_altitude FROM flight_log_final ''')
+    cursor.execute('''SELECT DISTINCT id, stime, duration, registration, max_altitude FROM flights ''')
     rows = cursor.fetchall()
     for row in rows:
         print "Next row candidate for a tug is: ", row, " Type code is: ", settings.FLOGGER_FLEET_LIST[row[3]]
@@ -49,10 +50,20 @@ def find_tug(cursor, db):
                 print "Multiple glider flights for a tug flight found - must be false, ignore: ", flight_count
                 continue
             if flight_count == 0:
-                print "No glider flight found for Tug details: ", row
+                print "No glider flight found for Tug flight, details: ", row
                 continue
-            print "Single glider flight found. Glider details: ", flight_details, " Tug details: ", row
-            
+            print "Single glider flight found. Glider details: ", flight_details, " Tug details: ", row, " Registration: ", row[3]
+            tug_reg = row[3]
+            cursor.execute('''SELECT aircraft_model FROM flarm_db WHERE registration=? ''', (tug_reg,))
+            tug_model = cursor.fetchone()
+            try:
+                cursor.execute('''UPDATE flights SET tug_registration=?, tug_altitude=?, tug_model=? WHERE id=?''', (row[3], row[4], tug_model[0], flight_id))
+#                print "Tug model added to: ", flight_id, " Model: ", tug_model 
+                db.commit()
+            except:
+                print "Failed to add tug model details to flights table for flight: ", flight_details, " tug_model: ", tug_model[0]
+        else:
+            print "Not a tug: ", row
     return
             
         

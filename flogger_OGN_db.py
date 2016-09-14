@@ -95,7 +95,9 @@ def ogndb (ognurl, cursor, flarmdb, flarm_data):
             airport = settings.FLOGGER_AIRFIELD_NAME
         else:
             airport = "OTHER" 
-        if int(nf7) > 2:
+#        if int(nf7) > 2:
+        if int(nf7) > 3:
+            # Type 2 is 'Plane', Type 3 is 'Ultralight'
 #            print "Ignore Aircraft type is: ", nf7
             continue
         elif "n" in settings.FLOGGER_LOG_TUGS or "N" in settings.FLOGGER_LOG_TUGS and int(nf7) == 2: 
