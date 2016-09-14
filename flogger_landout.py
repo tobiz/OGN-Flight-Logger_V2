@@ -40,9 +40,8 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
     print "Landing distance is: %d metres from airfield centre" % landing_dist
     if landing_dist <= radius:
         print "Landed in airfield"
-        if settings.FLOGGER_LANDING_EMAIL == "Y" or settings.FLOGGER_LANDING_EMAIL == "y":
-            landing_status = "landed"
-        else:
+        landing_status = "landed"
+        if settings.FLOGGER_LANDING_EMAIL <> "Y" and settings.FLOGGER_LANDING_EMAIL <> "y":
             return False
     else:
         landing_status = "landed out"
