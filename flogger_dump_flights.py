@@ -70,9 +70,8 @@ def dump_flights():
     return csv_path
          
 #    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-    cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-
-
+#    cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
+    cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name, tug_registration, tug_altitude, tug_model FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
     start_time = datetime.datetime.now()
     csv_path = settings.FLOGGER_FLIGHTS_LOG + str(start_time) + "_flights.csv"
     print "csv file name is: ", csv_path
