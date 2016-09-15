@@ -31,18 +31,18 @@ def find_tug(cursor, db):
         if settings.FLOGGER_FLEET_LIST[row[3]] > 100 and settings.FLOGGER_FLEET_LIST[row[3]] < 200 :
             # This is a tug flight
             print "Tug flight found: ", row   
-            tug_time = datetime.datetime.strptime("1900/01/01 " + row[1], '%Y/%m/%d %H:%M:%S')
+            tug_time = datetime.datetime.strptime("1900/01/01 " + row[1], '%Y/%m/%d %H:%M:%S')  # Tug takeoff time
             flight_count = 0
             for flight in rows: 
 #                print "Next row candidate for a glider is: ", flight       
                 if settings.FLOGGER_FLEET_LIST[flight[3]] <= 100:
                     # This is a glider flight
                     print "Glider flight found: ", flight
-                    glider_time = datetime.datetime.strptime("1900/01/01 " + flight[1], '%Y/%m/%d %H:%M:%S')  
+                    glider_time = datetime.datetime.strptime("1900/01/01 " + flight[1], '%Y/%m/%d %H:%M:%S')    # Glider takeoff time
                     tdelta_sec = (tug_time - glider_time).total_seconds()      # Difference between 2 times in seconds, note artificially same years, same month, same day
                     print "Delta flight times is: ", abs(tdelta_sec)
-                    if abs(tdelta_sec) < 40:
-                        # Time difference between takeoff times of glider and tug are less than 40 seconds, hence assume tug launched glider
+                    if abs(tdelta_sec) < settings.FLOGGER_DT_TUG_LAUNCH:
+                        # Time difference between takeoff times of glider and tug are less than this (secs), hence assume tug launched glider
                         flight_id = flight[0]
                         flight_details = flight
                         flight_count += 1
