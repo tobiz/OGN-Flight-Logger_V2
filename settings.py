@@ -99,6 +99,7 @@ FLOGGER_LOG_LAUNCH_FAILURES = "N"                               # Log launch fai
 FLOGGER_LOCATION_HORIZON = '-0:34'                              # Adjustments for angle to horizon for sunset
 FLOGGER_V_TAKEOFF_MIN = 10                                      # Min ground speed considered as takenoff. Same as ogn-live (55Km/h)
 FLOGGER_V_LANDING_MIN = 10                                      # Min ground speed considered as landed. Same as ogn-live (40Km/h)
+FLOGGER_DT_TUG_LAUNCH = 40                                      # Delta t(sec) between glider and tug takeoff times to be tug launched
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
