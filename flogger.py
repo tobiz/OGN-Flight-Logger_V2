@@ -1188,9 +1188,12 @@ try:
                 row = cursor.fetchone()
                 rowid = row[0]
                 print "Update row: ", rowid
-                cursor.execute('''UPDATE flight_log2 SET edate=?, etime=?, duration=?, max_altitude=?, speed=? WHERE ROWID=?''',
-                            (fl_end_date, fl_end_time_str, fl_duration_time_str, max_altitude, 0, rowid))
-                print "Updated flight_log2", src_callsign, " Row: ", rowid
+                try:
+                    cursor.execute('''UPDATE flight_log2 SET edate=?, etime=?, duration=?, max_altitude=?, speed=? WHERE ROWID=?''',
+                                (fl_end_date, fl_end_time_str, fl_duration_time_str, max_altitude, 0, rowid))
+                    print "Updated flight_log2", src_callsign, " Row: ", rowid
+                except:
+                    print "Failed to update flight_log2: ", src_callsign, " Row: ", rowid
                 nprev_vals[src_callsign]['speed'] = nvalues[src_callsign]['speed']  # ie set to '0'
 #
 # Bug 20150520-1
