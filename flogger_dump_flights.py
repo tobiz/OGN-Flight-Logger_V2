@@ -44,7 +44,7 @@ def dump_flights():
         max_date = "".join(max_row[0:3])        #max_row[0:3] is sdate
         print "Dump flights to csv. Last record date in flights is: ", max_date
 #         cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
-        cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))       
+        cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name, tug_registration, tug_altitude, tug_model  FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))       
         with open(csv_path, "wb") as csv_file:
             csv_writer = csv.writer(csv_file)
             # Write headers.
@@ -68,6 +68,10 @@ def dump_flights():
     
     print "End flights table dump"
     return csv_path
+
+#
+# This is not used and should be deleted
+#
          
 #    cursor.execute("SELECT * FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
 #    cursor.execute("SELECT flight_no, sdate, stime, etime, duration, src_callsign, max_altitude, registration, track_file_name FROM flights WHERE sdate=? ORDER by sdate, stime", (max_date,))
