@@ -15,7 +15,8 @@ def email_msg(sender, receiver, msg, date):
     if settings.FLOGGER_TAKEOFF_EMAIL != "y" and settings.FLOGGER_TAKEOFF_EMAIL != "Y":
         # Don't send take off email msg
         return
-    body = "Msg from %s. %s taken off @ %s" % (settings.APRS_USER, msg, date)  
+#    body = "Msg from %s. %s taken off @ %s" % (settings.APRS_USER, msg, date)  
+    body = "%s. %s taken off @ %s" % (settings.APRS_USER, msg, date)  
     print body
     msg = MIMEMultipart() 
     msg.attach(MIMEText(body, 'plain'))
