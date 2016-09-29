@@ -155,7 +155,8 @@ CREATE TABLE IF NOT EXISTS `flight_log_final` (
   `max_altitude` TEXT NULL DEFAULT NULL,
   `speed` TEXT NULL DEFAULT NULL,
   `registration` TEXT NULL DEFAULT NULL,
-  'flight_no' INTEGER NULL DEFAULT NULL);
+  'flight_no' INTEGER NULL DEFAULT NULL,
+  'land_out' TEXT NULL DEFAULT NULL);
   
 -- -----------------------------------------------------
 -- Table `mydb`.`track`

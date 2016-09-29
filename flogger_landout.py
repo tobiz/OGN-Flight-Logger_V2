@@ -137,7 +137,7 @@ def landout_check(flight_reg, flight_no, af_centre, radius, landing_coords, mode
         msg['To'] = toaddr
 #        txt = "%s: Flight %s landed out at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
 #        txt = "%s: Flight %s %s at: %s, %s, (%s)" % (settings.APRS_USER, flight_reg, landing_status, str(landing_coords[0]), str(landing_coords[1]), landing_coords)
-        txt = "%s: Flight %s %s at: %s. Time: %s" % (settings.APRS_USER, flight_reg, landing_status, landing_coords, now)
+        txt = "%s: %s %s at: %s. Time: %s" % (settings.APRS_USER, flight_reg, landing_status, landing_coords, now)
 
         msg['Subject'] =  txt 
 #        print "Email land out coordinates: ", txt
