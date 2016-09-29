@@ -1179,9 +1179,15 @@ try:
                 print "Updated flight_log_final", src_callsign
 #                flogger_landout_check(flight_reg, af_centre, radius, landing_coords, mode)
                 af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
-                res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
-                print "Landout check is: ", res
-                
+                cursor.execute('''SELECT land_out FROM flight_log_final WHERE flight_no=?''', (flight,))
+                row = cursor.fetchone()
+                if row[0] == "":
+                    # Check whether land_out already been logged
+                    # This is needed since using input from multiple base stations, landout can be logged more than once 
+                    res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
+                    print "Landout check is: ", res
+                    if res == True:    
+                        cursor.execute('''UPDATE flight_log_final SET land_out=?''', ("yes",))
                 
                 # Update flight record in flight_log2
                 cursor.execute(''' SELECT max(id) FROM flight_log2 WHERE src_callsign =?''', (src_callsign,))
