@@ -1187,7 +1187,7 @@ try:
                     res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
                     print "Landout check is: ", res
                     if res == True:    
-                        cursor.execute('''UPDATE flight_log_final SET land_out=?''', ("yes",))
+                        cursor.execute('''UPDATE flight_log_final SET land_out=? WHERE flight_no=?''', ("yes",flight))
                 
                 # Update flight record in flight_log2
                 cursor.execute(''' SELECT max(id) FROM flight_log2 WHERE src_callsign =?''', (src_callsign,))
