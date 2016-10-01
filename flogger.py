@@ -1121,7 +1121,7 @@ try:
                     r = cursor.fetchone()
                     try:
                         rowid = r[0]
-                        cursor.execute('''SELECT sdate, stime, max_altitude FROM flight_log2 WHERE ROWID =?''', rowid)
+                        cursor.execute('''SELECT sdate, stime, max_altitude FROM flight_log2 WHERE ROWID =?''', (rowid,))
                         row = cursor.fetchone()
                         print "Test Bug 20150520-1 ok, row is: ", row
                     except:
@@ -1181,14 +1181,15 @@ try:
                 af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
                 cursor.execute('''SELECT land_out FROM flight_log_final WHERE flight_no=?''', (flight,))
                 row = cursor.fetchone()
-                if row[0] == "":
-                    # Check whether land_out already been logged
-                    # This is needed since using input from multiple base stations, landout can be logged more than once 
-                    res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
+                # Check whether land_out already been logged
+                # This is needed since using input from multiple base stations, landout can be logged more than once 
+                res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
+                if row[0] == None:
                     print "Landout check is: ", res
                     if res == True:    
                         cursor.execute('''UPDATE flight_log_final SET land_out=? WHERE flight_no=?''', ("yes",flight))
-                
+                else:
+                    print "Landout check. row[0]: ", row[0]
                 # Update flight record in flight_log2
                 cursor.execute(''' SELECT max(id) FROM flight_log2 WHERE src_callsign =?''', (src_callsign,))
                 row = cursor.fetchone()
