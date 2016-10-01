@@ -1181,10 +1181,10 @@ try:
                 af_loc = (settings.FLOGGER_LATITUDE, settings.FLOGGER_LONGITUDE)
                 cursor.execute('''SELECT land_out FROM flight_log_final WHERE flight_no=?''', (flight,))
                 row = cursor.fetchone()
-                # Check whether land_out already been logged
-                # This is needed since using input from multiple base stations, landout can be logged more than once 
-                res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
                 if row[0] == None:
+                    # Check whether land_out already been logged
+                    # This is needed since using input from multiple base stations, landout can be logged more than once 
+                    res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
                     print "Landout check is: ", res
                     if res == True:    
                         cursor.execute('''UPDATE flight_log_final SET land_out=? WHERE flight_no=?''', ("yes",flight))
