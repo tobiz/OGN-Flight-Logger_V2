@@ -345,7 +345,9 @@ def process_log (cursor, db):
         return
     
     i = 1
-    while i < max_groupID:
+    while i <= max_groupID:
+        #
+        # 20161005. Changed "<" to "<=", groupID values include max_groupID
         
         cursor.execute('''SELECT max(max_altitude) FROM flight_group WHERE groupID=? ''', (i,))
         r = cursor.fetchone()
