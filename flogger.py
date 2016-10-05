@@ -1146,8 +1146,8 @@ try:
 # Bug 20150520-1 End
 #
                 
-                for r in row:
-                    print "Returned row for callsign: ", src_callsign, " is: ", r
+#                for r in row:
+#                    print "Returned row for callsign: ", src_callsign, " is: ", r
 #                 end_time = datetime.strptime(fl_time,'%H:%M:%S') 
                 end_time = datetime.datetime.now()  # In seconds since epoch
                 start_date = row[0]  # In %y/%m/%d format
@@ -1186,8 +1186,11 @@ try:
                     # This is needed since using input from multiple base stations, landout can be logged more than once 
                     res =landout_check(registration, flight, af_loc, settings.FLOGGER_AIRFIELD_LIMIT, (latitude, longitude), settings.FLOGGER_LANDOUT_MODE)
                     print "Landout check is: ", res
-                    if res == True:    
-                        cursor.execute('''UPDATE flight_log_final SET land_out=? WHERE flight_no=?''', ("yes",flight))
+                    if res == True: 
+                        landout_status = "yes"
+                    else:
+                        landout_status = "no"
+                    cursor.execute('''UPDATE flight_log_final SET land_out=? WHERE flight_no=?''', (landout_status,flight))
                 else:
                     print "Landout check. row[0]: ", row[0]
                 # Update flight record in flight_log2
