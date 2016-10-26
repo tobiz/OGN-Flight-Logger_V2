@@ -41,12 +41,14 @@ def find_tug(cursor, db):
 #                    print "Glider flight found: ", flight
                     glider_time = datetime.datetime.strptime("1900/01/01 " + flight[1], '%Y/%m/%d %H:%M:%S')    # Glider takeoff time
                     tdelta_sec = (tug_time - glider_time).total_seconds()      # Difference between 2 times in seconds, note artificially same years, same month, same day
+#                    print "Delta tug and glider take-off time is: ", tdelta_sec
                     if abs(tdelta_sec) < settings.FLOGGER_DT_TUG_LAUNCH:                    
-                        print "Delta flight times is: ", abs(tdelta_sec), " Glider reg: ", flight[3]
+                        print "Delta flight time is: ", abs(tdelta_sec), " Glider reg: ", flight[3]
                         # Time difference between takeoff times of glider and tug are less than this (secs), hence assume tug launched glider
                         flight_id = flight[0]
                         flight_details = flight
                         flight_count += 1
+                        break
             if flight_count > 1:
                 print "Multiple glider flights for a tug flight found - must be false, ignore: ", flight_count
                 continue
@@ -59,7 +61,7 @@ def find_tug(cursor, db):
             tug_model = cursor.fetchone()
             try:
                 cursor.execute('''UPDATE flights SET tug_registration=?, tug_altitude=?, tug_model=? WHERE id=?''', (row[3], row[4], tug_model[0], flight_id))
-                print "Tug model added to: ", flight_id, " Model: ", tug_model 
+                print "Tug model added to flight_id: ", flight_id, " Model: ", tug_model 
                 db.commit()
             except:
                 print "Failed to add tug model details to flights table for flight: ", flight_details, " tug_model: ", tug_model[0]
