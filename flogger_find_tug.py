@@ -21,9 +21,26 @@ from pysqlite2 import dbapi2 as sqlite
 from open_db import opendb 
 
 def find_tug(cursor, db):
+    #
+    # Finds if a tug launched a glider and if yes puts tug registration in flights table for 
+    # the glider flight
+    #
+    def glider_fleet_check(registration):
+        #
+        # Checks if registration is in fleet list if fleet checking is being used or
+        # checks that registration is a glider if fleet checking is not being used
+        #
+        if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+                    cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
+                    aircraft_type = cursor.fetchone()
+                    if aircraft_type[0] == 1:
+                        return True
+        else:
+            if settings.FLOGGER_FLEET_LIST[registration] <= 100:
+                return True
+        return False
+            
     print "find_tug called"
-#    cursor.execute('''SELECT DISTINCT id, stime, duration, registration, max_altitude FROM flight_log_final ''')
-#    cursor.execute('''SELECT DISTINCT id, stime, duration, registration, max_altitude FROM flights ORDER by stime''')
     cursor.execute('''SELECT id, stime, duration, registration, max_altitude FROM flights ORDER by stime''')
     rows = cursor.fetchall()
     for row in rows:
@@ -35,8 +52,10 @@ def find_tug(cursor, db):
             tug_time = datetime.datetime.strptime("1900/01/01 " + row[1], '%Y/%m/%d %H:%M:%S')  # Tug takeoff time
             flight_count = 0
             for flight in rows: 
-#                print "Next row candidate for a glider is: ", flight       
-                if settings.FLOGGER_FLEET_LIST[flight[3]] <= 100:
+#                print "Next row candidate for a glider is: ", flight
+                # Check  aircraft type in Flarm_db table is < 3 ie not powered aircraft if no fleet checking
+                # or check in fleet_list if fleet checking is being used
+                if glider_fleet_check(flight[3]):
                     # This is a glider flight
 #                    print "Glider flight found: ", flight
                     glider_time = datetime.datetime.strptime("1900/01/01 " + flight[1], '%Y/%m/%d %H:%M:%S')    # Glider takeoff time
