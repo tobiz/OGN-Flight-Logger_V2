@@ -89,6 +89,16 @@
 # 20160514        1) Use $ pipreqs --force /path/to/project to generate requirements.txt for pip install
 #
 # 20160518        1) Added attempt to load earlier version Linux libfap if current fails
+#
+# 20161026        1) Added flogger_find_tug code. This tries to determine which tug, if any, launched a particular glider.
+#                    Note this doesn't always get the right result, but then nor does OGN Flight Log! This could be due to tugs 
+#                    sometimes powering down if a launch is not imminent. Gliders are likely to be always powered on and Flarm operating.
+#                    Hence when it becomes time to launch the tug powers up, Flarm is now on but takes some time for the signal to be
+#                    acquired and put onto and processed by the APRS system. It is therefore possible for the launch to take place
+#                    with the take-off times for tug and glider to be too far displaced (from the APRS data) for flogger-find-tug 
+#                    to determine the launch has happened. The solution is possibly to increase the time delta used between glider and 
+#                    tug take-off but this could result in false positives, some fine tuning maybe needed. Interested to know if
+#                    OGN Flight Log has similar reasoning.
 
 import socket
 
