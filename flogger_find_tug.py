@@ -33,7 +33,8 @@ def find_tug(cursor, db):
         if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
                     cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
                     aircraft_type = cursor.fetchone()
-                    if aircraft_type[0] == 1:
+                    print "Glider Fleet check Registration: ", registration, " Type: ",  aircraft_type[0]
+                    if int(aircraft_type[0]) == 1:
                         return True
         else:
             if settings.FLOGGER_FLEET_LIST[registration] <= 100:
