@@ -33,11 +33,27 @@ def find_tug(cursor, db):
         if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
                     cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
                     aircraft_type = cursor.fetchone()
-                    print "Glider Fleet check Registration: ", registration, " Type: ",  aircraft_type[0]
+                    print "Glider Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
                     if int(aircraft_type[0]) == 1:
                         return True
         else:
             if settings.FLOGGER_FLEET_LIST[registration] <= 100:
+                return True
+        return False
+    
+    def tug_fleet_check(registration):
+        #
+        # Checks if registration is tug in fleet list if fleet checking is being used or
+        # checks that registration is a tug ("plane" or "ultralight") if fleet checking is not being used
+        #
+        if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+                    cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
+                    aircraft_type = cursor.fetchone()
+                    print "Tug Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
+                    if int(aircraft_type[0]) == 2 or int(aircraft_type[0]) == 3 :
+                        return True
+        else:
+            if settings.FLOGGER_FLEET_LIST[registration] > 100 and settings.FLOGGER_FLEET_LIST[registration] < 200 :
                 return True
         return False
             
@@ -47,7 +63,8 @@ def find_tug(cursor, db):
     for row in rows:
 #        print "Next row candidate for a tug is: ", row, " Type code is: ", settings.FLOGGER_FLEET_LIST[row[3]]
         # row[3] is the aircraft registration. Check whether it's a tug or not
-        if settings.FLOGGER_FLEET_LIST[row[3]] > 100 and settings.FLOGGER_FLEET_LIST[row[3]] < 200 :
+#        if settings.FLOGGER_FLEET_LIST[row[3]] > 100 and settings.FLOGGER_FLEET_LIST[row[3]] < 200 :
+        if tug_fleet_check(row[3]):
             # This is a tug flight
             print "Tug flight found: ", row   
             tug_time = datetime.datetime.strptime("1900/01/01 " + row[1], '%Y/%m/%d %H:%M:%S')  # Tug takeoff time
