@@ -30,15 +30,21 @@ def find_tug(cursor, db):
         # Checks if registration is in fleet list if fleet checking is being used or
         # checks that registration is a glider if fleet checking is not being used
         #
-        if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
-                    cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
-                    aircraft_type = cursor.fetchone()
-#                    print "Glider Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
-                    if int(aircraft_type[0]) == 1:
-                        return True
-        else:
-            if settings.FLOGGER_FLEET_LIST[registration] <= 100:
-                return True
+        try: 
+            if settings.FLOGGER_FLEET_LIST[registration] > 200 and settings.FLOGGER_FLEET_LIST[registration] < 300 :
+                # It's a Motor Glider in our fleet, ie not a glider
+                return False
+            else:
+                if settings.FLOGGER_FLEET_LIST[registration] <= 100:
+                    return True
+        except IndexError: 
+            # It's not a Motor Glider in our fleet   
+            if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+                        cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
+                        aircraft_type = cursor.fetchone()
+    #                    print "Glider Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
+                        if int(aircraft_type[0]) == 1:
+                            return True
         return False
     
     def tug_fleet_check(registration):
