@@ -673,7 +673,6 @@ SB_DATA = str(SB_DATA).replace(" ","_")
 SB_Log = str(SB_Log).replace(" ","_")
 SB_DATA = str(SB_DATA).replace(":","-")
 SB_Log = str(SB_Log).replace(":","-")
-#SB_DATA = "SB_data2015-03-05 14:57:27.980999"
 print "Checking log paths: ", settings.FLOGGER_LOG_PATH
 if settings.FLOGGER_LOG_PATH <> "":
     if not os.path.isdir(settings.FLOGGER_LOG_PATH):
@@ -874,7 +873,7 @@ try:
                 # In live mode so use socket read
                 print "Read socket"
                 packet_str = sock_file.readline()
-                datafile.write(packet_str)
+#                datafile.write(packet_str)
             else:
                 # In test mode so file read
                 packet_str = datafile.readline()
