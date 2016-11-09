@@ -86,9 +86,6 @@ def process_log (cursor, db):
     # Phase 1 processing    
     #-----------------------------------------------------------------
     #
-    # This phase examines flight_log_final and from this removes flights which are too short
-    # and or which don't attain a sufficient altitude. These are written to flight_log.
-    #
     # The following takes into account the situation when there are no records in flight_log
     # and there is therefore no highest date record. Note it does require that this code is
     # run on the same day as the flights are recorded in flight_log_final
@@ -159,65 +156,142 @@ def process_log (cursor, db):
             print "???? Record start date: ", strt_date, " before last flight_log record, ignore: ", max_date
     print "-------Phase 1 End--------"
     db.commit()  
-
-#def process_groups():
     #    
     #-----------------------------------------------------------------
     # Phase 2 processing    
     #-----------------------------------------------------------------
     #
     # Phase 2 processing
+    # For some records for each flight the end time and next start time are too close together
+    # to be independent flights.
     # This phase examines all the records and puts them into groups such that each group has 
     # an end and start time, such that a group is a distinct flight ie their end and start times are greater than
     # TIME_DELTA, and not just therefore data jiggles (eg moving the plane to a new position on the flight line),
     # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
-    # For some records for each flight the end time and next start time are too close together
-    # to be independent flights.
-    # This phase examines flight_log and forms them into flights made by each aircraft as denoted 
-    # by registration, the result being held in flight_group.
-    #
     
-    print "+++++++Phase 2: Process Groups Start+++++++"
-#    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
-    time_delta_min = time.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S")
+    print "+++++++Phase 2 Start+++++++"
+    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
+    #
+    # Note the following code processes each unique or distinct call_sign ie each group
+    # of flights for a call_sign
+    # SELECT DISTINCT call_sign FROM flight_log
+    # rows = cursor.fetchall()
+    # for call_sign in rows
+    
     group = 0  # Number of groups set for case there are none
     cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
     all_callsigns = cursor.fetchall()
     print "All call_signs: ", all_callsigns
-    group = 0
+    same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of first flight group
     for acallsign in all_callsigns:
-        call_sign = acallsign[0]        # acallsign is a tuple
-        prev_stime = "0:0:0"            # Initialise previous stime for comparison purposes for this group
+        if same_or_different_flight == 1:
+            group += 1
+        if group == 0:
+            print "GroupId set to 1"  # Must be at least 1 group since select is not empty 
+            group = 1
+        call_sign = ''.join(acallsign)  # callsign is a tuple ie (u'cccccc',) converts ccccc to string
         print "Processing for call_sign: ", call_sign
           
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration , flight_no
                      FROM flight_log WHERE src_callsign=?
                      ORDER BY sdate, stime ''', (call_sign,))
         
-        rows = cursor.fetchall()                # rows is all flight records for an aircraft with callsign
+        rows = cursor.fetchall()                # rows is all flight records for an aircraft callsign
+#        row_count = len(cursor.fetchall())
         row_count = len(rows)
         print "Number of rows is: ", row_count
-        for r in rows:  # This will cycle through all the rows of the select statement for a callsign       
-            row_0 = r
-            print "Next row is: ", row_0
-            time_delta = datetime.datetime.strptime(row_0[1], "%H:%M:%S") - datetime.datetime.strptime(prev_stime, "%H:%M:%S")
-            delta_secs = time_delta.total_seconds()
-            time_lmt = datetime.datetime.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
-            lmt_secs = time_lmt.total_seconds()
-            print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-            prev_stime = row_0[3]               # Set previous flight start time to current flight end time
-            if (delta_secs) >= lmt_secs: 
-                # Flight must be in the next group
-                print "----Different flight"
-                group += 1 
-            else:
-                # Flight must be in the same flight group, time difference too small
-                print "++++Same flight" 
+#        
+# Just for testing Start.  This dumps all flight records for an aircraft callsign
+#--------------------------------------------------------------------------------
+#
+        n = 0
+        for row in rows:
+            print "Row ", n, " is: ", row
+            n = n + 1
+#
+#--------------------------------------------------------------------------------
+# Just for testing End
+
+
+        # Only 1 flight row for a callsign is a special case
+        if row_count == 1:
+            # Only 1 flight for this callsign, so must be in its own group
+            row_0 = rows[0]
+            group += 1
             cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
-                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
-                        {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
-                        'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
-            print "GroupID: ", group, " record created ", row_0, "Delta_secs: ", delta_secs 
+                                VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
+            print "Only 1 flight for registration: ", row_0[7], " GroupID: ", group, " record created ", row_0
+            # Continue to process next callsign group
+            continue
+#
+        # Row count > 1 so process 2 or more rows
+        i = 0  # First index in a list is 0
+#        group = 1               # group is used as the identifier of flights in a group
+#        same_or_different_flight = 0  # 0 for same, 1 for different.  Initially 0 for first row pair of a callsign set    
+        for r in rows:  # This will cycle through all the rows of the select statement
+#        while i <= row_count: 
+            try:
+#                 row_0 = cursor.next()
+#                 row_1 = cursor.next()
+                 row_0 = rows[i]
+                 row_1 = rows[i + 1]
+                 print "Row pair: ", i
+                 print "row_", i, " is: ", row_0
+                 print "row_", i + 1, " is: ", row_1
+                 time.strptime(TIME_DELTA, "%H:%M:%S")
+                 time_delta = datetime.datetime.strptime(row_1[1], "%H:%M:%S") - datetime.datetime.strptime(row_0[3], "%H:%M:%S")
+                 delta_secs = time_delta.total_seconds()
+                 time_lmt = datetime.datetime.strptime(TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+                 lmt_secs = time_lmt.total_seconds()
+                 print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
+#
+# Revised processing, simpler and it works!
+#                                     
+                 # Create a group record for 1st record's data 
+                 if i == 0 :            # index i is 0 for first pair of set. A record must be created
+                                        # Flight time must be greater than minimum 
+                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                        VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                        {'groupID':group, 'sdate':row_0[0], 'stime':row_0[1], 'edate': row_0[2], 'etime':row_0[3],
+                                        'duration': row_0[4], 'src_callsign':row_0[5], 'max_altitude':row_0[6], 'registration': row_0[7], 'flight_no': row_0[8]})
+                     print "GroupID: ", group, " First record created ", row_0   
+                    # Test 2nd record of first pair to see if the time between them is such that it is a different flight
+                    # and therefore a separate record must be created
+                     if (delta_secs) >= lmt_secs: 
+                         # Flight must be in the next group
+                         print "----Different flight"
+                         group += 1 
+                     else:
+                         # Flight must be in the same flight group, time difference too small
+                         print "++++Same flight"             
+                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                    {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+                                    'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7], 'flight_no': row_1[8]})
+                     print "GroupID: ", group, " record created ", row_1, "Delta_secs: ", delta_secs 
+                 else:                   
+                    # Not the first record pair. Only need examine the 2nd record of the pair
+                    # as the first record will have been dealt with
+                     if (delta_secs) >= lmt_secs: 
+                         # Flight must be in the next group
+                         print "----Different flight. Not 1st pair, record is in next group"
+                         group += 1  
+                     else:
+                         print "++++Same flight. Not 1st pair, record is in same group, time difference too small"           
+                     cursor.execute('''INSERT INTO flight_group(groupID, sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
+                                    VALUES(:groupID,:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
+                                    {'groupID':group, 'sdate':row_1[0], 'stime':row_1[1], 'edate': row_1[2], 'etime':row_1[3],
+                                    'duration': row_1[4], 'src_callsign':row_1[5], 'max_altitude':row_1[6], 'registration': row_1[7], 'flight_no': row_1[8]})
+                     print "GroupID: ", group, " record created ", row_1, "Delta_secs: ", delta_secs 
+                 i = i + 1                      # Increment pair index to process next pair
+                 print "Number of groups is: ", group, " Row count i is: ", i 
+                 
+            except IndexError:
+                group += 1
+                print "IndexError. Access index greater than: ", i
+
     db.commit()
     print "-------Phase 2 End-------"
     #    

@@ -99,6 +99,11 @@
 #                    to determine the launch has happened. The solution is possibly to increase the time delta used between glider and 
 #                    tug take-off but this could result in false positives, some fine tuning maybe needed. Interested to know if
 #                    OGN Flight Log has similar reasoning.
+#
+# 20161108        1) Rewrote phase 2 flight log processing to be much simpler. Phase 2 puts flights into the flight_group
+#                    table such that all flights by a single aircraft have the same group id. This enables each flight to
+#                    be determined to be a distinct flight from its predecessor or not.
+#
 
 import socket
 
