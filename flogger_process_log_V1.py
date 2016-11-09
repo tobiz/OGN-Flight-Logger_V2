@@ -86,6 +86,9 @@ def process_log (cursor, db):
     # Phase 1 processing    
     #-----------------------------------------------------------------
     #
+    # This phase examines flight_log_final and from this removes flights which are too short
+    # and or which don't attain a sufficient altitude. These are written to flight_log.
+    #
     # The following takes into account the situation when there are no records in flight_log
     # and there is therefore no highest date record. Note it does require that this code is
     # run on the same day as the flights are recorded in flight_log_final
@@ -162,12 +165,15 @@ def process_log (cursor, db):
     #-----------------------------------------------------------------
     #
     # Phase 2 processing
-    # For some records for each flight the end time and next start time are too close together
-    # to be independent flights.
     # This phase examines all the records and puts them into groups such that each group has 
     # an end and start time, such that a group is a distinct flight ie their end and start times are greater than
     # TIME_DELTA, and not just therefore data jiggles (eg moving the plane to a new position on the flight line),
     # ie the end and start time of subsequent flights is such that it couldn't have been a real flight
+    # For some records for each flight the end time and next start time are too close together
+    # to be independent flights.
+    # This phase examines flight_log and forms them into flights made by each aircraft as denoted 
+    # by registration, the result being held in flight_group.
+    #
     
     print "+++++++Phase 2 Start+++++++"
     TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
