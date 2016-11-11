@@ -177,35 +177,37 @@ def process_log (cursor, db):
     # by registration, the result being held in flight_group.
     #
     
-    print "+++++++Phase 2: Process Groups Start+++++++"
+    print "+++++++Phase 2: Process Groups. Start+++++++"
 #    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
-    time_delta_min = time.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S")
+#    time_delta_min = time.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S")
+    time_lmt = datetime.datetime.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+    lmt_secs = time_lmt.total_seconds()         # lmt_secs is a constant so compute once
     group = 0  # Number of groups set for case there are none
+    
     cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
     all_callsigns = cursor.fetchall()
     print "All call_signs: ", all_callsigns
-    group = 0
     for acallsign in all_callsigns:
         call_sign = acallsign[0]        # acallsign is a tuple
         prev_stime = "0:0:0"            # Initialise previous stime for comparison purposes for this group
         print "Processing for call_sign: ", call_sign
           
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration , flight_no
-                     FROM flight_log WHERE src_callsign=?
-                     ORDER BY sdate, stime ''', (call_sign,))
+                         FROM flight_log WHERE src_callsign=?
+                         ORDER BY sdate, stime ''', (call_sign,))
         
         rows = cursor.fetchall()                # rows is all flight records for an aircraft with callsign
         row_count = len(rows)
         print "Number of rows is: ", row_count
         for r in rows:  # This will cycle through all the rows of the select statement for a callsign       
-            row_0 = r
+            row_0 = r   # Just so as to keep the working sections of the original code
             print "Next row is: ", row_0
+            # Compute current flight take-off time minus previous flight landing-time
             time_delta = datetime.datetime.strptime(row_0[1], "%H:%M:%S") - datetime.datetime.strptime(prev_stime, "%H:%M:%S")
             delta_secs = time_delta.total_seconds()
-            time_lmt = datetime.datetime.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
-            lmt_secs = time_lmt.total_seconds()
             print "Delta secs is: ", delta_secs, " Time limit is: ", lmt_secs
-            prev_stime = row_0[3]               # Set previous flight start time to current flight end time
+            prev_stime = row_0[3]               # Set previous flight start time to current flight end time used by next iteration
+            # if current flight take-off time minus previous flight landing-time is greater than defined limit then different flight
             if (delta_secs) >= lmt_secs: 
                 # Flight must be in the next group
                 print "----Different flight"
