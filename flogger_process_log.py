@@ -180,7 +180,7 @@ def process_log (cursor, db):
     print "+++++++Phase 2: Process Groups. Start+++++++"
 #    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
 #    time_delta_min = time.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S")
-    time_lmt = datetime.datetime.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+    time_lmt = datetime.datetime.strptime(settings.FLOGGER_DUPLICATE_FLIGHT_DELTA_T, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
     lmt_secs = time_lmt.total_seconds()         # lmt_secs is a constant so compute once
     group = 0  # Number of groups set for case there are none
     
@@ -317,37 +317,37 @@ def process_log (cursor, db):
         
         cursor.execute('''SELECT min(stime), max(etime) FROM flight_group WHERE groupID=?''', (i,))
         times = cursor.fetchone()           # times is a tuple
-        try: 
-            print "Start new total duration calculation"
-            cursor.execute('''SELECT duration from flight_group WHERE groupID=?''', (i,))
-            durations = cursor.fetchall()
-            d0 = datetime.datetime.strptime("0:0:0", "%H:%M:%S")
-            nduration = datetime.timedelta(hours=d0.hour, minutes=d0.minute, seconds=d0.second)
-            print "durations is: ", durations, " nduration is: ", nduration, " or: ", str(nduration)  
-            t_d1 = datetime.datetime.strptime(TIME_DELTA.replace(" ", ""), "%H:%M:%S")
-            dt1 = datetime.timedelta(hours=t_d1.hour, minutes=t_d1.minute, seconds=t_d1.second)
+#        try: 
+#            print "Start new total duration calculation"
+#            cursor.execute('''SELECT duration from flight_group WHERE groupID=?''', (i,))
+#            durations = cursor.fetchall()
+#            d0 = datetime.datetime.strptime("0:0:0", "%H:%M:%S")
+#            nduration = datetime.timedelta(hours=d0.hour, minutes=d0.minute, seconds=d0.second)
+#            print "durations is: ", durations, " nduration is: ", nduration, " or: ", str(nduration)  
+#            t_d1 = datetime.datetime.strptime(TIME_DELTA.replace(" ", ""), "%H:%M:%S")
+#            dt1 = datetime.timedelta(hours=t_d1.hour, minutes=t_d1.minute, seconds=t_d1.second)
 #            print "t_d1 is: ", t_d1, " dt1 is: ", str(dt1)
             
-            for s in durations:
+#            for s in durations:
 #                print "S is:", s, " s[0] is: ", s[0]
-                t_d2 = datetime.datetime.strptime(s[0].replace(" ", ""), "%H:%M:%S")
-                dt2 = datetime.timedelta(hours=t_d2.hour, minutes=t_d2.minute, seconds=t_d2.second)
+#                t_d2 = datetime.datetime.strptime(s[0].replace(" ", ""), "%H:%M:%S")
+#                dt2 = datetime.timedelta(hours=t_d2.hour, minutes=t_d2.minute, seconds=t_d2.second)
 #                print "dt2 is: ", dt2, " or: ", str(dt2)
-                if dt2 > dt1 :
-                    nduration += dt2 
+#                if dt2 > dt1 :
+#                    nduration += dt2 
 #                    print "nduration is now: ", nduration, " or: ", str(nduration)           
 #            print "New total duration calculation is: ", str(nduration)
-        except:
-            print "New duration calc FAILED"
-            
-        total_duration = str(nduration)                 # Was a time delta type, convert to string
-        print "New method total duration is: ", total_duration
+#        except:
+#            print "New duration calc FAILED"
+#            
+#        total_duration = str(nduration)                 # Was a time delta type, convert to string
+#        print "New method total duration is: ", total_duration
         
         print "Value of times are: ", times, " for flight group: ", i
         if times <> (None, None):
             nstime = datetime.datetime.strptime("1900/01/01 " + times[0], '%Y/%m/%d %H:%M:%S')
             netime = datetime.datetime.strptime("1900/01/01 " + times[1], '%Y/%m/%d %H:%M:%S')  
-            print "nstime is: ", nstime, " netime is: ", netime  
+#            print "nstime is: ", nstime, " netime is: ", netime  
             duration = str(netime - nstime)
             print "subtract ok for: ", netime, " from: ", nstime, " Duration is: ", duration
             total_duration = duration  # Just for now    
@@ -401,7 +401,6 @@ def process_log (cursor, db):
         cursor.execute('''INSERT INTO flights(sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration, flight_no)
                                     VALUES(:sdate,:stime,:edate,:etime,:duration,:src_callsign,:max_altitude, :registration, :flight_no)''',
                                     {'sdate':sdate, 'stime':r[0], 'edate': edate, 'etime':r[1],
-#                                    'duration': t_d, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':row[7]})
                                     'duration': total_duration, 'src_callsign':callsign, 'max_altitude':max_altitude, 'registration':r[2], 'flight_no':r[3]})  
         db.commit()
         i = i + 1
