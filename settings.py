@@ -101,8 +101,8 @@ FLOGGER_LOCATION_HORIZON = '-0:34'                              # Adjustments fo
 FLOGGER_V_TAKEOFF_MIN = 10                                      # Min ground speed considered as takenoff. ogn-live is (55Km/h)
 FLOGGER_V_LANDING_MIN = 10                                      # Min ground speed considered as landed. ogn-live is (40Km/h)
 FLOGGER_DT_TUG_LAUNCH = 20                                      # Delta t(sec) between glider and tug takeoff times to be tug launched
-FLOGGER_DUPLICATE_FLIGHT_DELTA = 90                             # Delta t(sec) between two landing & takeoff times of same aircraft to be different flights
-FLOGGER_TIME_DELTA = "0:2:0"                                    # Time difference between to flights of same aircraft to be considered different flights 
+FLOGGER_DUPLICATE_FLIGHT_DELTA_T = "0:1:30"                     # Delta between two landing & takeoff times of same aircraft to be different flights
+FLOGGER_DUPLICATE_FLIGHT_DELTA = 90                             # Delta time (secs) for duplicate flights
 #
 # The following fields are used to determine if data from APRS is a position packet from any 1 of up to 4 OGN receivers base stations.
 # The OGN receiver areas can overlap and if more then 1 is supplied it will increase the accuracy of both the data and track results
