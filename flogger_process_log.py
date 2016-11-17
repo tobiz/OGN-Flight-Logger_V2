@@ -178,18 +178,16 @@ def process_log (cursor, db):
     #
     
     print "+++++++Phase 2: Process Groups. Start+++++++"
-#    TIME_DELTA = "0:2:0"  # Time in hrs:min:sec of shortest flight
-#    time_delta_min = time.strptime(settings.FLOGGER_TIME_DELTA, "%H:%M:%S")
     time_lmt = datetime.datetime.strptime(settings.FLOGGER_DUPLICATE_FLIGHT_DELTA_T, "%H:%M:%S") - datetime.datetime.strptime("0:0:0", "%H:%M:%S")
     lmt_secs = time_lmt.total_seconds()         # lmt_secs is a constant so compute once
-    group = 0  # Number of groups set for case there are none
+    group = 0                                   # Number of groups set for case there are none
     
     cursor.execute('''SELECT DISTINCT src_callsign FROM flight_log ORDER BY sdate, stime ''')
     all_callsigns = cursor.fetchall()
     print "All call_signs: ", all_callsigns
     for acallsign in all_callsigns:
-        call_sign = acallsign[0]        # acallsign is a tuple
-        prev_stime = "0:0:0"            # Initialise previous stime for comparison purposes for this group
+        call_sign = acallsign[0]                # acallsign is a tuple
+        prev_stime = "0:0:0"                    # Initialise previous stime for comparison purposes for this group
         print "Processing for call_sign: ", call_sign
           
         cursor.execute('''SELECT sdate, stime, edate, etime, duration, src_callsign, max_altitude, registration , flight_no
