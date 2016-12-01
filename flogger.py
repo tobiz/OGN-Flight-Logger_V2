@@ -740,7 +740,7 @@ try:
         print "Ephem date is: ", location.date
         s = ephem.Sun()
         s.compute(location)
-        twilight = -6 * ephem.degree    # Defn of Twilight is: Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
+        twilight = -6 * ephem.degree    # Defn of Twilight is: Centre of Sun is 6, 12, 18 degrees below horizon (civil, nautical, astronomical)  
         if s.alt > twilight:
 #        t = False
 #        if t:
@@ -1039,7 +1039,9 @@ try:
             print "---------!!!!!! Comment",  res3, " packet returned: ", packet_str       
             src_callsign = packet[0].src_callsign
             res = string.find(str(packet[0].src_callsign), "None")
-            if string.find(str(packet_str), "GLIDERN1") <> -1 or string.find(str(packet_str), "GLIDERN2") <> -1:
+       #     if string.find(str(packet_str), "GLIDERN1") <> -1 or string.find(str(packet_str), "GLIDERN2") <> -1 or string.find(str(packet_str), "GLIDERN3"):
+            if string.find(str(packet_str), "GLIDERN") <> -1 :
+                # Should match: GLIDERN1, GLIDERN2 or GLIDERN3
 #                print settings.FLOGGER_AIRFIELD_NAME, " beacon packet, ignore: ", str(packet_str)
                 print res3, " beacon packet, ignore: ", str(packet_str)
                 print "-----------------End of Packet: ", i, " ------------------------------"    
@@ -1116,7 +1118,8 @@ try:
                 track_no[src_callsign] += 1                     # Increment trackpoint number for this flight
                 
 #            if nprev_vals[src_callsign]['speed'] <> 0 and nvalues[src_callsign]['speed'] == 0:
-            print "Test for was moving is now stopped"
+#            print "Test for was moving is now stopped"
+            print "Test for was moving is now stopped. nprev=: ", nprev_vals[src_callsign]['speed'], " nval=: ", nvalues[src_callsign]['speed'], " V_LANDING_MIN=: ", V_LANDING_MIN
 #            if nprev_vals[src_callsign]['speed'] > V_SMALL and nvalues[src_callsign]['speed'] <= V_SMALL:
             if nprev_vals[src_callsign]['speed'] > V_LANDING_MIN and nvalues[src_callsign]['speed'] <= V_LANDING_MIN:
                 # aircraft was moving is now stopped
