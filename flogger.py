@@ -104,6 +104,8 @@
 #                    table such that all flights by a single aircraft have the same group id. This enables each flight to
 #                    be determined to be a distinct flight from its predecessor or not.
 #
+# 20170201:        1) Added simple function test_YorN to test for Y|y or N|n
+#
 
 import socket
 
@@ -135,6 +137,7 @@ from flogger_landout import landout_check
 from geopy.distance import vincenty
 from flogger_email_msg import email_msg
 from flogger_find_tug import find_tug
+from flogger_test_YorN import test_YorN
 
 
 prev_vals = {'latitude': 0, 'longitude': 0, "altitude": 0, "speed": 0}
@@ -263,7 +266,8 @@ def fleet_check_new(callsign):
 #    flarm_id = callsign[3:]
 #    print "search for flarm_id: ", flarm_id
 #    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
-    if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+#    if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+    if not flogger_test_YorN(settings.FLOGGER_FLEET_CHECK):
         fleet_name = "Fleet Name: Not used"
         cursor.execute('''SELECT ROWID, registration FROM flarm_db WHERE registration =? OR flarm_id =? ''', (callsign,callsign[3:],))
     else:
