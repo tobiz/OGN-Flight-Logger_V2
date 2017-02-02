@@ -105,6 +105,7 @@
 #                    be determined to be a distinct flight from its predecessor or not.
 #
 # 20170201:        1) Added simple function test_YorN to test for Y|y or N|n
+#                  2) Started developing using Eclipse Neon.2 (4.6.2)
 #
 
 import socket
@@ -267,7 +268,7 @@ def fleet_check_new(callsign):
 #    print "search for flarm_id: ", flarm_id
 #    cursor.execute('''SELECT ROWID FROM flarm_db WHERE flarm_id =?''', (flarm_id,))
 #    if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
-    if not flogger_test_YorN(settings.FLOGGER_FLEET_CHECK):
+    if not test_YorN(settings.FLOGGER_FLEET_CHECK):
         fleet_name = "Fleet Name: Not used"
         cursor.execute('''SELECT ROWID, registration FROM flarm_db WHERE registration =? OR flarm_id =? ''', (callsign,callsign[3:],))
     else:
@@ -281,8 +282,10 @@ def fleet_check_new(callsign):
     else:
         print "Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name
         reg = callsign_trans(callsign)
-        if settings.FLOGGER_FLEET_CHECK <> "N":
-            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
+#        if settings.FLOGGER_FLEET_CHECK <> "N":
+        if not test_YorN(settings.FLOGGER_FLEET_CHECK):
+#            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
+            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and (not test_YorN(settings.FLOGGER_LOG_TUGS)):
                 print "Don't log tug: %s" % reg
                 return False
     # At least 1 match for the callsign has been found

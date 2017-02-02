@@ -19,6 +19,7 @@ import sys
 from flarm_db import flarmdb
 from pysqlite2 import dbapi2 as sqlite
 from open_db import opendb 
+from flogger_test_YorN import test_YorN
 
 def find_tug(cursor, db):
     #
@@ -40,7 +41,8 @@ def find_tug(cursor, db):
         except KeyError: 
             print "Not in local fleet: ", registration
             # It's not a Motor Glider in specified fleet   
-            if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+#            if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":  
+            if not test_YorN(settings.FLOGGER_FLEET_CHECK):
                         cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
                         aircraft_type = cursor.fetchone()
     #                    print "Glider Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
@@ -53,7 +55,8 @@ def find_tug(cursor, db):
         # Checks if registration is tug in fleet list if fleet checking is being used or
         # checks that registration is a tug ("plane" or "ultralight") if fleet checking is not being used
         #
-        if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n":
+#        if settings.FLOGGER_FLEET_CHECK == "N" or settings.FLOGGER_FLEET_CHECK == "n": 
+        if not test_YorN(settings.FLOGGER_FLEET_CHECK):
                     cursor.execute('''SELECT aircraft_type FROM flarm_db WHERE registration=?''', (registration,))
                     aircraft_type = cursor.fetchone()
                     print "Tug Fleet check. Registration: ", registration, " Type: ",  aircraft_type[0]
