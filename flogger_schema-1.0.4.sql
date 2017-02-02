@@ -4,7 +4,7 @@
 
 -- CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 -- USE `mydb` ; 
-
+ 
 --
 -- 20150825 Corrected schema for AUTOINCREMENT primary keys
 -- 20150826 Corrected flights table: set aircraft_id, users_id, launch_type,launch_types_idlaunch_types to INT NULL DEFAULT NULL
