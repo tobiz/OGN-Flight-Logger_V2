@@ -14,76 +14,47 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="btn_Celsius">
+   <widget class="QPushButton" name="runFloggerButton">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>200</y>
-      <width>109</width>
-      <height>26</height>
+      <x>210</x>
+      <y>180</y>
+      <width>111</width>
+      <height>121</height>
      </rect>
     </property>
     <property name="text">
-     <string>Btn_Celsius</string>
+     <string>Run Flogger</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="Btn_Fahrenheit">
+   <widget class="QTextEdit" name="floggerRunBox">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>280</y>
-      <width>109</width>
-      <height>26</height>
+      <x>210</x>
+      <y>330</y>
+      <width>104</width>
+      <height>76</height>
      </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>230</y>
-      <width>71</width>
-      <height>17</height>
+      <x>150</x>
+      <y>90</y>
+      <width>241</width>
+      <height>20</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
     </property>
     <property name="text">
-     <string>Celsius</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>310</y>
-      <width>81</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Fahrenheit</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>70</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBox">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>380</y>
-      <width>56</width>
-      <height>25</height>
-     </rect>
+     <string>Simple use of Button</string>
     </property>
    </widget>
   </widget>
