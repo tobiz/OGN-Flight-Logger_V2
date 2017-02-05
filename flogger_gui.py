@@ -4,6 +4,7 @@ import string
 from PyQt4 import QtGui, QtCore, uic
 from PyQt4.Qt import SIGNAL
 import subprocess
+import settings
 
 import socket
 
@@ -54,24 +55,58 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        self.runFloggerButton.clicked.connect(self.floggerStart)   
+#        self.runFloggerButton.clicked.connect(self.floggerStart) 
+        self.actionStart.triggered.connect(self.floggerStart)  
+        self.actionStop.triggered.connect(self.floggerStop)  
+        self.actionQuit.triggered.connect(self.floggerQuit)  
+        self.AirfieldBaseButton.clicked.connect(self.floggerAirfieldEdit) 
+        
+        # Initialise values from config file
+        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME) 
+        self.APRSUser.setText(settings.APRS_USER) 
+        self.APRSPasscode.setText(str(settings.APRS_PASSCODE)) 
+        self.APRSServerHostName.setText(settings.APRS_SERVER_HOST) 
+        self.APRSServerPort.setText(str(settings.APRS_SERVER_PORT))
+        if settings.FLOGGER_LATITUDE[0:1] == "-":
+            latitude = settings.FLOGGER_LATITUDE[1:] + " E"
+        else:
+            latitude = settings.FLOGGER_LATITUDE[1:] + " W"
+        print "Latitude: " + latitude
+        if settings.FLOGGER_LONGITUDE[0:1] == "-":
+            longitude = settings.FLOGGER_LONGITUDE[1:] + " S"
+        else:
+            longitude = settings.FLOGGER_LONGITUDE[1:] + " N"
+        print "Latitude: " + longitude
+        self.AirfieldLatitude.setText(latitude)
+        self.AirfieldLongitude.setText(longitude)
+ 
         
     def floggerStart(self):
         print "flogger start"
-#        self.n = self.n + 1
-#        print("flogger start called ")
-#        return
-#        price = int(self.floggerRunBox.toPlainText())
-#        tax = (self.tax_rate.value())
-#        total_price = price  + ((tax / 100) * price)
-        flogger_run_string = "flogger Start"
-        self.floggerRunBox.setText(flogger_run_string)
+#        flogger_run_string = "flogger Start"   
+#        self.floggerRunBox.setText(settings.FLOGGER_AIRFIELD_NAME)
         cmd = os.path.join(path,"flogger.py")
         cmd_args = ["OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk"]
         print("cmd_line: " + cmd)
-        execvp(cmd, cmd_args)
+#        execvp(cmd, cmd_args)
 #        execfile("flogger.py", "OGNFLOG2 31134  test --smt smtp.metronet.co.uk --tx pjrobinson@metronet.co.uk --rx pjrobinson@metronet.co.uk")
-
+   
+    def floggerStop(self):
+        print "flogger stop"
+    
+    def floggerQuit(self):
+        print "flogger quit"
+            
+    def floggerAirfieldEdit(self):
+        print "Base Airfield button clicked" 
+        airfield_base = self.AirfieldBase.toPlainText()  
+        print "Airfield Base: " + airfield_base
+        settings.FLOGGER_AIRFIELD_NAME = airfield_base
+        print "FLOGGER_AIRFIELD_NAME: " + settings.FLOGGER_AIRFIELD_NAME
+#        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
+            
+            
+            
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     window = MyApp()
