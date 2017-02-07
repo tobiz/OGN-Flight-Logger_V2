@@ -5,11 +5,13 @@ from PyQt4 import QtGui, QtCore, uic
 from PyQt4.Qt import SIGNAL
 import subprocess
 import settings
+from parse import *
+from ConfigParser import *
 
 import socket
 
 from libfap import *
-import settings
+#import flogger_settings
 import string
 import datetime
 import time
@@ -62,7 +64,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.AirfieldBaseButton.clicked.connect(self.floggerAirfieldEdit) 
         
         # Initialise values from config file
-        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME) 
+        self.old_value = self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME) 
         self.APRSUser.setText(settings.APRS_USER) 
         self.APRSPasscode.setText(str(settings.APRS_PASSCODE)) 
         self.APRSServerHostName.setText(settings.APRS_SERVER_HOST) 
@@ -101,9 +103,51 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         print "Base Airfield button clicked" 
         airfield_base = self.AirfieldBase.toPlainText()  
         print "Airfield Base: " + airfield_base
-        settings.FLOGGER_AIRFIELD_NAME = airfield_base
-        print "FLOGGER_AIRFIELD_NAME: " + settings.FLOGGER_AIRFIELD_NAME
-#        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
+        
+        self.editConfigField("settings.py", "FLOGGER_AIRFIELD_NAME", self.old_value, airfield_base)
+        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
+
+
+    def editConfigField (self, file_name, field_name, old_value, new_value):
+        print "editConfig called"
+        file = os.path.join(path, file_name)
+        with open(file, 'rw') as searchfile:
+            searchphrase = field_name
+            for line in searchfile:
+                if searchphrase in line and line[0:1] <> "#":
+#                    print "Line is: " + line
+                    pos = line.find("=")
+#                    print "Position: " + str(pos)
+                    line_list = line.split()
+#                    print line_list
+                    parse_str1 = field_name + " = " + "{field_val1}" + "#" + "{field_val2}"
+#                    print "Parse string1: " + parse_str1
+                    res1 = parse(parse_str1, line)
+                    print res1
+                    print "Field1: " + res1["field_val1"] + ", " + "Field2: " + res1["field_val2"]
+#                    print "Field1 Type: " +  str(type(res1["field_val1"])) + ", " + "Field2 Type: " + str(type(res1["field_val2"]))
+                    
+                    field1_type = str(type(res1["field_val1"]).__name__)
+                    field2_type = str(type(res1["field_val2"]).__name__)
+#                    print "Field1 Type: " +  type(res1["field_val1"]) + ", " + "Field2 Type: " + type(res1["field_val2"])
+                    print "Field1 Type: " +  field1_type + ", " + "Field2 Type: " + field2_type
+                    if field1_type == "str":
+                        print True
+                    else:
+                        print False
+                    print "Line is: " + line
+                    new_line = line.replace(self.old_value, new_value, 1)
+#                    new_line = field_name + " = " + new_value + " # " + res1["field_val2"]
+                    print new_line
+                    
+#                    import fileinput
+#                    parse_line = fileinput.input(files, inplace = 1)
+                    # Does a list of files, and
+                    # redirects STDOUT to the file in question
+                    #for line in fileinput.input(files, inplace = 1):
+#                    print line.replace(self.old_value, new_value),
+
+                    break
             
             
             

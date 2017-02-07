@@ -53,7 +53,11 @@ assert len(APRS_USER) > 3 and len(str(APRS_PASSCODE)) > 0, 'Please set APRS_USER
 # - flogger_schema-1.0.4.sql
 # - logs
 # - tracks
-FLOGGER_BS = "/home/pjr/git_neon/OGN-Flight-Logger_V2.1/"
+import sys, os
+file = sys.argv[0]
+pathname = os.path.dirname(file)
+#FLOGGER_BS = "/home/pjr/git_neon/OGN-Flight-Logger_V2/"
+FLOGGER_BS = pathname  + "/"
 #FLOGGER_BS = "/home/pi/workspace/OGN-Flight-Logger_V2.1/"       
                                                                 
 FLOGGER_MODE = "test"                                               # Test or live mode
