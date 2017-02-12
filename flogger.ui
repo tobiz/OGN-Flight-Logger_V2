@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>917</width>
-    <height>600</height>
+    <height>778</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -341,7 +341,7 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>340</y>
+      <y>410</y>
       <width>421</width>
       <height>61</height>
      </rect>
@@ -397,7 +397,7 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>400</y>
+      <y>480</y>
       <width>421</width>
       <height>61</height>
      </rect>
@@ -446,6 +446,185 @@
      </property>
      <property name="text">
       <string>Edit</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="AirfieldDetailsBox">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>350</y>
+      <width>421</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QLabel" name="AirfieldDetailsLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Airfield Details</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="AirfieldDetails">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>10</y>
+       <width>201</width>
+       <height>51</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="AirfieldDetailsButton">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>30</y>
+       <width>41</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Edit</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="MinFlightTimeBox">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>550</y>
+      <width>421</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;format is - Hrs:Min:Sec&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QLabel" name="MinFlightTimeLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Minimum Flight Time</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="MinFlightTime">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>10</y>
+       <width>201</width>
+       <height>51</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="MinFlightTimeButton">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>30</y>
+       <width>41</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Edit</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="RecordTracksBox">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>270</y>
+      <width>151</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;format is - Hrs:Min:Sec&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QRadioButton" name="RecordTracksRadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>141</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Record flight tracks Y|N&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Record Tracks</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="FleetCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>330</y>
+      <width>151</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;format is - Hrs:Min:Sec&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QRadioButton" name="FleetCheckRadioButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>141</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check for membership of fleet, Y|N&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>Fleet Check</string>
      </property>
     </widget>
    </widget>
