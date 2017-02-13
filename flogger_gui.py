@@ -17,7 +17,7 @@ from flogger_settings import *
 
 # get the directory of this script
 path = os.path.dirname(os.path.abspath(__file__))
-#print("Path: " + path) 
+print("Path: " + path) 
 settings = class_settings()
 
 Ui_MainWindow, base_class = uic.loadUiType(os.path.join(path,"flogger.ui"))
@@ -28,6 +28,8 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
+
+
         
 #        self.runFloggerButton.clicked.connect(self.floggerStart) 
         self.actionStart.triggered.connect(self.floggerStart)  
@@ -38,6 +40,8 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.AirfieldDetailsButton.clicked.connect(self.floggerAirfieldDetailsEdit)   
         self.MinFlightTimeButton.clicked.connect(self.floggerMinFlightTimeEdit)  
         self.FleetCheckRadioButton.toggled.connect(self.floggerFleetCheckRadioButton) 
+        self.RecordTracksRadioButton.toggled.connect(self.floggerRecordTracksRadioButton)
+        self.DBSchemaButton.clicked.connect(self.floggerDBSchemaEdit) 
         
         # Initialise values from config file
 
@@ -52,7 +56,6 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
             print "Opened"
         except:
             print "Open failed"
-            
             print self.config
             
 #
@@ -116,27 +119,46 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         print "Fleet Check: " + old_val 
         if old_val == "Y":
             print "Y"
-            self.FleetCheckRadioButton.setChecked()
+            self.FleetCheckRadioButton.setChecked(True)
         else:
             print "N"   
         settings.FLOGGER_FLEET_CHECK = old_val
- 
         
+        old_val = self.getOldValue(self.config, "FLOGGER_TRACKS")
+        print "Record Tracks: " + old_val 
+        if old_val == "Y":
+            print "Y"
+            self.RecordTracksRadioButton.setChecked(True)
+        else:
+            print "N"   
+        settings.FLOGGER_TRACKS = old_val 
+        
+        old_val = self.getOldValue(self.config, "FLOGGER_DB_SCHEMA")    
+        settings.FLOGGER_DB_SCHEMA = old_val
+        self.DBSchemaFile.setText(old_val)
+
+#
+# GUI Initialisation end
+#  
+
+#
+# Actions Start
+#      
     def floggerStart(self):
         print "flogger start"
         flogger = flogger3()
-        flogger.flogger_start()
+        flogger.flogger_start(settings)
 #        flogger_run_string = "flogger Start"   
 #        self.floggerRunBox.setText(settings.FLOGGER_AIRFIELD_NAME)
-        cmd = "python " + os.path.join(path,"flogger.py")
-        cmd_line = [cmd, "OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk"]
+#        cmd = "python " + os.path.join(path,"flogger.py")
+#        cmd_line = [cmd, "OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk"]
 #        print "cmd is: " + cmd
 #        print("cmd_line: ") + str(cmd_line)
 #        os.execvp(cmd, cmd_line[1:])
      #   os.execv(cmd, "OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk" )
 #        os.execv("#!flogger.py", ["OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk"])
 #        os.execlp("/home/pjr/git_neon/OGN-Flight-Logger_V2", "flogger.py","OGNFLOG2", "31134",  "test", "--smt smtp.metronet.co.uk", "--tx pjrobinson@metronet.co.uk", "--rx pjrobinson@metronet.co.uk")
-        exec "flogger.py"
+#        exec "flogger.py"
 
 #        execfile("flogger.py", "OGNFLOG2 31134  test --smt smtp.metronet.co.uk --tx pjrobinson@metronet.co.uk --rx pjrobinson@metronet.co.uk")
    
@@ -150,7 +172,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         print "Base Airfield button clicked" 
         airfield_base = self.AirfieldBase.toPlainText()  
         print "Airfield Base: " + airfield_base
-        self.editConfigField("settings.py", "FLOGGER_AIRFIELD_NAME", airfield_base)
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_AIRFIELD_NAME", airfield_base)
         airfield_base = self.config["FLOGGER_AIRFIELD_NAME"]
 #        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
         self.FLOGGER_AIRFIELD_NAME = airfield_base
@@ -164,13 +186,46 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         
     def floggerAirfieldDetailsEdit(self):
         print "Airfield Details button clicked"
+        airfield_details = self.AirfieldDetails.toPlainText()
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_AIRFIELD_DETAILS", airfield_details)
+        airfield_details = self.config["FLOGGER_AIRFIELD_DETAILS"]
+        self.FLOGGER_AIRFIELD_DETAILS = airfield_details
+        
         
     def floggerMinFlightTimeEdit(self):
         print "Min Flight Time button clicked"   
     
     def floggerFleetCheckRadioButton(self):
         print "Fleet Check Radio Button clicked" 
-        
+        if self.FleetCheckRadioButton.isChecked():
+            print "Fleet check checked"
+            settings.FLOGGER_FLEET_CHECK = "Y"
+            self.editConfigField("flogger_settings_file.txt", "FLOGGER_FLEET_CHECK", "Y")
+        else:
+            print "Fleet check unchecked"
+            settings.FLOGGER_FLEET_CHECK = "N"
+            self.editConfigField("flogger_settings_file.txt", "FLOGGER_FLEET_CHECK", "N")
+            
+    def floggerRecordTracksRadioButton(self):
+        print "Record Tracks Radio Button clicked" 
+        if self.RecordTracksRadioButton.isChecked():
+            print "Record Tracks checked"
+            settings.FLOGGER_TRACKS = "Y"
+            self.editConfigField("flogger_settings_file.txt", "FLOGGER_TRACKS", "Y")
+        else:
+            print "Record Tracks unchecked"
+            settings.FLOGGER_TRACKS = "N"
+            self.editConfigField("flogger_settings_file.txt", "FLOGGER_TRACKS", "N")
+
+            
+    def floggerDBSchemaEdit(self):
+        print "DB Schema File button clicked" 
+        db_schema_file = self.DBSchemaFile.toPlainText()  
+        print "DB Schema File: " + db_schema_file
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_DB_SCHEMA", db_schema_file)
+        db_schema = self.config["FLOGGER_DB_SCHEMA"]
+#        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
+        self.FLOGGER_DB_SCHEMA = db_schema_file        
           
     def editConfigField (self, file_name, field_name, new_value):
         print "editConfig called"
@@ -189,7 +244,9 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         val = config[config_field_name]
         setattr(self, config_field_name, val)
         return config[config_field_name]
-        
+#
+# Actions End
+#            
                
             
 if __name__ == "__main__":

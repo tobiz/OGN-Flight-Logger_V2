@@ -519,6 +519,9 @@ def connect_APRS(sock):
 #-----------------------------------------------------------------
 #
 
+settings = MyApp()
+print "FLOGGER_AIRFIELD_NAME from class is: " + settings.FLOGGER_AIRFIELD_NAME
+
 #
 # User and passcode now mandatory positional parameters
 # Mode is an optional positional parameter, default is "live"

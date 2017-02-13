@@ -41,9 +41,9 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>20</y>
-      <width>241</width>
-      <height>20</height>
+      <y>9</y>
+      <width>361</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -54,7 +54,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Simple use of Button</string>
+     <string>Flogger - Aircraft Flight Logging</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="AirfieldGroupBox">
@@ -625,6 +625,65 @@
      </property>
      <property name="text">
       <string>Fleet Check</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="DBSchemaBox">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>640</y>
+      <width>421</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;format is - Hrs:Min:Sec&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QLabel" name="DBSchemaLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>DB Schema File</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="DBSchemaFile">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>10</y>
+       <width>201</width>
+       <height>51</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="DBSchemaButton">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>30</y>
+       <width>41</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Edit</string>
      </property>
     </widget>
    </widget>
