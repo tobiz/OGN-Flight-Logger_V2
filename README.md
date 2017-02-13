@@ -74,3 +74,6 @@ Included option to send email if flight lands outside the take off airfield.  Th
 send an SMS msg but has not been tested.
 
 20160914 - Added option to determine which tug used for a launch, if any, plus release height.
+
+20170213 - Next phase of the development is to control running and configuring the code from a gui. At the moment
+			this is highly experimental. This uses PyQt as the api and Qt Designer for building the graphical interface. 
