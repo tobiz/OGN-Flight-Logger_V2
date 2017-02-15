@@ -432,7 +432,8 @@ class flogger3():
             # base_list should be set up as part of the main code initialisation
             #-----------------------------------------------------------------
             #  
-            for base in APRS_base_list:
+#            for base in APRS_base_list:
+            for base in settings.FLOGGER_APRS_BASES:
                 if string.find(str(packet_str), base) <> -1:
                     print "Found in list of APRS base stations: ", base
                     return base
@@ -647,7 +648,7 @@ class flogger3():
         #                  settings.FLOGGER_APRS_BASE_3,
         #                  settings.FLOGGER_APRS_BASE_4,] 
         
-        APRS_base_list = settings.FLOGGER_APRS_BASES 
+#        APRS_base_list = settings.FLOGGER_APRS_BASES 
         
         #    
         #-----------------------------------------------------------------
@@ -680,7 +681,7 @@ class flogger3():
         start_time = datetime.datetime.now()
         keepalive_time = time.time()
         #sock_file = sock.makefile()
-        
+        print "Start time!" 
         sock = APRS_connect(settings)
         sock_file = sock.makefile()
         print "libfap_init"
@@ -801,8 +802,8 @@ class flogger3():
         # FLOGGER_SMTP_SERVER_TX is either set in config by user or value taken from cmd line --smtp parm.
         # 
                     if settings.FLOGGER_SMTP_SERVER_URL <> "":
-                        print "Email today's flight log"
-                        email_log2(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, csv_file, datetime.date.today())
+                        print "Email today's flight log. RX: " + settings.FLOGGER_SMTP_RX
+                        email_log2(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, csv_file, datetime.date.today(), settings)
                     else:
                         print "Don't email flight log, no flights"
                     
@@ -1119,7 +1120,7 @@ class flogger3():
         #            if (nprev_vals[src_callsign]['speed'] <= V_SMALL and nvalues[src_callsign]['speed'] > V_SMALL) or (nprev_vals[src_callsign]['speed'] == nvalues[src_callsign]['speed'] and  nvalues[src_callsign]['speed']> V_SMALL):
                         print "New test true for switch-on"
                         print "Takeoff point is: ", (latitude, longitude), "Distance is: ", takeoff_dist
-                        email_msg(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, registration, fl_time)
+                        email_msg(settings.FLOGGER_SMTP_TX, settings.FLOGGER_SMTP_RX, registration, fl_time, settings)
                         # aircraft was stopped, now isn't
                         # Enhancement.  At this point create new Track table record for the flight.
                         # Set track_no to current value and increment for use by next new flight.

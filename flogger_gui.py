@@ -41,7 +41,14 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.MinFlightTimeButton.clicked.connect(self.floggerMinFlightTimeEdit)  
         self.FleetCheckRadioButton.toggled.connect(self.floggerFleetCheckRadioButton) 
         self.RecordTracksRadioButton.toggled.connect(self.floggerRecordTracksRadioButton)
-        self.DBSchemaButton.clicked.connect(self.floggerDBSchemaEdit) 
+        self.DBSchemaButton.clicked.connect(self.floggerDBSchemaEdit)  
+        self.SMTPServerURLButton.clicked.connect(self.floggerSMTPServerURLEdit) 
+        self.SMTPServerPortButton.clicked.connect(self.floggerSMTPServerPortEdit)
+#        self.APRSBasesListWidget.itemClicked.connect(self.floggerAPRSBasesListEdit)
+        self.APRSBase1Button.clicked.connect(self.floggerAPRSBaseEdit)
+        self.APRSBase2Button.clicked.connect(self.floggerAPRSBaseEdit)
+        self.APRSBase3Button.clicked.connect(self.floggerAPRSBaseEdit)
+        self.APRSBase4Button.clicked.connect(self.floggerAPRSBaseEdit)
         
         # Initialise values from config file
 
@@ -81,7 +88,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.APRSServerHostName.setText(old_val)
         
         old_val = self.getOldValue(self.config, "APRS_SERVER_PORT")    # This might get parsed as an int - need to watch it!
-        settings.APRS_SERVER_PORT = old_val
+        settings.APRS_SERVER_PORT = int(old_val)
         self.APRSServerPort.setText(old_val)
         
         old_val = self.getOldValue(self.config, "FLOGGER_AIRFIELD_DETAILS")    
@@ -136,7 +143,50 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         old_val = self.getOldValue(self.config, "FLOGGER_DB_SCHEMA")    
         settings.FLOGGER_DB_SCHEMA = old_val
         self.DBSchemaFile.setText(old_val)
+        settings.FLOGGER_DB_SCHEMA = old_val
 
+        old_val = self.getOldValue(self.config, "FLOGGER_SMTP_SERVER_URL")    
+        settings.FLOGGER_SMTP_SERVER_URL = old_val
+        self.SMTPServerURL.setText(old_val)
+        settings.FLOGGER_SMTP_SERVER_URL = old_val
+        
+        old_val = self.getOldValue(self.config, "FLOGGER_SMTP_SERVER_PORT")    
+        settings.FLOGGER_SMTP_SERVER_PORT = int(old_val)
+        self.SMTPServerPort.setText(old_val)
+        settings.FLOGGER_SMTP_SERVER_PORT = int(old_val)
+        
+        old_val = self.getOldValue(self.config, "FLOGGER_APRS_BASES")
+        for item in old_val:
+            print "APRS Base: " + item
+            self.APRSBasesListWidget.addItem(item)
+        settings.FLOGGER_APRS_BASES = old_val
+        print "APRS_BASES: ", old_val
+        
+        old_val = self.getOldValue(self.config, "FLOGGER_APRS_BASES")
+        i = 1
+        for item in old_val:
+            print "APRS Base: " + item
+            if i == 1:
+                self.APRSBase1Edit.setText(item)
+                i = i + 1
+                continue
+            if i == 2:
+                self.APRSBase2Edit.setText(item)
+                i = i + 1
+                continue
+            if i == 3:
+                self.APRSBase3Edit.setText(item)
+                i = i + 1
+                continue
+            if i == 4:
+                self.APRSBase4Edit.setText(item)
+                i = i + 1  
+                continue 
+#            self.APRSBasesListWidget.addItem(item)
+        settings.FLOGGER_APRS_BASES = old_val
+        print "APRS_BASES: ", old_val
+        
+        
 #
 # GUI Initialisation end
 #  
@@ -225,7 +275,47 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.editConfigField("flogger_settings_file.txt", "FLOGGER_DB_SCHEMA", db_schema_file)
         db_schema = self.config["FLOGGER_DB_SCHEMA"]
 #        self.AirfieldBase.setText(settings.FLOGGER_AIRFIELD_NAME)
-        self.FLOGGER_DB_SCHEMA = db_schema_file        
+        self.FLOGGER_DB_SCHEMA = db_schema_file 
+        
+                
+    def floggerSMTPServerURLEdit(self):
+        print "SMTP Server URL button clicked" 
+        smtp_server_URL = self.SMTPServerURL.toPlainText()  
+        print "SMTP Server URL: " + smtp_server_URL
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_SMTP_SERVER_URL", smtp_server_URL)
+        smtp_server_URL = self.config["FLOGGER_SMTP_SERVER_URL"]
+        self.FLOGGER_SMTP_SERVER_URL = smtp_server_URL  
+        
+                       
+    def floggerSMTPServerPortEdit(self):
+        print "SMTP Server Port button clicked" 
+        smtp_server_port = self.SMTPServerPort.toPlainText()  
+        print "SMTP Server Port: " + smtp_server_port
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_SMTP_SERVER_PORT", smtp_server_port)
+        smtp_server_port = self.config["FLOGGER_SMTP_SERVER_PORT"]
+        self.FLOGGER_SMTP_SERVER_PORT = int(smtp_server_port)      
+    
+    def floggerAPRSBasesListEdit(self):
+        print "APRS Bases list clicked"
+#        sel_items = listWidget.selectedItems()
+        sel_items = self.APRSBasesListWidget.selectedItems()
+        for item in sel_items:
+            new_val = item.text()
+            print new_val
+            item.editItem()
+#            item.setText(item.text()+"More Text")
+     
+    def floggerAPRSBaseEdit(self):  
+        print "APRS Base station list called" 
+        APRSBase1 = self.APRSBase1Edit.toPlainText()
+        APRSBase2 = self.APRSBase2Edit.toPlainText() 
+        APRSBase3 = self.APRSBase3Edit.toPlainText() 
+        APRSBase4 = self.APRSBase4Edit.toPlainText() 
+        APRSBaseList = [str(APRSBase1), str(APRSBase2), str(APRSBase3), str(APRSBase4)]
+        print "APRSBaseList: ", APRSBaseList
+        self.editConfigField("flogger_settings_file.txt", "FLOGGER_APRS_BASES", APRSBaseList)
+#        APRSBase = self.config["FLOGGER_APRS_BASES"]
+        self.FLOGGER_APRS_BASES = APRSBaseList 
           
     def editConfigField (self, file_name, field_name, new_value):
         print "editConfig called"

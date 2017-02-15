@@ -10,7 +10,7 @@ import  settings
 import os
 import datetime
 
-def email_msg(sender, receiver, msg, date):
+def email_msg(sender, receiver, msg, date, settings):
 #    print "Send take off msg"
     if settings.FLOGGER_TAKEOFF_EMAIL != "y" and settings.FLOGGER_TAKEOFF_EMAIL != "Y":
         # Don't send take off email msg

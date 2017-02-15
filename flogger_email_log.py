@@ -6,11 +6,10 @@ from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
 from email import encoders
 from __builtin__ import file
-import  settings
 import os
 import datetime
 
-def email_log2(sender, receiver, filepath, date):
+def email_log2(sender, receiver, filepath, date, settings):
 #    print "email_log2 with sender=%s, receiver=%s, filepath=%s" % (sender, receiver, filepath)
     FLIGHT_LOG_FILE = "flight_log.csv"
 #    filepath = path + file
@@ -34,6 +33,7 @@ def email_log2(sender, receiver, filepath, date):
     fpw.close()
     fromaddr = sender
     toaddr = receiver  
+    print "From: " + fromaddr + " To: " + toaddr
     msg = MIMEMultipart() 
     msg['From'] = fromaddr
     msg['To'] = toaddr
@@ -53,10 +53,21 @@ def email_log2(sender, receiver, filepath, date):
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', "attachment; filename= %s" % FLIGHT_LOG_FILE)  
         msg.attach(part)
-    server = smtplib.SMTP(settings.FLOGGER_SMTP_SERVER_URL, settings.FLOGGER_SMTP_SERVER_PORT)
+    
+#    print "SMTP URL: " + str(settings.FLOGGER_SMTP_SERVER_URL) + " SMTP Port: " + str(settings.FLOGGER_SMTP_SERVER_PORT)
+    try:
+        server = smtplib.SMTP(settings.FLOGGER_SMTP_SERVER_URL, settings.FLOGGER_SMTP_SERVER_PORT)
+#        server = smtplib.SMTP(settings.FLOGGER_SMTP_SERVER_URL, int(settings.FLOGGER_SMTP_SERVER_PORT))
+#        print "SMTP Server connection ok"
+    except:
+        print "SMTP Server connection failed"
     text = msg.as_string()
-#    print "Msg string is: ", text
-    server.sendmail(fromaddr, toaddr, text)
+    print "Msg string is: ", text
+    try:
+        server.sendmail(fromaddr, toaddr, text)
+#        print "Sendmail ok"
+    except:
+        print "Sendmail failed"
     server.quit()
     fpw.close()
     try:
