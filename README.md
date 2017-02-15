@@ -77,3 +77,6 @@ send an SMS msg but has not been tested.
 
 20170213 - Next phase of the development is to control running and configuring the code from a gui. At the moment
 			this is highly experimental. This uses PyQt as the api and Qt Designer for building the graphical interface. 
+			
+20170215 - User defined configuration data is held in data formats defined by ConfigObj 4, 
+			see http://www.voidspace.org.uk/python/configobj.html
