@@ -80,3 +80,5 @@ send an SMS msg but has not been tested.
 			
 20170215 - User defined configuration data is held in data formats defined by ConfigObj 4, 
 			see http://www.voidspace.org.uk/python/configobj.html
+			
+20170226 - Please note at this stage the user interface is purely on the basis of understanding how the code works and is not intended to be the final design.
