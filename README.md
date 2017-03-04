@@ -82,3 +82,5 @@ send an SMS msg but has not been tested.
 			see http://www.voidspace.org.uk/python/configobj.html
 			
 20170226 - Please note at this stage the user interface is purely on the basis of understanding how the code works and is not intended to be the final design.
+
+20170304 - Flogger now runs as a separate process to the gui (I think?) Still some issues with access to some variables from settings data which results in an exception and crash (catch the exception in try statement when calling the process? Maybe).
