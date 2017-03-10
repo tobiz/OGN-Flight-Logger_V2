@@ -84,3 +84,5 @@ send an SMS msg but has not been tested.
 20170226 - Please note at this stage the user interface is purely on the basis of understanding how the code works and is not intended to be the final design.
 
 20170304 - Flogger now runs as a separate process to the gui (I think?) Still some issues with access to some variables from settings data which results in an exception and crash (catch the exception in try statement when calling the process? Maybe).
+
+20170310 - The intention is to remove separate Edit buttons for each field and replace by a single one which when clicked will update all changed fields. There will also be a Cancel button to 'undo' any changed fields (for now this will be limited to a single undo level, muliple undo levels is for later(!)); so far this feature has been shown to work on 2 fields. In addition the Python Packaging 'setup' files have been added for uploading OGN-Flogger to PyPi, and something(?) has been added to the PyPi index (but not convinced it installs correctly at the moment).
